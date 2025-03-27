@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using OnlineBookClub.Models;
 using OnlineBookClub.Repository;
 using OnlineBookClub.Service;
+using OnlineBookClub.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<MembersService>();
+builder.Services.AddScoped<MailService>();
 builder.Services.AddScoped<MembersRepository>();
 var app = builder.Build();
 

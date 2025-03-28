@@ -8,6 +8,7 @@ namespace OnlineBookClub.Controllers
     [ApiController]
     public class BookPlanController : ControllerBase
     {
+
         // GET: api/<BookPlanController>
         [HttpGet]
         public IEnumerable<string> Get()

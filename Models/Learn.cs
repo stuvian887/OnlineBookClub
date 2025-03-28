@@ -17,6 +17,8 @@ public partial class Learn
 
     public DateTime DueTime { get; set; }
 
+    public bool Manual_Check { get; set; }
+
     public virtual ICollection<Answer_Record> Answer_Record { get; set; } = new List<Answer_Record>();
 
     public virtual BookPlan Plan { get; set; } = null!;

@@ -3,6 +3,9 @@ using System.Security.Cryptography;
 using System.Text;
 using OnlineBookClub.Repository;
 using OnlineBookClub.DTO;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 namespace OnlineBookClub.Service
 {
     public class MembersService
@@ -61,5 +64,41 @@ namespace OnlineBookClub.Service
             }
             return Validatestr;
         }
+        public string LoginCheck(LoginDTO Value)
+        {
+
+            Members LoginMember = GetDataEmail(Value.Email);
+
+            if (LoginMember != null)
+            {
+                if (String.IsNullOrWhiteSpace(LoginMember.AuthCode))
+                {
+                    if (PasswordCheck(LoginMember, Value.Password))
+                    {
+
+                        return "";
+                    }
+                    else
+                    {
+                        return " 密碼輸入錯誤 ";
+                    }
+                }
+                else
+                {
+                    return " 此帳號尚未經過 Email 驗證，請去收信 ";
+                }
+            }
+            else
+            {
+                return " 無此會員帳號，請去註冊 ";
+            }
+        }
+        public bool PasswordCheck(Members CheckMember, string Password)
+        {
+
+            bool result = CheckMember.Password.Equals(HashPassword(Password));
+            return result;
+        }
+        
     }
 }

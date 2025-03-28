@@ -23,6 +23,8 @@ builder.Services.AddScoped<MembersService>();
 builder.Services.AddScoped<MailService>();
 builder.Services.AddScoped<MembersRepository>();
 builder.Services.AddScoped<JwtService>();
+builder.Services.AddScoped<BookPlanRepository>();
+builder.Services.AddScoped<BookPlanService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

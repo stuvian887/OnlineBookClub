@@ -2,16 +2,14 @@
 
 namespace OnlineBookClub.DTO
 {
-    public class CreateBookPlanDTO
+    public class BookPlanDTO
     {
-        [Required]
         public string PlanName { get; set; }
-        [Required]
         public string PlanGoal { get; set; }
-        [Required]
         public string PlanType { get; set; }
-        [Required]
         public string PlanSubject { get; set; }
         public bool IsPublic { get; set; }
+        public bool IsComplete { get; set; }
+        public int UserId { get; set; }
     }
 }

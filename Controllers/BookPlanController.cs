@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OnlineBookClub.DTO;
 using OnlineBookClub.Service;
+using OnlineBookClub.Token;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -11,10 +12,11 @@ namespace OnlineBookClub.Controllers
     public class BookPlanController : ControllerBase
     {
         private readonly BookPlanService _service;
-
-        public BookPlanController(BookPlanService service)
+        private readonly JwtService _jwtService;
+        public BookPlanController(BookPlanService service, JwtService jwtService)
         {
             _service = service;
+            _jwtService = jwtService;
         }
 
         [HttpGet("public")]
@@ -35,7 +37,13 @@ namespace OnlineBookClub.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] BookPlanDTO bookPlanDto)
         {
-            var plan = await _service.Create(bookPlanDto);
+            var token = HttpContext.Request.Cookies["JWT"];
+          
+
+            var userId = _jwtService.GetUserIdFromToken(token);
+
+            int id = Convert.ToInt32(userId);
+            var plan = await _service.Create(bookPlanDto,id);
             return CreatedAtAction(nameof(GetById), new { id = plan.Plan_Id }, plan);
         }
 

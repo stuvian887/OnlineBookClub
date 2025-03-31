@@ -1,16 +1,23 @@
-﻿using OnlineBookClub.DTO;
+﻿using Microsoft.AspNetCore.Http;
+using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
 using OnlineBookClub.Repository;
+using OnlineBookClub.Token;
+using System.Security.Claims;
 
 namespace OnlineBookClub.Service
 {
     public class BookPlanService
     {
+        
         private readonly BookPlanRepository _repository;
-
-        public BookPlanService(BookPlanRepository repository)
+        private readonly JwtService _jwtService;
+        private readonly PlanMemberRepository _memberRepository;
+        public BookPlanService(BookPlanRepository repository, JwtService jwtService, PlanMemberRepository memberRepository)
         {
+            _jwtService = jwtService;
             _repository = repository;
+            _memberRepository = memberRepository;
         }
 
         public async Task<IEnumerable<BookPlan>> GetAllPublicPlans()
@@ -23,8 +30,9 @@ namespace OnlineBookClub.Service
             return await _repository.GetById(id);
         }
 
-        public async Task<BookPlan> Create(BookPlanDTO bookPlanDto)
+        public async Task<BookPlan> Create(BookPlanDTO bookPlanDto,int id)
         {
+           
             var bookPlan = new BookPlan
             {
                 Plan_Name = bookPlanDto.PlanName,
@@ -33,8 +41,14 @@ namespace OnlineBookClub.Service
                 Plan_suject = bookPlanDto.PlanSubject,
                 IsPublic = bookPlanDto.IsPublic,
                 IsComplete = bookPlanDto.IsComplete,
-                User_Id = bookPlanDto.UserId
+                User_Id = id
             };
+
+
+            
+            
+
+
 
             return await _repository.Create(bookPlan);
         }

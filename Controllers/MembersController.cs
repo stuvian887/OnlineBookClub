@@ -39,15 +39,22 @@ namespace OnlineBookClub.Controllers
         [AllowAnonymous]
         public IActionResult Register([FromBody] RegisterDTO Register)
         {
-            if (ModelState.IsValid && MemberService.EmailCheck(Register.newMember.Email))
+            if (ModelState.IsValid && MemberService.EmailCheck(Register.email))
             {
-                Register.newMember.Password = MemberService.HashPassword(Register.Password);
-                Register.newMember.AuthCode = MailService.GetAuthCode();
-                MemberService.Register(Register.newMember);
+                Register.Password = MemberService.HashPassword(Register.Password);
+                string authcode = MailService.GetAuthCode();
+                var newmember = new Members()
+                {
+                    Email = Register.email,
+                    UserName=Register.name,
+                    AuthCode=authcode,
+                    Password = Register.Password
+                };
+                MemberService.Register(newmember);
                 string TempMail = System.IO.File.ReadAllText(Path.Combine(env.ContentRootPath, "RegisterEmailTemplate.html"));
-                string ValidateUrl = $"{Request.Scheme}://{Request.Host}/api/members/EmailValidate?Email={Register.newMember.Email}&AuthCode={Register.newMember.AuthCode}";
-                string MailBody = MailService.GetRegisterMailBody(TempMail, Register.newMember.UserName, ValidateUrl);
-                MailService.SendRegisterMail(MailBody, Register.newMember.Email);
+                string ValidateUrl = $"{Request.Scheme}://{Request.Host}/api/members/EmailValidate?Email={Register.email}&AuthCode={authcode}";
+                string MailBody = MailService.GetRegisterMailBody(TempMail, Register.name, ValidateUrl);
+                MailService.SendRegisterMail(MailBody, Register.email);
                 return Ok("註冊成功，請去收信以驗證Email");
             }
             return BadRequest("註冊失敗，請重新註冊");

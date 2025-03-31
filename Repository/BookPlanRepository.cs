@@ -7,10 +7,12 @@ namespace OnlineBookClub.Repository
     public class BookPlanRepository
     {
         private readonly OnlineBookClubContext _context;
+        private readonly PlanMemberRepository _planMemberRepsitory;
 
-        public BookPlanRepository(OnlineBookClubContext context)
+        public BookPlanRepository(OnlineBookClubContext context, PlanMemberRepository planMemberRepsitory)
         {
             _context = context;
+            _planMemberRepsitory = planMemberRepsitory;
         }
 
         public async Task<IEnumerable<BookPlan>> GetAllPublicPlans()
@@ -25,8 +27,10 @@ namespace OnlineBookClub.Repository
 
         public async Task<BookPlan> Create(BookPlan bookPlan)
         {
+
             _context.BookPlan.Add(bookPlan);
             await _context.SaveChangesAsync();
+            await _planMemberRepsitory.AddUserToPlanAsync(bookPlan.User_Id,bookPlan.Plan_Id);
             return bookPlan;
         }
 

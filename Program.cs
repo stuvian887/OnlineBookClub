@@ -11,7 +11,7 @@ using OnlineBookClub.Token;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddHttpContextAccessor();
 // Add services to the container.
 builder.Services.AddDbContext<OnlineBookClubContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("WebDatabase")));
@@ -25,7 +25,9 @@ builder.Services.AddScoped<MembersRepository>();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<BookPlanRepository>();
 builder.Services.AddScoped<BookPlanService>();
-
+builder.Services.AddScoped<PlanMemberRepository>();
+builder.Services.AddScoped<PlanMemberService>();
+    
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {

@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using OnlineBookClub.DTO;
+using OnlineBookClub.Service;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -8,36 +10,49 @@ namespace OnlineBookClub.Controllers
     [ApiController]
     public class BookPlanController : ControllerBase
     {
-        // GET: api/<BookPlanController>
-        [HttpGet]
-        public IEnumerable<string> Get()
+        private readonly BookPlanService _service;
+
+        public BookPlanController(BookPlanService service)
         {
-            return new string[] { "value1", "value2" };
+            _service = service;
         }
 
-        // GET api/<BookPlanController>/5
+        [HttpGet("public")]
+        public async Task<IActionResult> GetAllPublicPlans()
+        {
+            var plans = await _service.GetAllPublicPlans();
+            return Ok(plans);
+        }
+
         [HttpGet("{id}")]
-        public string Get(int id)
+        public async Task<IActionResult> GetById(int id)
         {
-            return "value";
+            var plan = await _service.GetById(id);
+            if (plan == null) return NotFound();
+            return Ok(plan);
         }
 
-        // POST api/<BookPlanController>
         [HttpPost]
-        public void Post([FromBody] string value)
+        public async Task<IActionResult> Create([FromBody] BookPlanDTO bookPlanDto)
         {
+            var plan = await _service.Create(bookPlanDto);
+            return CreatedAtAction(nameof(GetById), new { id = plan.Plan_Id }, plan);
         }
 
-        // PUT api/<BookPlanController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public async Task<IActionResult> Update(int id, [FromBody] BookPlanDTO bookPlanDto)
         {
+            var updatedPlan = await _service.Update(id, bookPlanDto);
+            if (updatedPlan == null) return NotFound();
+            return Ok(updatedPlan);
         }
 
-        // DELETE api/<BookPlanController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
+            var result = await _service.Delete(id);
+            if (!result) return NotFound();
+            return NoContent();
         }
     }
 }

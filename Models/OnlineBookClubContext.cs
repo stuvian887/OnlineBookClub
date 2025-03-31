@@ -43,7 +43,7 @@ public partial class OnlineBookClubContext : DbContext
     {
         modelBuilder.Entity<Answer_Record>(entity =>
         {
-            entity.HasKey(e => e.AR_Id).HasName("PK__Answer_R__003ED5F23A33418F");
+            entity.HasKey(e => e.AR_Id).HasName("PK__Answer_R__003ED5F2530C4EB0");
 
             entity.Property(e => e.Answer).HasMaxLength(1);
             entity.Property(e => e.AnswerDate).HasColumnType("datetime");
@@ -61,7 +61,7 @@ public partial class OnlineBookClubContext : DbContext
 
         modelBuilder.Entity<Book>(entity =>
         {
-            entity.HasKey(e => e.Book_Id).HasName("PK__Book__C223F3B44BA23E96");
+            entity.HasKey(e => e.Book_Id).HasName("PK__Book__C223F3B4770B6A77");
 
             entity.Property(e => e.BookName).HasMaxLength(100);
             entity.Property(e => e.Description).HasMaxLength(1000);
@@ -74,11 +74,12 @@ public partial class OnlineBookClubContext : DbContext
 
         modelBuilder.Entity<BookPlan>(entity =>
         {
-            entity.HasKey(e => e.Plan_Id).HasName("PK__BookPlan__9BAF9B03783099CE");
+            entity.HasKey(e => e.Plan_Id).HasName("PK__BookPlan__9BAF9B03708D248C");
 
             entity.Property(e => e.Plan_Goal).HasMaxLength(200);
             entity.Property(e => e.Plan_Name).HasMaxLength(100);
             entity.Property(e => e.Plan_Type).HasMaxLength(100);
+            entity.Property(e => e.Plan_suject).HasMaxLength(100);
 
             entity.HasOne(d => d.User).WithMany(p => p.BookPlan)
                 .HasForeignKey(d => d.User_Id)
@@ -88,7 +89,7 @@ public partial class OnlineBookClubContext : DbContext
 
         modelBuilder.Entity<Learn>(entity =>
         {
-            entity.HasKey(e => e.Learn_Id).HasName("PK__Learn__319993003FCD92E2");
+            entity.HasKey(e => e.Learn_Id).HasName("PK__Learn__31999300A6B2BEBB");
 
             entity.Property(e => e.DueTime).HasColumnType("datetime");
             entity.Property(e => e.Learn_Name).HasMaxLength(100);
@@ -101,9 +102,9 @@ public partial class OnlineBookClubContext : DbContext
 
         modelBuilder.Entity<Members>(entity =>
         {
-            entity.HasKey(e => e.User_Id).HasName("PK__Members__206D917091A37B8D");
+            entity.HasKey(e => e.User_Id).HasName("PK__Members__206D9170305704E6");
 
-            entity.HasIndex(e => e.Email, "UQ__Members__A9D105349BEE5E48").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ__Members__A9D10534CC599637").IsUnique();
 
             entity.Property(e => e.AuthCode)
                 .HasMaxLength(10)
@@ -118,7 +119,7 @@ public partial class OnlineBookClubContext : DbContext
 
         modelBuilder.Entity<Notice>(entity =>
         {
-            entity.HasKey(e => e.Notice_Id).HasName("PK__Notice__E9930CABDF4AF963");
+            entity.HasKey(e => e.Notice_Id).HasName("PK__Notice__E9930CABA4CD603E");
 
             entity.Property(e => e.Message).HasMaxLength(200);
             entity.Property(e => e.NoticeTime).HasColumnType("datetime");
@@ -131,7 +132,7 @@ public partial class OnlineBookClubContext : DbContext
 
         modelBuilder.Entity<PlanMembers>(entity =>
         {
-            entity.HasKey(e => new { e.User_Id, e.Plan_Id }).HasName("PK__PlanMemb__09D768C0FA70A000");
+            entity.HasKey(e => new { e.User_Id, e.Plan_Id }).HasName("PK__PlanMemb__09D768C00C45C967");
 
             entity.Property(e => e.JoinDate).HasColumnType("datetime");
             entity.Property(e => e.Role).HasMaxLength(10);
@@ -149,7 +150,7 @@ public partial class OnlineBookClubContext : DbContext
 
         modelBuilder.Entity<Post>(entity =>
         {
-            entity.HasKey(e => e.Post_Id).HasName("PK__Post__5875F7ADAF0F4B5B");
+            entity.HasKey(e => e.Post_Id).HasName("PK__Post__5875F7AD2D37E2D1");
 
             entity.Property(e => e.Content).HasMaxLength(100);
             entity.Property(e => e.CreateTime).HasColumnType("datetime");
@@ -168,7 +169,7 @@ public partial class OnlineBookClubContext : DbContext
 
         modelBuilder.Entity<Post_Report>(entity =>
         {
-            entity.HasKey(e => e.P_Report_Id).HasName("PK__Post_Rep__AF4E25E378CB993A");
+            entity.HasKey(e => e.P_Report_Id).HasName("PK__Post_Rep__AF4E25E3A709B58F");
 
             entity.Property(e => e.Action)
                 .HasMaxLength(10)
@@ -183,7 +184,7 @@ public partial class OnlineBookClubContext : DbContext
 
         modelBuilder.Entity<ProgressTracking>(entity =>
         {
-            entity.HasKey(e => e.Progress_Id).HasName("PK__Progress__D558797A32C6845B");
+            entity.HasKey(e => e.Progress_Id).HasName("PK__Progress__D558797A58D891E6");
 
             entity.Property(e => e.CompletionDate).HasColumnType("datetime");
 
@@ -200,7 +201,7 @@ public partial class OnlineBookClubContext : DbContext
 
         modelBuilder.Entity<Reply>(entity =>
         {
-            entity.HasKey(e => e.Reply_Id).HasName("PK__Reply__B6633284EB09FCA7");
+            entity.HasKey(e => e.Reply_Id).HasName("PK__Reply__B663328486632044");
 
             entity.Property(e => e.ReplyContent).HasMaxLength(100);
             entity.Property(e => e.ReplyTime).HasColumnType("datetime");
@@ -218,7 +219,7 @@ public partial class OnlineBookClubContext : DbContext
 
         modelBuilder.Entity<Reply_Report>(entity =>
         {
-            entity.HasKey(e => e.R_Report_Id).HasName("PK__Reply_Re__6B66990F81BA8E1F");
+            entity.HasKey(e => e.R_Report_Id).HasName("PK__Reply_Re__6B66990FD9042FE7");
 
             entity.Property(e => e.Action)
                 .HasMaxLength(10)
@@ -233,7 +234,7 @@ public partial class OnlineBookClubContext : DbContext
 
         modelBuilder.Entity<Statistic>(entity =>
         {
-            entity.HasKey(e => e.Statistics_Id).HasName("PK__Statisti__A2EC2FD97545864C");
+            entity.HasKey(e => e.Statistics_Id).HasName("PK__Statisti__A2EC2FD9F55015F2");
 
             entity.HasOne(d => d.Plan).WithMany(p => p.Statistic)
                 .HasForeignKey(d => d.Plan_Id)
@@ -243,7 +244,7 @@ public partial class OnlineBookClubContext : DbContext
 
         modelBuilder.Entity<Topic>(entity =>
         {
-            entity.HasKey(e => e.Topic_Id).HasName("PK__Topic__8DEAA405DC674108");
+            entity.HasKey(e => e.Topic_Id).HasName("PK__Topic__8DEAA4057F61B55D");
 
             entity.Property(e => e.Answer).HasMaxLength(1);
             entity.Property(e => e.Option_A).HasMaxLength(200);

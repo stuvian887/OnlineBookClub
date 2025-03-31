@@ -13,7 +13,7 @@ public partial class BookPlan
 
     public string Plan_Type { get; set; } = null!;
 
-    public string Plan_subject { get; set; } = null!;
+    public string Plan_suject { get; set; } = null!;
 
     public bool IsPublic { get; set; }
 

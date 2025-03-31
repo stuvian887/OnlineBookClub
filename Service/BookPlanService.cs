@@ -30,7 +30,7 @@ namespace OnlineBookClub.Service
                 Plan_Name = bookPlanDto.PlanName,
                 Plan_Goal = bookPlanDto.PlanGoal,
                 Plan_Type = bookPlanDto.PlanType,
-                Plan_subject = bookPlanDto.PlanSubject,
+                Plan_suject = bookPlanDto.PlanSubject,
                 IsPublic = bookPlanDto.IsPublic,
                 IsComplete = bookPlanDto.IsComplete,
                 User_Id = bookPlanDto.UserId
@@ -47,7 +47,7 @@ namespace OnlineBookClub.Service
             bookPlan.Plan_Name = bookPlanDto.PlanName;
             bookPlan.Plan_Goal = bookPlanDto.PlanGoal;
             bookPlan.Plan_Type = bookPlanDto.PlanType;
-            bookPlan.Plan_subject = bookPlanDto.PlanSubject;
+            bookPlan.Plan_suject = bookPlanDto.PlanSubject;
             bookPlan.IsPublic = bookPlanDto.IsPublic;
             bookPlan.IsComplete = bookPlanDto.IsComplete;
 

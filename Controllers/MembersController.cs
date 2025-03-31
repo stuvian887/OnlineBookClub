@@ -10,6 +10,7 @@ using OnlineBookClub.Models;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using OnlineBookClub.Token;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -24,14 +25,15 @@ namespace OnlineBookClub.Controllers
         private readonly MailService MailService;
         private readonly OnlineBookClubContext OnlineBookClubContext;
         private readonly IConfiguration _config;
-        public MembersController(IWebHostEnvironment _env, MembersService _MemberService, MailService _MailService, OnlineBookClubContext _OnlineBookClubContext, IConfiguration config)
+        private readonly JwtService _jwtService;
+        public MembersController(IWebHostEnvironment _env, MembersService _MemberService, MailService _MailService, OnlineBookClubContext _OnlineBookClubContext, IConfiguration config, JwtService jwtService)
         {
             env = _env;
             MemberService = _MemberService;
             MailService = _MailService;
             OnlineBookClubContext = _OnlineBookClubContext;
             _config = config;
-
+            _jwtService = jwtService;
         }
         [HttpPost("Register")]
         [AllowAnonymous]
@@ -70,35 +72,11 @@ namespace OnlineBookClub.Controllers
                             where a.Email == LoginMember.Email
                             && a.Password == MemberService.HashPassword( LoginMember.Password)
                             select a).SingleOrDefault();
-                var claims = new List<Claim>    
-                {
-                    new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                    new Claim("FullName", user.UserName),
-                    new Claim(JwtRegisteredClaimNames.NameId, user.User_Id.ToString())
-                };
-                var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:KEY"]));
+                // 使用 JwtService 產生 Token
+                string token = _jwtService.GenerateJwtToken(user);
 
-
-                //設定jwt相關資訊
-                var jwt = new JwtSecurityToken
-                (
-                    issuer: _config["JWT:Issuer"],
-                    audience: _config["JWT:Audience"],
-                    claims: claims,
-                    expires: DateTime.Now.AddMinutes(30),
-                    signingCredentials: new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256)
-                );
-
-                //產生JWT Token
-                var token = new JwtSecurityTokenHandler().WriteToken(jwt);
-                var cookieOptions = new CookieOptions
-                {
-                    HttpOnly = true,  // 避免 JavaScript 讀取，防止 XSS 攻擊
-                    Secure = false,    // 僅在 HTTPS 傳輸
-                    SameSite = SameSiteMode.Strict, // 限制跨站請求
-                    Expires = DateTime.Now.AddMinutes(30)
-                };
-                Response.Cookies.Append("JWT", token, cookieOptions);
+                // 設定 Cookie
+                _jwtService.SetJwtCookie(Response, token);
                 return Ok(); // 已登入則重新導向
 
             }
@@ -119,11 +97,6 @@ namespace OnlineBookClub.Controllers
             return Ok("登出成功");
 
         }
-        [AllowAnonymous]
-        [HttpGet("NoLogin")]
-        public ActionResult noLogin()
-        {
-            return Ok("為登入");
-        }
+        
     }
 }

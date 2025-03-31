@@ -7,6 +7,7 @@ using OnlineBookClub.Models;
 using OnlineBookClub.Repository;
 using OnlineBookClub.Service;
 using OnlineBookClub.Services;
+using OnlineBookClub.Token;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,10 +22,13 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<MembersService>();
 builder.Services.AddScoped<MailService>();
 builder.Services.AddScoped<MembersRepository>();
+builder.Services.AddScoped<JwtService>();
+builder.Services.AddScoped<BookPlanRepository>();
+builder.Services.AddScoped<BookPlanService>();
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -44,7 +48,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                     context.Token = context.Request.Cookies["JWT"];
                 }
                 return Task.CompletedTask;
-            }
+            },
+            
         };
     });
 builder.Services.AddMvc(options =>

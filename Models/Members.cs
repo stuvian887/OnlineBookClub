@@ -15,7 +15,7 @@ public partial class Members
 
     public string AuthCode { get; set; } = null!;
 
-    public bool? Gender { get; set; }
+    public bool Gender { get; set; }
 
     public DateTime? Birthday { get; set; }
 

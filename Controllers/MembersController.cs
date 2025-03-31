@@ -104,6 +104,50 @@ namespace OnlineBookClub.Controllers
             return Ok("登出成功");
 
         }
-        
+
+        [HttpPost("ForgetPassword")]
+        [AllowAnonymous]
+        public ActionResult ForgetPassword(string emaill) 
+        {
+            if (!MemberService.EmailCheck(emaill)) 
+            {
+                string authcode = MailService.GetAuthCode();
+                var member = MemberService.GetDataEmail(emaill);
+                MemberService.authcode(emaill, authcode);
+                string TempMail = System.IO.File.ReadAllText(Path.Combine(env.ContentRootPath, "forgetpasswordpage.html"));
+                string ValidateUrl = $"{Request.Scheme}://{Request.Host}/api/members/PSValidate?Email={emaill}&AuthCode={authcode}";
+                
+                string MailBody = MailService.GetRegisterMailBody(TempMail, member.UserName, ValidateUrl);
+                MailService.SendRegisterMail(MailBody, emaill);
+                return Ok("輸入成功，請去收信以驗證Email");
+            }
+
+            return BadRequest("無此帳號");
+        }
+        [HttpGet("PSValidate")]
+        [AllowAnonymous]
+        public IActionResult PSValidate(string Email, string AuthCode)
+        {
+            string Validatestr = MemberService.forgetpsEmailValidate(Email, AuthCode);
+            return Ok(Validatestr);
+        }
+        [HttpPut("changeps")]
+        [AllowAnonymous]
+        public IActionResult changeps(string emaill,string ps,string ps2)
+        {
+            
+            ps = MemberService.HashPassword(ps);
+            var member = MemberService.GetDataEmail(emaill);
+            if (ps == ps2)
+            {
+                return BadRequest("兩次輸入的密碼不一致");
+            }
+            MemberService.updatePassword(member,ps);
+            return Ok("修改成功 請重新登入");
+        }
+
+
+
+
     }
 }

@@ -10,21 +10,26 @@ namespace OnlineBookClub.Repository
         {
             _OnlineBookClubContext = OnlineBookClubContext;
         }
-        public Members Add(Members NewMember)
+        public void Add(Members NewMember)
         {
-            Members result = new Members
-            {
-                UserName = NewMember.UserName,
-                Email = NewMember.Email,
-                Password = NewMember.Password,
-                AuthCode = NewMember.AuthCode,
-                Gender = NewMember.Gender,
-                Birthday = NewMember.Birthday
-            };
-            _OnlineBookClubContext.Members.Add(result);
+            _OnlineBookClubContext.Members.Add(NewMember);
             _OnlineBookClubContext.SaveChanges();
-            return result;
+            
         }
+        public void Delete(Members Member)
+        {
+            _OnlineBookClubContext.Members.Remove(Member);
+            _OnlineBookClubContext.SaveChanges();
+        }
+        public void Update(Members Member) 
+        {
+            _OnlineBookClubContext.Members.Update(Member);
+            _OnlineBookClubContext.SaveChanges();
+        }
+        
+
+
+
 
     }
 }

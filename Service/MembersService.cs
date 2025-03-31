@@ -36,11 +36,9 @@ namespace OnlineBookClub.Service
             string Hashreseult = Convert.ToBase64String(HashDate);
             return Hashreseult;
         }
-        private Members GetDataEmail(string Email)
+        public Members GetDataEmail(string Email)
         {
-            Members Data = new Members();
-            var sql = (from a in _OnlineBookClubContext.Members where a.Email == Email select a).SingleOrDefault();
-            return sql;
+            return _OnlineBookClubContext.Members.SingleOrDefault(a => a.Email == Email);
         }
         public bool EmailCheck(string Email)
         {
@@ -61,6 +59,29 @@ namespace OnlineBookClub.Service
             else
             {
                 Validatestr = "驗證碼錯誤，請重新確認或再註冊";
+            }
+            return Validatestr;
+        }
+        public void authcode(string email,string authcode)
+        {
+            var members = GetDataEmail(email);
+            members.AuthCode = authcode;
+            _MembersRepository.Update(members);
+        }
+        public string forgetpsEmailValidate(string Email, string AuthCode)
+        {
+            Members ValidateMember = GetDataEmail(Email);
+            string Validatestr = string.Empty;
+            if (ValidateMember != null && ValidateMember.AuthCode == AuthCode)
+            {
+                var update = (from a in _OnlineBookClubContext.Members where a.Email == ValidateMember.Email select a).SingleOrDefault();
+                update.AuthCode = string.Empty;  // 清空驗證碼，標記為已驗證
+                _OnlineBookClubContext.SaveChanges(); // 儲存變更
+                return "帳號信箱驗證成功，請點擊下方連結前往更改密碼";
+            }
+            else
+            {
+                Validatestr = "驗證碼錯誤，請重新確認";
             }
             return Validatestr;
         }
@@ -99,6 +120,15 @@ namespace OnlineBookClub.Service
             bool result = CheckMember.Password.Equals(HashPassword(Password));
             return result;
         }
-        
+        public void updatePassword(Members members, string Password)
+        {
+
+            if (members != null)
+            {
+                members.Password = HashPassword(Password);
+                _MembersRepository.Update(members);
+                
+            }
+        }
     }
 }

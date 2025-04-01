@@ -79,7 +79,6 @@ public partial class OnlineBookClubContext : DbContext
             entity.Property(e => e.Plan_Goal).HasMaxLength(200);
             entity.Property(e => e.Plan_Name).HasMaxLength(100);
             entity.Property(e => e.Plan_Type).HasMaxLength(100);
-            entity.Property(e => e.Plan_subject).HasMaxLength(100);
 
             entity.HasOne(d => d.User).WithMany(p => p.BookPlan)
                 .HasForeignKey(d => d.User_Id)

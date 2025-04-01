@@ -1,4 +1,5 @@
-﻿using OnlineBookClub.Models;
+﻿using OnlineBookClub.DTO;
+using OnlineBookClub.Models;
 using System.Collections.Generic;
 
 namespace OnlineBookClub.Repository
@@ -26,10 +27,10 @@ namespace OnlineBookClub.Repository
             _OnlineBookClubContext.Members.Update(Member);
             _OnlineBookClubContext.SaveChanges();
         }
-        
+       
 
 
 
 
     }
-}
+} 

@@ -12,6 +12,7 @@ namespace OnlineBookClub.Repository
             _context = context;
         }
 
+
         public async Task<BookPlan> GetPlanByIdAsync(int planId)
         {
             return await _context.BookPlan.FirstOrDefaultAsync(p => p.Plan_Id == planId);

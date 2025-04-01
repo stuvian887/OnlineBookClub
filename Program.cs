@@ -25,6 +25,10 @@ builder.Services.AddScoped<MembersRepository>();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<BookPlanRepository>();
 builder.Services.AddScoped<BookPlanService>();
+builder.Services.AddScoped<LearnRepository>();
+builder.Services.AddScoped<LearnService>();
+builder.Services.AddScoped<ProgressTrackingRepository>();
+builder.Services.AddScoped<ProgressTracking>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

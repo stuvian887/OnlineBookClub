@@ -9,5 +9,6 @@ namespace OnlineBookClub.DTO
         //public string email { get; set; }
         public DateTime? Birthday { get; set; }  
         public bool Gender { get; set; }
+        public string ProfilePictureUrl { get; set; }
     }
 }

@@ -199,10 +199,11 @@ namespace OnlineBookClub.Controllers
         [HttpPut("Update-profile")]
         public IActionResult Updateprofile(ProfileDTO data)
         {
+            var rootPath = env.ContentRootPath + "\\wwwroot\\";
             var token = HttpContext.Request.Cookies["JWT"];
             var email = _jwtService.GetemailFromToken(token);
             bool isUpdated = MemberService.UpdateProfile(data, email);
-
+           
             if (!isUpdated)
             {
                 return NotFound(new { message = "會員不存在" });

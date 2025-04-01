@@ -77,10 +77,10 @@ namespace OnlineBookClub.Repository
                 return null;
             }
         }
-        public async Task<LearnDTO> UpdateLearn(int PlanId , int LearnId, LearnDTO UpdateData)
+        public async Task<LearnDTO> UpdateLearn(int PlanId, int LearnId, LearnDTO UpdateData)
         {
             BookPlan UpdateDataPlan = await CheckLearnByPlanId(PlanId);
-            if(UpdateDataPlan != null)
+            if (UpdateDataPlan != null)
             {
                 Learn UpdateLearn = await GetLearnByLearnId(LearnId);
                 if (UpdateLearn != null && UpdateLearn.Plan_Id == PlanId)
@@ -107,7 +107,7 @@ namespace OnlineBookClub.Repository
                 return null;
             }
         }
-        public async Task<LearnDTO> DeleteLearn(int PlanId , int LearnId)
+        public async Task<LearnDTO> DeleteLearn(int PlanId, int LearnId)
         {
             BookPlan DeleteLearnOfPlan = await CheckLearnByPlanId(PlanId);
             if (DeleteLearnOfPlan != null)
@@ -131,5 +131,37 @@ namespace OnlineBookClub.Repository
                 return null;
             }
         }
+        public async Task<LearnDTO> GetProgressTrack(int PlanId, int LearnId, LearnDTO b)
+        {
+            BookPlan bookPlan = await CheckLearnByPlanId(PlanId);
+            if (bookPlan != null)
+            {
+                Learn learn = await GetLearnByLearnId(LearnId);
+                if (learn != null)
+                {
+                    List<ProgressTrackingDTO> Progress = new List<ProgressTrackingDTO>();
+                    if (b.ProgressTracking != null)
+                    {
+                        foreach (var temp in b.ProgressTracking)
+                        {
+                            if (temp != null)
+                            {
+                                ProgressTrackingDTO progress = new ProgressTrackingDTO
+                                {
+                                    Progress_Id = temp.Progress_Id,
+                                    User_Id = temp.User_Id,
+                                    Learn_Id = temp.Learn_Id,
+                                    Status = temp.Status,
+                                    CompletionDate = temp.CompletionDate,
+                                };
+                                Progress.Add(progress);
+                            }
+                        }
+                    }
+                }
+            }
+            return b;
+        }
+
     }
 }

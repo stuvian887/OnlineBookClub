@@ -38,7 +38,9 @@ namespace OnlineBookClub.Service
         }
         public Members GetDataEmail(string Email)
         {
-            return _OnlineBookClubContext.Members.SingleOrDefault(a => a.Email == Email);
+            
+            Members Data = (from a in _OnlineBookClubContext.Members where a.Email == Email select a).SingleOrDefault();
+            return Data;
         }
         public bool EmailCheck(string Email)
         {
@@ -116,8 +118,8 @@ namespace OnlineBookClub.Service
         }
         public bool PasswordCheck(Members CheckMember, string Password)
         {
-
-            bool result = CheckMember.Password.Equals(HashPassword(Password));
+            string pwd = HashPassword(Password);
+            bool result = CheckMember.Password.Equals(pwd);
             return result;
         }
         public void updatePassword(Members members, string Password)
@@ -129,6 +131,50 @@ namespace OnlineBookClub.Service
                 _MembersRepository.Update(members);
                 
             }
+        }
+        public string ChangePassword(string email, string Password, string NEWPassword)
+        {
+            Members members = GetDataEmail(email);
+            if (PasswordCheck(members, Password))
+            {
+
+                members.Password = HashPassword(NEWPassword);
+                _MembersRepository.Update(members);
+                return "修改成功";
+            }
+            return "密碼不正確";
+        }
+
+        public ProfileDTO profile(string email)
+        {
+            var member = _OnlineBookClubContext.Members
+            .Where(m => m.Email == email)
+            .Select(m => new ProfileDTO
+            {
+                Name = m.UserName,
+                Birthday = m.Birthday,
+                Gender = m.Gender
+            })
+            .SingleOrDefault();  // 確保只取得一筆資料
+
+            return member;  
+        }
+        public bool UpdateProfile(ProfileDTO profileDto,string email)
+        {
+            var member = GetDataEmail(email);
+
+            if (member == null)
+            {
+                return false; // 找不到會員
+            }
+
+            // 更新會員資料
+            member.UserName = profileDto.Name;
+            member.Birthday = profileDto.Birthday;
+            member.Gender = profileDto.Gender;
+
+            _MembersRepository.Update(member);
+            return true;
         }
     }
 }

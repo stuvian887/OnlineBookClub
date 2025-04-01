@@ -87,5 +87,26 @@ namespace OnlineBookClub.Token
             var userIdClaim = jwtToken.Claims.First(c => c.Type == JwtRegisteredClaimNames.Name).Value;
             return userIdClaim; // 返回 UserId
         }
+        public string GetemailFromToken(string token)
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(_config["JWT:Key"]);
+            handler.ValidateToken(token, new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidIssuer = _config["jwt:Issuer"],  // 從配置中讀取 Issuer
+                ValidAudience = _config["jwt:Audience"],  // 確保這裡的 "User" 與 token 中的 aud 聲明一致
+                ValidateLifetime = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key)  // 使用對稱密鑰驗證簽名
+            }, out SecurityToken validatedToken);
+
+            var jwtToken = (JwtSecurityToken)validatedToken;
+
+            // 从 JWT token 中提取 User_Id
+            var userIdClaim = jwtToken.Claims.First(c => c.Type == JwtRegisteredClaimNames.Email).Value;
+            return userIdClaim; // 返回 UserId
+        }
+
     }
 }

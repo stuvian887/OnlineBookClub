@@ -11,6 +11,7 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using OnlineBookClub.Token;
+using Microsoft.AspNetCore.Identity;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -136,16 +137,79 @@ namespace OnlineBookClub.Controllers
         public IActionResult changeps(string emaill,string ps,string ps2)
         {
             
-            ps = MemberService.HashPassword(ps);
-            var member = MemberService.GetDataEmail(emaill);
+            
+            
             if (ps == ps2)
             {
-                return BadRequest("兩次輸入的密碼不一致");
+                var member = MemberService.GetDataEmail(emaill);
+                if (member != null)
+                {
+                MemberService.updatePassword(member, ps);
+                return Ok("修改成功 請重新登入");
+                }
+                else
+                {
+                    return BadRequest("資訊錯誤請重新驗證");
+                }
             }
-            MemberService.updatePassword(member,ps);
-            return Ok("修改成功 請重新登入");
+            else
+            {
+               
+                return BadRequest("密碼不同請重新輸入");
+            }
+            
+           
         }
 
+
+        [HttpPut("changePassword")]
+        public IActionResult ChangPS(ChengePasswordDTO cp)
+        {
+
+
+            var token = HttpContext.Request.Cookies["JWT"];
+            var email = _jwtService.GetemailFromToken(token);
+            var member = MemberService.GetDataEmail(email);
+
+            if (member.Password != MemberService.HashPassword(cp.oldpassword))
+            {
+                return BadRequest("舊密碼不同請重新輸入");
+            }
+            if (cp.newpassword != cp.Chenckpassword) { return BadRequest("新密碼與確認密碼不同，請重新輸入"); }
+            
+            MemberService.ChangePassword(email, cp.oldpassword, cp.newpassword);
+
+
+            return Ok("修改成功 請重新登入");
+        }
+        [HttpGet("Get-profile")]
+        public IActionResult profile() 
+        {
+            var token = HttpContext.Request.Cookies["JWT"];
+            var email = _jwtService.GetemailFromToken(token);
+            var member = MemberService.profile(email);
+            if (member == null)
+            {
+                return NotFound("找不到會員資料");
+            }
+
+            return Ok(member);
+            
+        }
+        [HttpPut("Update-profile")]
+        public IActionResult Updateprofile(ProfileDTO data)
+        {
+            var token = HttpContext.Request.Cookies["JWT"];
+            var email = _jwtService.GetemailFromToken(token);
+            bool isUpdated = MemberService.UpdateProfile(data, email);
+
+            if (!isUpdated)
+            {
+                return NotFound(new { message = "會員不存在" });
+            }
+
+            return Ok(new { message = "會員資料更新成功" });
+        }
 
 
 

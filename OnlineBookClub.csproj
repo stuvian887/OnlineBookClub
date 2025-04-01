@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
@@ -11,10 +10,6 @@
     <Content Remove="Middleware\**" />
     <EmbeddedResource Remove="Middleware\**" />
     <None Remove="Middleware\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="DTO\PlanMembersDTO.cs" />
   </ItemGroup>
 
   <ItemGroup>

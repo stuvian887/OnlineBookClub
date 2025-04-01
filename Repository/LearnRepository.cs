@@ -162,6 +162,10 @@ namespace OnlineBookClub.Repository
             }
             return b;
         }
+        public async Task<ProgressTrackingDTO> CreateProgressTrack(int UserId , int PlanId, int LearnId)
+        {
+            return null;
+        }
 
     }
 }

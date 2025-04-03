@@ -13,24 +13,24 @@ namespace OnlineBookClub.Service
         }
         public async Task<IEnumerable<LearnDTO>> GetAllLearn()
         {
-            return await _learnRepository.GetAllLearn();
+            return await _learnRepository.GetAllLearnAsync();
 
         }
         public async Task<IEnumerable<LearnDTO>> GetLearn(int PlanId)
         {
-            return await _learnRepository.GetLearnByPlanId(PlanId);
+            return await _learnRepository.GetLearnByPlanIdAsync(PlanId);
         }
         public async Task<LearnDTO> CreateLearn(int PlanId , LearnDTO newData)
         {
-            return await _learnRepository.CreateLearn(PlanId, newData);
+            return await _learnRepository.CreateLearnAsync(PlanId, newData);
         }
         public async Task<LearnDTO> UpdateLearn(int PlanId , int LearnId , LearnDTO UpdateData)
         {
-            return await _learnRepository.UpdateLearn(PlanId, LearnId, UpdateData);
+            return await _learnRepository.UpdateLearnAsync(PlanId, LearnId, UpdateData);
         }
         public async Task<LearnDTO> DeleteLearn(int PlanId , int LearnId)
         {
-            return await _learnRepository.DeleteLearn(PlanId , LearnId);
+            return await _learnRepository.DeleteLearnAsync(PlanId , LearnId);
         }
     }
 }

@@ -5,13 +5,14 @@ namespace OnlineBookClub.Repository
 {
     public class PlanMemberRepository
     {
+        private readonly LearnRepository _learnRepository;
         private readonly OnlineBookClubContext _context;
-
-        public PlanMemberRepository(OnlineBookClubContext context)
+        [ActivatorUtilitiesConstructor]
+        public PlanMemberRepository(OnlineBookClubContext context , LearnRepository learnRepository)
         {
             _context = context;
+            _learnRepository = learnRepository;
         }
-
 
         public async Task<BookPlan> GetPlanByIdAsync(int planId)
         {
@@ -41,7 +42,7 @@ namespace OnlineBookClub.Repository
 
             await _context.PlanMembers.AddAsync(planMember);
             await _context.SaveChangesAsync();
-
+            await _learnRepository.CreateProgressTrackAsync(userId, planId);
         }
         public async Task<string> GetUserRoleAsync(int userId, int planId)
         {

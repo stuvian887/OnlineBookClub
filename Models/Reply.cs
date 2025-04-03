@@ -11,15 +11,15 @@ public partial class Reply
 
     public int User_Id { get; set; }
 
-    public string ReplyContent { get; set; } = null!;
+    public string ReplyContent { get; set; }
 
     public DateTime ReplyTime { get; set; }
 
-    public string? ReplyImg { get; set; }
+    public string ReplyImg { get; set; }
 
-    public virtual Post Post { get; set; } = null!;
+    public virtual Post Post { get; set; }
 
     public virtual ICollection<Reply_Report> Reply_Report { get; set; } = new List<Reply_Report>();
 
-    public virtual Members User { get; set; } = null!;
+    public virtual Members User { get; set; }
 }

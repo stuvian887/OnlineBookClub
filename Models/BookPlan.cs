@@ -7,13 +7,13 @@ public partial class BookPlan
 {
     public int Plan_Id { get; set; }
 
-    public string Plan_Name { get; set; } = null!;
+    public string Plan_Name { get; set; }
 
-    public string Plan_Goal { get; set; } = null!;
+    public string Plan_Goal { get; set; }
 
-    public string Plan_Type { get; set; } = null!;
+    public string Plan_Type { get; set; }
 
-    public string Plan_suject { get; set; } = null!;
+    public string Plan_suject { get; set; }
 
     public bool IsPublic { get; set; }
 
@@ -31,5 +31,5 @@ public partial class BookPlan
 
     public virtual ICollection<Statistic> Statistic { get; set; } = new List<Statistic>();
 
-    public virtual Members User { get; set; } = null!;
+    public virtual Members User { get; set; }
 }

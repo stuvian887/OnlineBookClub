@@ -13,6 +13,7 @@ namespace OnlineBookClub.Controllers
     {
         private readonly BookPlanService _service;
         private readonly JwtService _jwtService;
+        [ActivatorUtilitiesConstructor]
         public BookPlanController(BookPlanService service, JwtService jwtService)
         {
             _service = service;

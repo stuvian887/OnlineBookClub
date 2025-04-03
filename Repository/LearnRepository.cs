@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
 
@@ -12,7 +11,7 @@ namespace OnlineBookClub.Repository
         {
             _context = context;
         }
-        public async Task<IEnumerable<LearnDTO>> GetAllLearn()
+        public async Task<IEnumerable<LearnDTO>> GetAllLearnAsync()
         {
             var result = (from a in _context.Learn
                           select new LearnDTO
@@ -26,7 +25,7 @@ namespace OnlineBookClub.Repository
                           });
             return await result.ToListAsync();
         }
-        public async Task<IEnumerable<LearnDTO>> GetLearnByPlanId(int PlanId)
+        public async Task<IEnumerable<LearnDTO>> GetLearnByPlanIdAsync(int PlanId)
         {
             var result = (from a in _context.Learn
                           where PlanId == a.Plan_Id
@@ -40,22 +39,23 @@ namespace OnlineBookClub.Repository
                               Manual_Check = a.Manual_Check,
                               ProgressTracking = a.ProgressTracking
                           });
-            return await result.ToListAsync();
+            var list = await result.ToListAsync();
+            return list.Select(a => GetProgressTrack(a));
         }
-        public async Task<Learn> GetLearnByLearnId(int LearnId)
+        public async Task<Learn> GetLearnByLearnIdAsync(int LearnId)
         {
             var result = await _context.Learn.SingleOrDefaultAsync(l => l.Learn_Id == LearnId);
             return result;
         }
-        public async Task<BookPlan> CheckLearnByPlanId(int PlanId)
+        public async Task<BookPlan> CheckLearnByPlanIdAsync(int PlanId)
         {
             var result = await _context.BookPlan.SingleOrDefaultAsync(p => p.Plan_Id == PlanId);
             return result;
         }
 
-        public async Task<LearnDTO> CreateLearn(int PlanId, LearnDTO InsertData)
+        public async Task<LearnDTO> CreateLearnAsync(int PlanId, LearnDTO InsertData)
         {
-            BookPlan FindPlan = await CheckLearnByPlanId(PlanId);
+            BookPlan FindPlan = await CheckLearnByPlanIdAsync(PlanId);
             if (FindPlan != null)
             {
                 Learn learn = new Learn();
@@ -77,12 +77,12 @@ namespace OnlineBookClub.Repository
                 return null;
             }
         }
-        public async Task<LearnDTO> UpdateLearn(int PlanId, int LearnId, LearnDTO UpdateData)
+        public async Task<LearnDTO> UpdateLearnAsync(int PlanId, int LearnId, LearnDTO UpdateData)
         {
-            BookPlan UpdateDataPlan = await CheckLearnByPlanId(PlanId);
+            BookPlan UpdateDataPlan = await CheckLearnByPlanIdAsync(PlanId);
             if (UpdateDataPlan != null)
             {
-                Learn UpdateLearn = await GetLearnByLearnId(LearnId);
+                Learn UpdateLearn = await GetLearnByLearnIdAsync(LearnId);
                 if (UpdateLearn != null && UpdateLearn.Plan_Id == PlanId)
                 {
                     UpdateLearn.Plan_Id = UpdateDataPlan.Plan_Id;
@@ -107,12 +107,12 @@ namespace OnlineBookClub.Repository
                 return null;
             }
         }
-        public async Task<LearnDTO> DeleteLearn(int PlanId, int LearnId)
+        public async Task<LearnDTO> DeleteLearnAsync(int PlanId, int LearnId)
         {
-            BookPlan DeleteLearnOfPlan = await CheckLearnByPlanId(PlanId);
+            BookPlan DeleteLearnOfPlan = await CheckLearnByPlanIdAsync(PlanId);
             if (DeleteLearnOfPlan != null)
             {
-                Learn DeleteLearn = await GetLearnByLearnId(LearnId);
+                Learn DeleteLearn = await GetLearnByLearnIdAsync(LearnId);
                 if (DeleteLearn != null && DeleteLearn.Plan_Id == PlanId)
                 {
                     _context.Remove(DeleteLearn);
@@ -131,39 +131,75 @@ namespace OnlineBookClub.Repository
                 return null;
             }
         }
-        public async Task<LearnDTO> GetProgressTrack(int PlanId, int LearnId, LearnDTO b)
+        public async Task<LearnDTO> DeleteAllLearnAsync(int PlanId)
         {
-            BookPlan bookPlan = await CheckLearnByPlanId(PlanId);
-            if (bookPlan != null)
+            BookPlan DeleteLearnOfPlan = await CheckLearnByPlanIdAsync(PlanId);
+            if (DeleteLearnOfPlan != null)
             {
-                Learn learn = await GetLearnByLearnId(LearnId);
-                if (learn != null)
+                var learns = await _context.Learn.Where(a => a.Plan_Id == PlanId).ToListAsync();
+                foreach(var item in learns)
                 {
-                    List<ProgressTrackingDTO> Progress = new List<ProgressTrackingDTO>();
-                    if (b.ProgressTracking != null)
+                    if(item != null && item.Plan_Id == PlanId)
                     {
-                        foreach (var temp in b.ProgressTracking)
+                        _context.Learn.Remove(item);     
+                    }
+                }
+                await _context.SaveChangesAsync();
+                return null;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public static LearnDTO GetProgressTrack(LearnDTO b)
+        {
+            List<ProgressTrackingDTO> Progress = new List<ProgressTrackingDTO>();
+            if (b.ProgressTracking != null)
+            {
+                foreach (var temp in b.ProgressTracking)
+                {
+                    if (temp != null)
+                    {
+                        ProgressTrackingDTO progress = new ProgressTrackingDTO
                         {
-                            if (temp != null)
-                            {
-                                ProgressTrackingDTO progress = new ProgressTrackingDTO
-                                {
-                                    Progress_Id = temp.Progress_Id,
-                                    User_Id = temp.User_Id,
-                                    Learn_Id = temp.Learn_Id,
-                                    Status = temp.Status,
-                                    CompletionDate = temp.CompletionDate,
-                                };
-                                Progress.Add(progress);
-                            }
-                        }
+                            Progress_Id = temp.Progress_Id,
+                            User_Id = temp.User_Id,
+                            Learn_Id = temp.Learn_Id,
+                            Status = temp.Status,
+                            CompletionDate = temp.CompletionDate,
+                        };
+                        Progress.Add(progress);
                     }
                 }
             }
             return b;
         }
-        public async Task<ProgressTrackingDTO> CreateProgressTrack(int UserId , int PlanId, int LearnId)
+        public async Task<ProgressTrackingDTO> CreateProgressTrackAsync(int UserId, int PlanId)
         {
+            BookPlan bookPlan = await CheckLearnByPlanIdAsync(PlanId);
+            foreach (var item in bookPlan.Learn)
+            {
+                if(bookPlan != null && item.Plan_Id == bookPlan.Plan_Id)
+                {
+                    ProgressTracking progress = new ProgressTracking
+                    {
+                        User_Id = UserId,
+                        Learn_Id = item.Learn_Id,
+                        Status = false,
+                    };
+                    _context.ProgressTracking.Add(progress);
+                    await _context.SaveChangesAsync();
+
+                    ProgressTrackingDTO resultDTO = new ProgressTrackingDTO
+                    {
+                        User_Id = progress.User_Id,
+                        Learn_Id = progress.Learn_Id,
+                        Status = progress.Status,
+                    };
+                    return resultDTO;
+                }
+            }
             return null;
         }
 

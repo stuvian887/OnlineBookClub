@@ -27,8 +27,14 @@ builder.Services.AddScoped<BookPlanRepository>();
 builder.Services.AddScoped<BookPlanService>();
 builder.Services.AddScoped<LearnRepository>();
 builder.Services.AddScoped<LearnService>();
-builder.Services.AddScoped<ProgressTracking>();
 builder.Services.AddScoped<PlanMemberRepository>();
+builder.Services.AddScoped<PlanMemberService>();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    // 或使用 Preserve（會保留引用資訊，但 JSON 格式會比較複雜）
+    // options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+});
 
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

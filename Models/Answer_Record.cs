@@ -15,13 +15,13 @@ public partial class Answer_Record
 
     public DateTime AnswerDate { get; set; }
 
-    public string Answer { get; set; } = null!;
+    public string Answer { get; set; }
 
     public int times { get; set; }
 
     public bool? Pass { get; set; }
 
-    public virtual Learn Learn { get; set; } = null!;
+    public virtual Learn Learn { get; set; }
 
-    public virtual Members User { get; set; } = null!;
+    public virtual Members User { get; set; }
 }

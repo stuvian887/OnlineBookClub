@@ -35,21 +35,14 @@ namespace OnlineBookClub.Service
            
             var bookPlan = new BookPlan
             {
-                Plan_Name = bookPlanDto.PlanName,
-                Plan_Goal = bookPlanDto.PlanGoal,
-                Plan_Type = bookPlanDto.PlanType,
-                Plan_suject = bookPlanDto.PlanSubject,
+                Plan_Name = bookPlanDto.Plan_Name,
+                Plan_Goal = bookPlanDto.Plan_Goal,
+                Plan_Type = bookPlanDto.Plan_Type,
+                Plan_suject = bookPlanDto.Plan_Suject,
                 IsPublic = bookPlanDto.IsPublic,
                 IsComplete = bookPlanDto.IsComplete,
                 User_Id = id
             };
-
-
-            
-            
-
-
-
             return await _repository.Create(bookPlan);
         }
 
@@ -58,10 +51,10 @@ namespace OnlineBookClub.Service
             var bookPlan = await _repository.GetById(id);
             if (bookPlan == null) return null;
 
-            bookPlan.Plan_Name = bookPlanDto.PlanName;
-            bookPlan.Plan_Goal = bookPlanDto.PlanGoal;
-            bookPlan.Plan_Type = bookPlanDto.PlanType;
-            bookPlan.Plan_suject = bookPlanDto.PlanSubject;
+            bookPlan.Plan_Name = bookPlanDto.Plan_Name;
+            bookPlan.Plan_Goal = bookPlanDto.Plan_Goal;
+            bookPlan.Plan_Type = bookPlanDto.Plan_Type;
+            bookPlan.Plan_suject = bookPlanDto.Plan_Suject;
             bookPlan.IsPublic = bookPlanDto.IsPublic;
             bookPlan.IsComplete = bookPlanDto.IsComplete;
 

@@ -15,5 +15,5 @@ public partial class Statistic
 
     public int ViewTimes { get; set; }
 
-    public virtual BookPlan Plan { get; set; } = null!;
+    public virtual BookPlan Plan { get; set; }
 }

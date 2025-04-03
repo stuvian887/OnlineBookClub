@@ -9,9 +9,9 @@ public partial class Reply_Report
 
     public int Reply_Id { get; set; }
 
-    public string Action { get; set; } = null!;
+    public string Action { get; set; }
 
-    public string Report_text { get; set; } = null!;
+    public string Report_text { get; set; }
 
-    public virtual Reply Reply { get; set; } = null!;
+    public virtual Reply Reply { get; set; }
 }

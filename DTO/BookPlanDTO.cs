@@ -4,10 +4,10 @@ namespace OnlineBookClub.DTO
 {
     public class BookPlanDTO
     {
-        public string PlanName { get; set; }
-        public string PlanGoal { get; set; }
-        public string PlanType { get; set; }
-        public string PlanSubject { get; set; }
+        public string Plan_Name { get; set; }
+        public string Plan_Goal { get; set; }
+        public string Plan_Type { get; set; }
+        public string Plan_Suject { get; set; }
         public bool IsPublic { get; set; }
         public bool IsComplete { get; set; }
         

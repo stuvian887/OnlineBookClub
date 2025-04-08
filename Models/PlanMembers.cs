@@ -9,11 +9,11 @@ public partial class PlanMembers
 
     public int Plan_Id { get; set; }
 
-    public string Role { get; set; } = null!;
+    public string Role { get; set; }
 
     public DateTime JoinDate { get; set; }
 
-    public virtual BookPlan Plan { get; set; } = null!;
+    public virtual BookPlan Plan { get; set; }
 
-    public virtual Members User { get; set; } = null!;
+    public virtual Members User { get; set; }
 }

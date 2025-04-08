@@ -15,7 +15,7 @@ public partial class ProgressTracking
 
     public DateTime? CompletionDate { get; set; }
 
-    public virtual Learn Learn { get; set; } = null!;
+    public virtual Learn Learn { get; set; }
 
-    public virtual Members User { get; set; } = null!;
+    public virtual Members User { get; set; }
 }

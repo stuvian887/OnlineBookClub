@@ -7,17 +7,19 @@ public partial class Members
 {
     public int User_Id { get; set; }
 
-    public string UserName { get; set; } = null!;
+    public string UserName { get; set; }
 
-    public string Email { get; set; } = null!;
+    public string Email { get; set; }
 
-    public string Password { get; set; } = null!;
+    public string Password { get; set; }
 
-    public string AuthCode { get; set; } = null!;
+    public string AuthCode { get; set; }
 
-    public bool Gender { get; set; }
+    public bool? Gender { get; set; }
 
     public DateTime? Birthday { get; set; }
+
+    public string ProfilePictureUrl { get; set; }
 
     public virtual ICollection<Answer_Record> Answer_Record { get; set; } = new List<Answer_Record>();
 

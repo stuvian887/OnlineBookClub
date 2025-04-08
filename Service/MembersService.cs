@@ -153,13 +153,14 @@ namespace OnlineBookClub.Service
             {
                 Name = m.UserName,
                 Birthday = m.Birthday,
-                Gender = m.Gender
+                Gender = m.Gender,
+                ProfilePictureUrl = m.ProfilePictureUrl
             })
             .SingleOrDefault();  // 確保只取得一筆資料
 
             return member;  
         }
-        public bool UpdateProfile(ProfileDTO profileDto,string email)
+        public bool UpdateProfile(ProfileDTO profileDto,string email, string savedFilePath)
         {
             var member = GetDataEmail(email);
 
@@ -172,7 +173,7 @@ namespace OnlineBookClub.Service
             member.UserName = profileDto.Name;
             member.Birthday = profileDto.Birthday;
             member.Gender = profileDto.Gender;
-
+            member.ProfilePictureUrl = savedFilePath;
             _MembersRepository.Update(member);
             return true;
         }

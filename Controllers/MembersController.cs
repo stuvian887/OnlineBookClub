@@ -197,16 +197,44 @@ namespace OnlineBookClub.Controllers
             
         }
         [HttpPut("Update-profile")]
-        public IActionResult Updateprofile(ProfileDTO data)
+        public IActionResult Updateprofile([FromForm]ProfileDTO data, ICollection<IFormFile> files )
         {
             var rootPath = env.ContentRootPath + "\\wwwroot\\";
             var token = HttpContext.Request.Cookies["JWT"];
             var email = _jwtService.GetemailFromToken(token);
-            bool isUpdated = MemberService.UpdateProfile(data, email);
-           
-            if (!isUpdated)
+            
+            
+            
+            
+            
+            if (data.ProfilePictureUrl != null && files.Count > 0)
             {
-                return NotFound(new { message = "會員不存在" });
+                var uploadFolder = Path.Combine(rootPath, "uploads");
+
+                if (!Directory.Exists(uploadFolder))
+                {
+                    Directory.CreateDirectory(uploadFolder);
+                }
+
+                foreach (var file in files)
+                {
+                    if (file.Length > 0)
+                    {
+                        var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                        var filePath = Path.Combine(uploadFolder, fileName);
+
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            file.CopyTo(stream);
+                        }
+
+                        // 生成存入資料庫的路徑 (相對於 wwwroot)
+                        string savedFilePath = "/uploads/" + fileName;
+
+                        // 將大頭照路徑更新到會員資料
+                        bool isUpdated = MemberService.UpdateProfile(data, email, savedFilePath);
+                    }
+                }
             }
 
             return Ok(new { message = "會員資料更新成功" });

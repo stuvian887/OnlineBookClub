@@ -11,7 +11,7 @@ public partial class Notice
 
     public DateTime NoticeTime { get; set; }
 
-    public string Message { get; set; } = null!;
+    public string Message { get; set; }
 
-    public virtual Members User { get; set; } = null!;
+    public virtual Members User { get; set; }
 }

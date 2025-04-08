@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace OnlineBookClub.Models;
 
@@ -25,6 +26,7 @@ public partial class BookPlan
 
     public virtual ICollection<Learn> Learn { get; set; } = new List<Learn>();
 
+    [JsonIgnore]
     public virtual ICollection<PlanMembers> PlanMembers { get; set; } = new List<PlanMembers>();
 
     public virtual ICollection<Post> Post { get; set; } = new List<Post>();

@@ -22,8 +22,10 @@ namespace OnlineBookClub.Repository
                               Pass_Standard = a.Pass_Standard,
                               DueTime = a.DueTime,
                               Manual_Check = a.Manual_Check,
+                              ProgressTracking = a.ProgressTracking
                           });
-            return await result.ToListAsync();
+            var list = await result.ToListAsync();
+            return list.Select(a => GetProgressTrack(a));
         }
         public async Task<IEnumerable<LearnDTO>> GetLearnByPlanIdAsync(int PlanId)
         {
@@ -49,8 +51,7 @@ namespace OnlineBookClub.Repository
         }
         public async Task<BookPlan> CheckLearnByPlanIdAsync(int PlanId)
         {
-            var result = await _context.BookPlan.SingleOrDefaultAsync(p => p.Plan_Id == PlanId);
-            return result;
+            return await _context.BookPlan.Include(bp => bp.Learn).SingleOrDefaultAsync(p => p.Plan_Id == PlanId);
         }
 
         public async Task<LearnDTO> CreateLearnAsync(int PlanId, LearnDTO InsertData)
@@ -70,6 +71,7 @@ namespace OnlineBookClub.Repository
                 {
                     Learn_Name = learn.Learn_Name,
                 };
+                await CreateProgressTrackAsync(PlanId, learn.Learn_Id);
                 return resultDTO;
             }
             else
@@ -137,11 +139,11 @@ namespace OnlineBookClub.Repository
             if (DeleteLearnOfPlan != null)
             {
                 var learns = await _context.Learn.Where(a => a.Plan_Id == PlanId).ToListAsync();
-                foreach(var item in learns)
+                foreach (var item in learns)
                 {
-                    if(item != null && item.Plan_Id == PlanId)
+                    if (item != null && item.Plan_Id == PlanId)
                     {
-                        _context.Learn.Remove(item);     
+                        _context.Learn.Remove(item);
                     }
                 }
                 await _context.SaveChangesAsync();
@@ -175,33 +177,64 @@ namespace OnlineBookClub.Repository
             }
             return b;
         }
-        public async Task<ProgressTrackingDTO> CreateProgressTrackAsync(int UserId, int PlanId)
+        public async Task<IEnumerable<ProgressTrackingDTO>> CreateAllProgressTrackAsync(int UserId, int PlanId)
         {
-            BookPlan bookPlan = await CheckLearnByPlanIdAsync(PlanId);
-            foreach (var item in bookPlan.Learn)
+            var Learns = await _context.Learn.Where(l => l.Plan_Id == PlanId).ToListAsync();
+            if (Learns != null)
             {
-                if(bookPlan != null && item.Plan_Id == bookPlan.Plan_Id)
+                List<ProgressTrackingDTO> resultDTOs = new List<ProgressTrackingDTO>();
+                foreach (var learn in Learns)
                 {
                     ProgressTracking progress = new ProgressTracking
                     {
                         User_Id = UserId,
-                        Learn_Id = item.Learn_Id,
+                        Learn_Id = learn.Learn_Id,
                         Status = false,
                     };
-                    _context.ProgressTracking.Add(progress);
-                    await _context.SaveChangesAsync();
+                    await _context.ProgressTracking.AddAsync(progress);
 
-                    ProgressTrackingDTO resultDTO = new ProgressTrackingDTO
+                    ProgressTrackingDTO dto = new ProgressTrackingDTO
                     {
                         User_Id = progress.User_Id,
                         Learn_Id = progress.Learn_Id,
                         Status = progress.Status,
                     };
-                    return resultDTO;
+                    resultDTOs.Add(dto);
                 }
+                await _context.SaveChangesAsync();
+                return resultDTOs;
             }
             return null;
         }
+        public async Task<IEnumerable<ProgressTrackingDTO>> CreateProgressTrackAsync(int PlanId, int LearnId)
+        {
+            var Members = await _context.PlanMembers.Where(pm => pm.Plan_Id == PlanId).ToListAsync();
+            List<ProgressTrackingDTO> resultDTO = new List<ProgressTrackingDTO>();
 
+            if (Members != null)
+            {
+                foreach (var member in Members)
+                {
+                    ProgressTracking progress = new ProgressTracking
+                    {
+                        User_Id = member.User_Id,
+                        Learn_Id = LearnId,
+                        Status = false,
+                    };
+                    await _context.ProgressTracking.AddAsync(progress);
+
+                    ProgressTrackingDTO dto = new ProgressTrackingDTO
+                    {
+                        User_Id = progress.User_Id,
+                        Learn_Id = progress.Learn_Id,
+                        Status = progress.Status,
+                    };
+                    resultDTO.Add(dto);
+                }
+                await _context.SaveChangesAsync();
+                return resultDTO;
+            }
+            return null;
+        }
     }
 }

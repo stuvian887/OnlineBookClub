@@ -39,10 +39,8 @@ namespace OnlineBookClub.Repository
                 Role = role,
                 JoinDate = DateTime.UtcNow
             };
-
             await _context.PlanMembers.AddAsync(planMember);
             await _context.SaveChangesAsync();
-            await _learnRepository.CreateProgressTrackAsync(userId, planId);
         }
         public async Task<string> GetUserRoleAsync(int userId, int planId)
         {

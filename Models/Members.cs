@@ -19,6 +19,8 @@ public partial class Members
 
     public DateTime? Birthday { get; set; }
 
+    public string ProfilePictureUrl { get; set; }
+
     public virtual ICollection<Answer_Record> Answer_Record { get; set; } = new List<Answer_Record>();
 
     public virtual ICollection<BookPlan> BookPlan { get; set; } = new List<BookPlan>();

@@ -1,16 +1,19 @@
 ﻿using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
 using OnlineBookClub.Repository;
+using System.Numerics;
 
 namespace OnlineBookClub.Service
 {
     public class PlanMemberService
     {
         private readonly PlanMemberRepository _planMembersRepository;
+        private readonly LearnRepository _learnRepository;
 
-        public PlanMemberService(PlanMemberRepository planMembersRepository)
+        public PlanMemberService(PlanMemberRepository planMembersRepository ,LearnRepository learnRepository)
         {
             _planMembersRepository = planMembersRepository;
+            _learnRepository = learnRepository;
         }
 
         public async Task<(bool Success, string Message)> JoinPlanAsync(PlanMembers joinPlanDto)
@@ -38,6 +41,7 @@ namespace OnlineBookClub.Service
 
             // 4. 加入計畫
             await _planMembersRepository.AddUserToPlanAsync(joinPlanDto.User_Id, joinPlanDto.Plan_Id);
+            await _learnRepository.CreateAllProgressTrackAsync(joinPlanDto.User_Id, joinPlanDto.Plan_Id);
             return (true, "成功加入計畫");
         }
         public async Task<(bool Success, string Message)> LeavePlanAsync(PlanMembers leavePlanDto)

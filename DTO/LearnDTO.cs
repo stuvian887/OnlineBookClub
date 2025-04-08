@@ -14,6 +14,6 @@ namespace OnlineBookClub.DTO
         public int Pass_Standard { get; set; }
         public DateTime DueTime { get; set; }
         public bool Manual_Check { get; set; }
-        public virtual ICollection<ProgressTracking> ProgressTracking {  get; set; }
+        public virtual ICollection<ProgressTracking> ProgressTracking { get; set; }
     }
 }

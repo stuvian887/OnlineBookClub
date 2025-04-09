@@ -38,7 +38,6 @@ namespace OnlineBookClub.Service
         }
         public Members GetDataEmail(string Email)
         {
-            
             Members Data = (from a in _OnlineBookClubContext.Members where a.Email == Email select a).SingleOrDefault();
             return Data;
         }

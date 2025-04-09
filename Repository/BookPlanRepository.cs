@@ -8,13 +8,11 @@ namespace OnlineBookClub.Repository
     {
         private readonly OnlineBookClubContext _context;
         private readonly PlanMemberRepository _planMemberRepsitory;
-        private readonly LearnRepository _learnRepository;
 
         public BookPlanRepository(OnlineBookClubContext context, PlanMemberRepository planMemberRepsitory , LearnRepository learnRepository)
         {
             _context = context;
             _planMemberRepsitory = planMemberRepsitory;
-            _learnRepository = learnRepository;
         }
 
         public async Task<IEnumerable<BookPlan>> GetAllPublicPlans()

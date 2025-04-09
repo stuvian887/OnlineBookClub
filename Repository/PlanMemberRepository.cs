@@ -5,13 +5,11 @@ namespace OnlineBookClub.Repository
 {
     public class PlanMemberRepository
     {
-        private readonly LearnRepository _learnRepository;
         private readonly OnlineBookClubContext _context;
         [ActivatorUtilitiesConstructor]
-        public PlanMemberRepository(OnlineBookClubContext context , LearnRepository learnRepository)
+        public PlanMemberRepository(OnlineBookClubContext context)
         {
             _context = context;
-            _learnRepository = learnRepository;
         }
 
         public async Task<BookPlan> GetPlanByIdAsync(int planId)

@@ -62,7 +62,7 @@ public partial class OnlineBookClubContext : DbContext
 
         modelBuilder.Entity<Book>(entity =>
         {
-            entity.HasKey(e => e.Book_Id).HasName("PK__Book__C223F3B45E6536D8");
+            entity.HasKey(e => e.Book_Id).HasName("PK__Book__C223F3B4CBA24285");
 
             entity.Property(e => e.BookName).HasMaxLength(100);
             entity.Property(e => e.Description).HasMaxLength(1000);
@@ -75,7 +75,7 @@ public partial class OnlineBookClubContext : DbContext
 
         modelBuilder.Entity<BookPlan>(entity =>
         {
-            entity.HasKey(e => e.Plan_Id).HasName("PK__BookPlan__9BAF9B0351C75CDE");
+            entity.HasKey(e => e.Plan_Id).HasName("PK__BookPlan__9BAF9B031DE0303A");
 
             entity.Property(e => e.Plan_Goal)
                 .IsRequired()
@@ -97,7 +97,7 @@ public partial class OnlineBookClubContext : DbContext
 
         modelBuilder.Entity<Learn>(entity =>
         {
-            entity.HasKey(e => e.Learn_Id).HasName("PK__Learn__31999300BF643019");
+            entity.HasKey(e => e.Learn_Id).HasName("PK__Learn__319993005E050ACF");
 
             entity.Property(e => e.DueTime).HasColumnType("datetime");
             entity.Property(e => e.Learn_Name)
@@ -111,9 +111,9 @@ public partial class OnlineBookClubContext : DbContext
 
         modelBuilder.Entity<Members>(entity =>
         {
-            entity.HasKey(e => e.User_Id).HasName("PK__Members__206D9170026C53EE");
+            entity.HasKey(e => e.User_Id).HasName("PK__Members__206D9170C8FFF617");
 
-            entity.HasIndex(e => e.Email, "UQ__Members__A9D10534F7B3454D").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ__Members__A9D10534555AED53").IsUnique();
 
             entity.Property(e => e.AuthCode)
                 .IsRequired()
@@ -124,17 +124,13 @@ public partial class OnlineBookClubContext : DbContext
                 .IsRequired()
                 .HasMaxLength(200)
                 .IsUnicode(false);
-            entity.Property(e => e.Password)
-                .IsRequired()
-                .IsUnicode(false);
-            entity.Property(e => e.UserName)
-                .IsRequired()
-                .HasMaxLength(50);
+            entity.Property(e => e.Password).IsUnicode(false);
+            entity.Property(e => e.UserName).HasMaxLength(50);
         });
 
         modelBuilder.Entity<Notice>(entity =>
         {
-            entity.HasKey(e => e.Notice_Id).HasName("PK__Notice__E9930CABBB2E44A7");
+            entity.HasKey(e => e.Notice_Id).HasName("PK__Notice__E9930CABD96445D5");
 
             entity.Property(e => e.Message)
                 .IsRequired()
@@ -148,7 +144,7 @@ public partial class OnlineBookClubContext : DbContext
 
         modelBuilder.Entity<PlanMembers>(entity =>
         {
-            entity.HasKey(e => new { e.User_Id, e.Plan_Id }).HasName("PK__PlanMemb__09D768C031119E03");
+            entity.HasKey(e => new { e.User_Id, e.Plan_Id }).HasName("PK__PlanMemb__09D768C06B5D99B1");
 
             entity.Property(e => e.JoinDate).HasColumnType("datetime");
             entity.Property(e => e.Role)
@@ -167,7 +163,7 @@ public partial class OnlineBookClubContext : DbContext
 
         modelBuilder.Entity<Post>(entity =>
         {
-            entity.HasKey(e => e.Post_Id).HasName("PK__Post__5875F7AD2DEF8D8D");
+            entity.HasKey(e => e.Post_Id).HasName("PK__Post__5875F7AD1838C391");
 
             entity.Property(e => e.Content)
                 .IsRequired()
@@ -189,7 +185,7 @@ public partial class OnlineBookClubContext : DbContext
 
         modelBuilder.Entity<Post_Report>(entity =>
         {
-            entity.HasKey(e => e.P_Report_Id).HasName("PK__Post_Rep__AF4E25E3B72A40DD");
+            entity.HasKey(e => e.P_Report_Id).HasName("PK__Post_Rep__AF4E25E3E831EA16");
 
             entity.Property(e => e.Action)
                 .IsRequired()
@@ -206,7 +202,7 @@ public partial class OnlineBookClubContext : DbContext
 
         modelBuilder.Entity<ProgressTracking>(entity =>
         {
-            entity.HasKey(e => e.Progress_Id).HasName("PK__Progress__D558797A78B1BA0E");
+            entity.HasKey(e => e.Progress_Id).HasName("PK__Progress__D558797A60C7671D");
 
             entity.Property(e => e.CompletionDate).HasColumnType("datetime");
 
@@ -222,7 +218,7 @@ public partial class OnlineBookClubContext : DbContext
 
         modelBuilder.Entity<Reply>(entity =>
         {
-            entity.HasKey(e => e.Reply_Id).HasName("PK__Reply__B66332845B1014D1");
+            entity.HasKey(e => e.Reply_Id).HasName("PK__Reply__B6633284E3C88026");
 
             entity.Property(e => e.ReplyContent)
                 .IsRequired()
@@ -241,7 +237,7 @@ public partial class OnlineBookClubContext : DbContext
 
         modelBuilder.Entity<Reply_Report>(entity =>
         {
-            entity.HasKey(e => e.R_Report_Id).HasName("PK__Reply_Re__6B66990FC2260C00");
+            entity.HasKey(e => e.R_Report_Id).HasName("PK__Reply_Re__6B66990FED16DBBA");
 
             entity.Property(e => e.Action)
                 .IsRequired()
@@ -258,7 +254,7 @@ public partial class OnlineBookClubContext : DbContext
 
         modelBuilder.Entity<Statistic>(entity =>
         {
-            entity.HasKey(e => e.Statistics_Id).HasName("PK__Statisti__A2EC2FD9F1F7BAB4");
+            entity.HasKey(e => e.Statistics_Id).HasName("PK__Statisti__A2EC2FD9D49FAB21");
 
             entity.HasOne(d => d.Plan).WithMany(p => p.Statistic)
                 .HasForeignKey(d => d.Plan_Id)
@@ -267,7 +263,7 @@ public partial class OnlineBookClubContext : DbContext
 
         modelBuilder.Entity<Topic>(entity =>
         {
-            entity.HasKey(e => e.Topic_Id).HasName("PK__Topic__8DEAA4050CB88B32");
+            entity.HasKey(e => e.Topic_Id).HasName("PK__Topic__8DEAA40577172212");
 
             entity.Property(e => e.Answer)
                 .IsRequired()

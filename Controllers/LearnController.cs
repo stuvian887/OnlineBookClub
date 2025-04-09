@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using OnlineBookClub.DTO;
 using OnlineBookClub.Service;
+using System.Reflection.Metadata.Ecma335;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -49,14 +51,16 @@ namespace OnlineBookClub.Controllers
         [HttpPut("Update/{PlanId}/{LearnId}")]
         public async Task<IActionResult> Put(int PlanId, int LearnId, [FromBody] LearnDTO updateData)
         {
-            LearnDTO result = await _service.UpdateLearn(PlanId, LearnId, updateData);
-            if (result != null)
+            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            int UserId = int.Parse(UserIdClaim.Value);
+            var result = await _service.UpdateLearn(UserId , PlanId, LearnId, updateData);
+            if (result.Item1 != null)
             {
-                return Ok(new { message = "學習內容更新成功" });
+                return Ok(result.Message);
             }
             else
             {
-                return BadRequest(new { message = "發生錯誤" });
+                return BadRequest(result.Message);
             }
         }
 
@@ -64,14 +68,16 @@ namespace OnlineBookClub.Controllers
         [HttpDelete("Delete/{PlanId}/{LearnId}")]
         public async Task<IActionResult> Delete(int PlanId, int LearnId)
         {
-            LearnDTO result = await _service.DeleteLearn(PlanId, LearnId);
-            if(result != null)
+            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            int UserId = int.Parse(UserIdClaim.Value);
+            var result = await _service.DeleteLearn(UserId , PlanId, LearnId);
+            if(result.Item1 != null)
             {
-                return Ok(new { message = "學習內容刪除成功" });
+                return Ok(result.Message);
             }
             else
             {
-                return BadRequest(new { message = "發生錯誤" });
+                return BadRequest(result.Message);
             }
         }
     }

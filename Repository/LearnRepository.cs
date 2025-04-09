@@ -1,15 +1,19 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
+using System.Security.Claims;
 
 namespace OnlineBookClub.Repository
 {
     public class LearnRepository
     {
+
         private readonly OnlineBookClubContext _context;
-        public LearnRepository(OnlineBookClubContext context)
+        private readonly PlanMemberRepository _planMemberRepository;
+        public LearnRepository(OnlineBookClubContext context, PlanMemberRepository planMemberRepository)
         {
             _context = context;
+            _planMemberRepository = planMemberRepository; 
         }
         public async Task<IEnumerable<LearnDTO>> GetAllLearnAsync()
         {
@@ -79,58 +83,83 @@ namespace OnlineBookClub.Repository
                 return null;
             }
         }
-        public async Task<LearnDTO> UpdateLearnAsync(int PlanId, int LearnId, LearnDTO UpdateData)
+        public async Task<(LearnDTO , string Message)> UpdateLearnAsync(int UserId , int PlanId, int LearnId, LearnDTO UpdateData)
         {
-            BookPlan UpdateDataPlan = await CheckLearnByPlanIdAsync(PlanId);
-            if (UpdateDataPlan != null)
+            var Role = await _planMemberRepository.GetUserRoleAsync(UserId, PlanId);
+            if(Role == "組長")
             {
-                Learn UpdateLearn = await GetLearnByLearnIdAsync(LearnId);
-                if (UpdateLearn != null && UpdateLearn.Plan_Id == PlanId)
+                BookPlan UpdateDataPlan = await CheckLearnByPlanIdAsync(PlanId);
+                if (UpdateDataPlan != null)
                 {
-                    UpdateLearn.Plan_Id = UpdateDataPlan.Plan_Id;
-                    UpdateLearn.Learn_Name = UpdateData.Learn_Name;
-                    UpdateLearn.Learn_Index = UpdateData.Learn_Index;
-                    UpdateLearn.Pass_Standard = UpdateLearn.Pass_Standard;
-                    UpdateLearn.DueTime = UpdateData.DueTime;
-                    UpdateLearn.Manual_Check = UpdateData.Manual_Check;
-                    _context.Update(UpdateLearn);
-                    await _context.SaveChangesAsync();
-                    LearnDTO resultDTO = new LearnDTO();
-                    resultDTO.Learn_Name = UpdateLearn.Learn_Name;
-                    return resultDTO;
+                    Learn UpdateLearn = await GetLearnByLearnIdAsync(LearnId);
+                    if (UpdateLearn != null && UpdateLearn.Plan_Id == PlanId)
+                    {
+                        UpdateLearn.Plan_Id = UpdateDataPlan.Plan_Id;
+                        UpdateLearn.Learn_Name = UpdateData.Learn_Name;
+                        UpdateLearn.Learn_Index = UpdateData.Learn_Index;
+                        UpdateLearn.Pass_Standard = UpdateLearn.Pass_Standard;
+                        UpdateLearn.DueTime = UpdateData.DueTime;
+                        UpdateLearn.Manual_Check = UpdateData.Manual_Check;
+                        _context.Update(UpdateLearn);
+                        await _context.SaveChangesAsync();
+                        LearnDTO resultDTO = new LearnDTO();
+                        resultDTO.Learn_Name = UpdateLearn.Learn_Name;
+                        return (resultDTO , "修改計畫成功");
+                    }
+                    else
+                    {
+                        return (null , "錯誤，找不到該學習內容");
+                    }
                 }
                 else
                 {
-                    return null;
+                    return (null , "錯誤，找不到該計畫");
                 }
+            }
+            else if(Role == "組員")
+            {
+                return (null , "你沒有權限這麼做");
             }
             else
             {
-                return null;
+                return (null, "找不到你是誰");
             }
         }
-        public async Task<LearnDTO> DeleteLearnAsync(int PlanId, int LearnId)
+            
+        public async Task<(LearnDTO , string Message)> DeleteLearnAsync(int UserId , int PlanId, int LearnId)
         {
-            BookPlan DeleteLearnOfPlan = await CheckLearnByPlanIdAsync(PlanId);
-            if (DeleteLearnOfPlan != null)
+            var Role = await _planMemberRepository.GetUserRoleAsync(UserId, PlanId);
+            if (Role == "組長")
             {
-                Learn DeleteLearn = await GetLearnByLearnIdAsync(LearnId);
-                if (DeleteLearn != null && DeleteLearn.Plan_Id == PlanId)
+                BookPlan DeleteLearnOfPlan = await CheckLearnByPlanIdAsync(PlanId);
+                if (DeleteLearnOfPlan != null)
                 {
-                    _context.Remove(DeleteLearn);
-                    await _context.SaveChangesAsync();
-                    LearnDTO resultDTO = new LearnDTO();
-                    resultDTO.Learn_Name = DeleteLearn.Learn_Name;
-                    return resultDTO;
+                    Learn DeleteLearn = await GetLearnByLearnIdAsync(LearnId);
+                    if (DeleteLearn != null && DeleteLearn.Plan_Id == PlanId)
+                    {
+                        _context.Remove(DeleteLearn);
+                        await _context.SaveChangesAsync();
+                        LearnDTO resultDTO = new LearnDTO();
+                        resultDTO.Learn_Name = DeleteLearn.Learn_Name;
+                        return (resultDTO, "刪除成功");
+                    }
+                    else
+                    {
+                        return (null, "找不到此學習");
+                    }
                 }
                 else
                 {
-                    return null;
+                    return (null, "找不到此計畫");
                 }
+            }
+            else if(Role == "組員")
+            {
+                return (null, "你沒有權限這麼做");
             }
             else
             {
-                return null;
+                return (null, "找不到你是誰");
             }
         }
         public async Task<LearnDTO> DeleteAllLearnAsync(int PlanId)

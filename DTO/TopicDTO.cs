@@ -21,4 +21,3 @@ namespace OnlineBookClub.DTO
         public virtual Learn Learn { get; set; }
     }
 }
-}

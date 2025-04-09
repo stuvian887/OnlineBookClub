@@ -31,6 +31,8 @@ builder.Services.AddScoped<PlanMemberRepository>();
 builder.Services.AddScoped<PlanMemberService>();
 builder.Services.AddScoped<TopicRepository>();
 builder.Services.AddScoped<TopicService>();
+builder.Services.AddScoped<BookRepository>();
+builder.Services.AddScoped<BookService>();
 //builder.Services.AddControllers().AddJsonOptions(options =>
 //{
 //    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;

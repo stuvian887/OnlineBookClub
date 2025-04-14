@@ -37,6 +37,9 @@ builder.Services.AddScoped<PostRepository>();
 builder.Services.AddScoped<PostService>();
 builder.Services.AddScoped<ReplyRepository>();
 builder.Services.AddScoped<ReplyService>();
+builder.Services.AddScoped<StatisticRepository>();
+builder.Services.AddScoped<StatisticService>();
+
 //builder.Services.AddControllers().AddJsonOptions(options =>
 //{
 //    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;

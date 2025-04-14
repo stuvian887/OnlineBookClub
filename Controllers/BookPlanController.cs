@@ -2,6 +2,7 @@
 using OnlineBookClub.DTO;
 using OnlineBookClub.Service;
 using OnlineBookClub.Token;
+using System.Security.Claims;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -62,6 +63,17 @@ namespace OnlineBookClub.Controllers
             var result = await _service.Delete(id);
             if (!result) return NotFound();
             return NoContent();
+        }
+        [HttpPost("copy/{planId}")]
+        public async Task<IActionResult> CopyPlan(int planId)
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
+
+            var result = await _service.CopyPlanAsync(planId, userId);
+            if (!result)
+                return NotFound("找不到");
+
+            return Ok("Plan copied successfully.");
         }
     }
 }

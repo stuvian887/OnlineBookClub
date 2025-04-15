@@ -13,7 +13,7 @@ namespace OnlineBookClub.Repository
         public LearnRepository(OnlineBookClubContext context, PlanMemberRepository planMemberRepository)
         {
             _context = context;
-            _planMemberRepository = planMemberRepository; 
+            _planMemberRepository = planMemberRepository;
         }
         public async Task<IEnumerable<LearnDTO>> GetAllLearnAsync()
         {
@@ -83,10 +83,10 @@ namespace OnlineBookClub.Repository
                 return null;
             }
         }
-        public async Task<(LearnDTO , string Message)> UpdateLearnAsync(int UserId , int PlanId, int LearnId, LearnDTO UpdateData)
+        public async Task<(LearnDTO, string Message)> UpdateLearnAsync(int UserId, int PlanId, int LearnId, LearnDTO UpdateData)
         {
             var Role = await _planMemberRepository.GetUserRoleAsync(UserId, PlanId);
-            if(Role == "組長")
+            if (Role == "組長")
             {
                 BookPlan UpdateDataPlan = await CheckLearnByPlanIdAsync(PlanId);
                 if (UpdateDataPlan != null)
@@ -104,29 +104,29 @@ namespace OnlineBookClub.Repository
                         await _context.SaveChangesAsync();
                         LearnDTO resultDTO = new LearnDTO();
                         resultDTO.Learn_Name = UpdateLearn.Learn_Name;
-                        return (resultDTO , "修改計畫成功");
+                        return (resultDTO, "修改計畫成功");
                     }
                     else
                     {
-                        return (null , "錯誤，找不到該學習內容");
+                        return (null, "錯誤，找不到該學習內容");
                     }
                 }
                 else
                 {
-                    return (null , "錯誤，找不到該計畫");
+                    return (null, "錯誤，找不到該計畫");
                 }
             }
-            else if(Role == "組員")
+            else if (Role == "組員")
             {
-                return (null , "你沒有權限這麼做");
+                return (null, "你沒有權限這麼做");
             }
             else
             {
                 return (null, "找不到你是誰");
             }
         }
-            
-        public async Task<(LearnDTO , string Message)> DeleteLearnAsync(int UserId , int PlanId, int LearnId)
+
+        public async Task<(LearnDTO, string Message)> DeleteLearnAsync(int UserId, int PlanId, int LearnId)
         {
             var Role = await _planMemberRepository.GetUserRoleAsync(UserId, PlanId);
             if (Role == "組長")
@@ -153,7 +153,7 @@ namespace OnlineBookClub.Repository
                     return (null, "找不到此計畫");
                 }
             }
-            else if(Role == "組員")
+            else if (Role == "組員")
             {
                 return (null, "你沒有權限這麼做");
             }
@@ -235,6 +235,7 @@ namespace OnlineBookClub.Repository
             }
             return null;
         }
+        //還沒Debug
         public async Task<IEnumerable<ProgressTrackingDTO>> CreateProgressTrackAsync(int PlanId, int LearnId)
         {
             var Members = await _context.PlanMembers.Where(pm => pm.Plan_Id == PlanId).ToListAsync();
@@ -264,6 +265,108 @@ namespace OnlineBookClub.Repository
                 return resultDTO;
             }
             return null;
+        }
+        //還沒Debug
+        public async Task<IEnumerable<Answer_RecordDTO>> CreateRecordAsync(int UserId, int PlanId, int LearnId)
+        {
+            List<Answer_RecordDTO> resultDTO = new List<Answer_RecordDTO>();
+            var User = await _planMemberRepository.GetUserRoleAsync(UserId, PlanId);
+            if (User != null)
+            {
+                var Plan = await _context.BookPlan.FindAsync(PlanId);
+                if (Plan != null)
+                {
+                    var Learn = await _context.Learn.FindAsync(LearnId);
+                    if (Learn != null & Learn.Plan_Id == Plan.Plan_Id)
+                    {
+                        //缺少判斷User 如果有相同人作答 可能會蓋掉其他人資料?
+                        var Topic = await _context.Topic.Where(t => t.Learn_Id == LearnId).ToListAsync();
+                        foreach (var topics in Topic)
+                        {
+                            
+                            Answer_Record answer_Record = new Answer_Record();
+                            answer_Record.User_Id = UserId;
+                            answer_Record.Learn_Id = Learn.Learn_Id;
+                            answer_Record.Topic_Id = topics.Topic_Id;
+                            answer_Record.AnswerDate = DateTime.Now;
+                            answer_Record.Answer = topics.Answer;
+                            answer_Record.times = answer_Record.times + 1;
+                            await _context.Answer_Record.AddAsync(answer_Record);
+
+                            Answer_RecordDTO result = new Answer_RecordDTO
+                            {
+                                User_Id = answer_Record.User_Id,
+                                Learn_Id = answer_Record.Learn_Id,
+                                Topic_Id = topics.Topic_Id,
+                                AnswerDate = answer_Record.AnswerDate,
+                                Answer = answer_Record.Answer,
+                                times = answer_Record.times
+                            };
+                            resultDTO.Add(result);
+                        }
+                        await _context.SaveChangesAsync();
+                        return resultDTO;
+                    }
+                    else { return null; }
+                }
+                else { return null; }
+            }
+            else { return null; }
+        }
+        //還沒Debug
+        public async Task<IEnumerable<Answer_RecordDTO>> GetRecordAsync(int UserId, int PlanId, int LearnId, int TopicId)
+        {
+            var User = await _planMemberRepository.GetUserRoleAsync(UserId, PlanId);
+            if (User != null)
+            {
+                var Plan = await _context.BookPlan.FindAsync(PlanId);
+                if (Plan != null)
+                {
+                    var Learn = await _context.Learn.FindAsync(LearnId);
+                    if (Learn != null && Plan.Plan_Id == Learn.Plan_Id)
+                    {
+                        var Topic = await _context.Topic.FindAsync(TopicId);
+                        if (Topic != null && Learn.Learn_Id == Topic.Learn_Id)
+                        {
+                            Answer_Record Record = await _context.Answer_Record.FindAsync(UserId);
+                            if (Record != null && Learn.Learn_Id == Record.Learn_Id && Topic.Topic_Id == Record.Topic_Id)
+                            {
+                                var result = (from a in _context.Answer_Record.
+                                              Where(a => a.User_Id == UserId && a.Topic_Id == TopicId)
+                                              select new Answer_RecordDTO
+                                              {
+                                                  User_Id = a.User_Id,
+                                                  Topic_Id = a.Topic_Id,
+                                                  Learn_Id = a.Learn_Id,
+                                                  AnswerDate = a.AnswerDate,
+                                                  Answer = a.Answer,
+                                                  times = a.times,
+                                                  Pass = a.Pass
+                                              });
+                                return ((IEnumerable<Answer_RecordDTO>)result);
+                            }
+                            else
+                            {
+                                return (null);
+                            }
+                        }
+                        else { return (null); }
+                    }
+                    else
+                    {
+                        return (null);
+                    }
+                }
+                else
+                {
+                    return (null);
+                }
+            }
+            else
+            {
+                return (null);
+            }
+
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
+using System.Net;
 using System.Security.Claims;
 
 namespace OnlineBookClub.Repository
@@ -48,16 +49,15 @@ namespace OnlineBookClub.Repository
             var list = await result.ToListAsync();
             return list.Select(a => GetProgressTrack(a));
         }
-        public async Task<Learn> GetLearnByLearnIdAsync(int LearnId)
+        public async Task<Learn> GetLearnByLearnIdAsync(int Learn_Index)
         {
-            var result = await _context.Learn.SingleOrDefaultAsync(l => l.Learn_Id == LearnId);
+            var result = await _context.Learn.SingleOrDefaultAsync(l => l.Learn_Index == Learn_Index);
             return result;
         }
         public async Task<BookPlan> CheckLearnByPlanIdAsync(int PlanId)
         {
             return await _context.BookPlan.Include(bp => bp.Learn).SingleOrDefaultAsync(p => p.Plan_Id == PlanId);
         }
-
         public async Task<LearnDTO> CreateLearnAsync(int PlanId, LearnDTO InsertData)
         {
             BookPlan FindPlan = await CheckLearnByPlanIdAsync(PlanId);
@@ -69,7 +69,7 @@ namespace OnlineBookClub.Repository
                 learn.Learn_Index = InsertData.Learn_Index;
                 learn.Pass_Standard = InsertData.Pass_Standard;
                 learn.DueTime = InsertData.DueTime;
-                _context.Learn.Add(learn);
+                await _context.Learn.AddAsync(learn);
                 await _context.SaveChangesAsync();
                 LearnDTO resultDTO = new LearnDTO()
                 {
@@ -83,21 +83,20 @@ namespace OnlineBookClub.Repository
                 return null;
             }
         }
-        public async Task<(LearnDTO, string Message)> UpdateLearnAsync(int UserId, int PlanId, int LearnId, LearnDTO UpdateData)
+        public async Task<(LearnDTO, string Message)> UpdateLearnAsync(int UserId, int PlanId, int Learn_Index, LearnDTO UpdateData)
         {
             var Role = await _planMemberRepository.GetUserRoleAsync(UserId, PlanId);
             if (Role == "組長")
             {
-                BookPlan UpdateDataPlan = await CheckLearnByPlanIdAsync(PlanId);
+                var UpdateDataPlan = await _context.BookPlan.FindAsync(PlanId);
                 if (UpdateDataPlan != null)
                 {
-                    Learn UpdateLearn = await GetLearnByLearnIdAsync(LearnId);
-                    if (UpdateLearn != null && UpdateLearn.Plan_Id == PlanId)
+                    var UpdateLearn = await _context.Learn.Where(l => l.Plan_Id == PlanId).FirstOrDefaultAsync(l => l.Learn_Index == Learn_Index);
+                    if (UpdateLearn != null)
                     {
                         UpdateLearn.Plan_Id = UpdateDataPlan.Plan_Id;
                         UpdateLearn.Learn_Name = UpdateData.Learn_Name;
-                        UpdateLearn.Learn_Index = UpdateData.Learn_Index;
-                        UpdateLearn.Pass_Standard = UpdateLearn.Pass_Standard;
+                        UpdateLearn.Pass_Standard = UpdateData.Pass_Standard;
                         UpdateLearn.DueTime = UpdateData.DueTime;
                         UpdateLearn.Manual_Check = UpdateData.Manual_Check;
                         _context.Update(UpdateLearn);
@@ -126,16 +125,16 @@ namespace OnlineBookClub.Repository
             }
         }
 
-        public async Task<(LearnDTO, string Message)> DeleteLearnAsync(int UserId, int PlanId, int LearnId)
+        public async Task<(LearnDTO, string Message)> DeleteLearnAsync(int UserId, int PlanId, int Learn_Index)
         {
             var Role = await _planMemberRepository.GetUserRoleAsync(UserId, PlanId);
             if (Role == "組長")
             {
-                BookPlan DeleteLearnOfPlan = await CheckLearnByPlanIdAsync(PlanId);
+                var DeleteLearnOfPlan = await _context.BookPlan.FindAsync(PlanId);
                 if (DeleteLearnOfPlan != null)
                 {
-                    Learn DeleteLearn = await GetLearnByLearnIdAsync(LearnId);
-                    if (DeleteLearn != null && DeleteLearn.Plan_Id == PlanId)
+                    var DeleteLearn = await _context.Learn.Where(l => l.Plan_Id == PlanId).FirstOrDefaultAsync(l => l.Learn_Index == Learn_Index);
+                    if (DeleteLearn != null)
                     {
                         _context.Remove(DeleteLearn);
                         await _context.SaveChangesAsync();
@@ -235,77 +234,82 @@ namespace OnlineBookClub.Repository
             }
             return null;
         }
-        //還沒Debug
-        public async Task<IEnumerable<ProgressTrackingDTO>> CreateProgressTrackAsync(int PlanId, int LearnId)
+        public async Task<IEnumerable<ProgressTrackingDTO>> CreateProgressTrackAsync(int PlanId, int Learn_Id)
         {
+            List<ProgressTrackingDTO> resultDTOs = new List<ProgressTrackingDTO>();
             var Members = await _context.PlanMembers.Where(pm => pm.Plan_Id == PlanId).ToListAsync();
-            List<ProgressTrackingDTO> resultDTO = new List<ProgressTrackingDTO>();
-
-            if (Members != null)
+            if(Members != null)
             {
-                foreach (var member in Members)
+                foreach(var member in Members)
                 {
                     ProgressTracking progress = new ProgressTracking
                     {
-                        User_Id = member.User_Id,
-                        Learn_Id = LearnId,
+                        User_Id= member.User_Id,
+                        Learn_Id= Learn_Id,
                         Status = false,
                     };
                     await _context.ProgressTracking.AddAsync(progress);
-
-                    ProgressTrackingDTO dto = new ProgressTrackingDTO
+                    ProgressTrackingDTO resultDTO = new ProgressTrackingDTO
                     {
                         User_Id = progress.User_Id,
-                        Learn_Id = progress.Learn_Id,
-                        Status = progress.Status,
+                        Learn_Id = Learn_Id,
+                        Status = false,
                     };
-                    resultDTO.Add(dto);
+                    resultDTOs.Add(resultDTO);
                 }
                 await _context.SaveChangesAsync();
-                return resultDTO;
+                return resultDTOs;
             }
-            return null;
+            else { return null; }
         }
-        //還沒Debug
+        
         public async Task<IEnumerable<Answer_RecordDTO>> CreateRecordAsync(int UserId, AnswerSubmissionDTO submission)
         {
             List<Answer_RecordDTO> resultDTOs = new List<Answer_RecordDTO>();
-            foreach (var answerInput in submission.Answers)
+            var Plan = await _context.BookPlan.FindAsync(submission.Plan_Id);
+            if(Plan != null)
             {
-                int countimes = await _context.Answer_Record.CountAsync(a => a.User_Id == UserId && a.Topic_Id == answerInput.Topic_Id);
-                var topic = await _context.Topic.FindAsync(answerInput.Topic_Id);
-                Answer_Record answer_Record = new Answer_Record();
-                answer_Record.User_Id = UserId;
-                answer_Record.Learn_Id = submission.Learn_Id;
-                answer_Record.Topic_Id = answerInput.Topic_Id;
-                answer_Record.AnswerDate = DateTime.Now;
-                answer_Record.Answer = answerInput.User_Answer;
-                answer_Record.times = countimes + 1;
-                if (answer_Record.Answer == topic.Answer)
+                //簡單除錯
+                foreach (var answerInput in submission.Answers)
                 {
-                    answer_Record.Pass = true;
+                    int countimes = await _context.Answer_Record.CountAsync(a => a.User_Id == UserId && a.Topic_Id == answerInput.Topic_Id);
+                    var topic = await _context.Topic.FindAsync(answerInput.Topic_Id);
+                    Answer_Record answer_Record = new Answer_Record();
+                    answer_Record.User_Id = UserId;
+                    answer_Record.Learn_Id = submission.Learn_Id;
+                    answer_Record.Topic_Id = answerInput.Topic_Id;
+                    answer_Record.AnswerDate = DateTime.Now;
+                    answer_Record.Answer = answerInput.User_Answer;
+                    answer_Record.times = countimes + 1;
+                    if (answer_Record.Answer == topic.Answer)
+                    {
+                        answer_Record.Pass = true;
+                    }
+                    else
+                    {
+                        answer_Record.Pass = false;
+                    }
+                    await _context.Answer_Record.AddAsync(answer_Record);
+                    Answer_RecordDTO dto = new Answer_RecordDTO
+                    {
+                        User_Id = answer_Record.User_Id,
+                        Learn_Id = answer_Record.Learn_Id,
+                        Topic_Id = answer_Record.Topic_Id,
+                        AnswerDate = answer_Record.AnswerDate,
+                        Answer = answer_Record.Answer,
+                        times = answer_Record.times,
+                        Pass = answer_Record.Pass
+                    };
+                    resultDTOs.Add(dto);
                 }
-                else
-                {
-                    answer_Record.Pass = false;
-                }
-                await _context.Answer_Record.AddAsync(answer_Record);
-                Answer_RecordDTO dto = new Answer_RecordDTO
-                {
-                    User_Id = answer_Record.User_Id,
-                    Learn_Id = answer_Record.Learn_Id,
-                    Topic_Id = answer_Record.Topic_Id,
-                    AnswerDate = answer_Record.AnswerDate,
-                    Answer = answer_Record.Answer,
-                    times = answer_Record.times,
-                    Pass = answer_Record.Pass
-                };
-                resultDTOs.Add(dto);
+                await _context.SaveChangesAsync();
+                return resultDTOs;
             }
-            await _context.SaveChangesAsync();
-            return resultDTOs;
+            else
+            {
+                return null;
+            }
         }
-        //還沒Debug
         public async Task<IEnumerable<Answer_RecordDTO>> GetRecordAsync(int UserId, int PlanId, int LearnId)
         {
             var User = await _planMemberRepository.GetUserRoleAsync(UserId, PlanId);
@@ -317,13 +321,15 @@ namespace OnlineBookClub.Repository
                     var Learn = await _context.Learn.FindAsync(LearnId);
                     if (Learn != null && Plan.Plan_Id == Learn.Plan_Id)
                     {
-                        var result = (from a in _context.Answer_Record.
+                        var result = (from a in _context.Answer_Record.       
                                       Where(a => a.User_Id == UserId)
+                                      join b in _context.Topic on a.Topic_Id equals b.Topic_Id
                                       select new Answer_RecordDTO
                                       {
                                           AR_Id = a.AR_Id,
                                           User_Id = a.User_Id,
                                           Topic_Id = a.Topic_Id,
+                                          Question_Id = b.Question_Id,
                                           Learn_Id = a.Learn_Id,
                                           AnswerDate = a.AnswerDate,
                                           Answer = a.Answer,

@@ -60,8 +60,7 @@ namespace OnlineBookClub.Repository
                 {
                     return (null, "找不到該學習內容");
                 }
-                var existingTopic = await _context.Topic
-                    .FirstOrDefaultAsync(t => t.Learn_Id == LearnId && t.Question_Id == InsertTopic.Question_Id);
+                var existingTopic = await _context.Topic.FirstOrDefaultAsync(t => t.Learn_Id == LearnId && t.Question_Id == InsertTopic.Question_Id);
                 if (existingTopic != null)
                 {
                     return (null, "該題號已存在");
@@ -79,7 +78,6 @@ namespace OnlineBookClub.Repository
                 };
                 await _context.Topic.AddAsync(topic);
                 await _context.SaveChangesAsync();
-
                 TopicDTO resultDTO = new TopicDTO
                 {
                     Question_Id = topic.Question_Id,
@@ -117,8 +115,7 @@ namespace OnlineBookClub.Repository
                 {
                     return (null, "找不到該學習內容");
                 }
-                var topic = await _context.Topic
-                    .FirstOrDefaultAsync(t => t.Learn_Id == LearnId && t.Question_Id == EditTopic.Question_Id);
+                var topic = await _context.Topic.FirstOrDefaultAsync(t => t.Learn_Id == LearnId && t.Question_Id == EditTopic.Question_Id);
                 if (topic != null)
                 {
                     topic.Learn_Id = LearnId;

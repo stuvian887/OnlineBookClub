@@ -24,13 +24,13 @@ namespace OnlineBookClub.Service
         {
             return await _learnRepository.CreateLearnAsync(PlanId, newData);
         }
-        public async Task<(LearnDTO , string Message)> UpdateLearn(int UserId , int PlanId , int LearnId , LearnDTO UpdateData)
+        public async Task<(LearnDTO , string Message)> UpdateLearn(int UserId , int PlanId , int Learn_Index , LearnDTO UpdateData)
         {
-            return await _learnRepository.UpdateLearnAsync(UserId , PlanId, LearnId, UpdateData);
+            return await _learnRepository.UpdateLearnAsync(UserId , PlanId, Learn_Index, UpdateData);
         }
-        public async Task<(LearnDTO , string Message)> DeleteLearn(int UserId , int PlanId , int LearnId)
+        public async Task<(LearnDTO , string Message)> DeleteLearn(int UserId , int PlanId , int Learn_Index)
         {
-            return await _learnRepository.DeleteLearnAsync(UserId , PlanId , LearnId);
+            return await _learnRepository.DeleteLearnAsync(UserId , PlanId , Learn_Index);
         }
         public async Task<IEnumerable<Answer_RecordDTO>> GetAnswer_Record(int UserId , int PlanId , int LearnId)
         {
@@ -40,5 +40,6 @@ namespace OnlineBookClub.Service
         {
             return await _learnRepository.CreateRecordAsync(UserId , Answer);
         }
+        
     }
 }

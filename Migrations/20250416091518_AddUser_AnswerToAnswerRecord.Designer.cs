@@ -12,8 +12,8 @@ using OnlineBookClub.Models;
 namespace OnlineBookClub.Migrations
 {
     [DbContext(typeof(OnlineBookClubContext))]
-    [Migration("20250408050019_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250416091518_AddUser_AnswerToAnswerRecord")]
+    partial class AddUser_AnswerToAnswerRecord
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -49,6 +49,9 @@ namespace OnlineBookClub.Migrations
 
                     b.Property<int>("Topic_Id")
                         .HasColumnType("int");
+
+                    b.Property<string>("User_Answer")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("User_Id")
                         .HasColumnType("int");
@@ -90,7 +93,7 @@ namespace OnlineBookClub.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Book_Id")
-                        .HasName("PK__Book__C223F3B45E6536D8");
+                        .HasName("PK__Book__C223F3B4CBA24285");
 
                     b.HasIndex("Plan_Id");
 
@@ -135,7 +138,7 @@ namespace OnlineBookClub.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Plan_Id")
-                        .HasName("PK__BookPlan__9BAF9B0351C75CDE");
+                        .HasName("PK__BookPlan__9BAF9B031DE0303A");
 
                     b.HasIndex("User_Id");
 
@@ -171,7 +174,7 @@ namespace OnlineBookClub.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Learn_Id")
-                        .HasName("PK__Learn__31999300BF643019");
+                        .HasName("PK__Learn__319993005E050ACF");
 
                     b.HasIndex("Plan_Id");
 
@@ -205,7 +208,6 @@ namespace OnlineBookClub.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("Password")
-                        .IsRequired()
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
@@ -213,14 +215,13 @@ namespace OnlineBookClub.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserName")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.HasKey("User_Id")
-                        .HasName("PK__Members__206D9170026C53EE");
+                        .HasName("PK__Members__206D9170C8FFF617");
 
-                    b.HasIndex(new[] { "Email" }, "UQ__Members__A9D10534F7B3454D")
+                    b.HasIndex(new[] { "Email" }, "UQ__Members__A9D10534555AED53")
                         .IsUnique();
 
                     b.ToTable("Members");
@@ -246,7 +247,7 @@ namespace OnlineBookClub.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Notice_Id")
-                        .HasName("PK__Notice__E9930CABBB2E44A7");
+                        .HasName("PK__Notice__E9930CABD96445D5");
 
                     b.HasIndex("User_Id");
 
@@ -270,7 +271,7 @@ namespace OnlineBookClub.Migrations
                         .HasColumnType("nvarchar(10)");
 
                     b.HasKey("User_Id", "Plan_Id")
-                        .HasName("PK__PlanMemb__09D768C031119E03");
+                        .HasName("PK__PlanMemb__09D768C06B5D99B1");
 
                     b.HasIndex("Plan_Id");
 
@@ -308,7 +309,7 @@ namespace OnlineBookClub.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Post_Id")
-                        .HasName("PK__Post__5875F7AD2DEF8D8D");
+                        .HasName("PK__Post__5875F7AD1838C391");
 
                     b.HasIndex("Plan_Id");
 
@@ -341,7 +342,7 @@ namespace OnlineBookClub.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.HasKey("P_Report_Id")
-                        .HasName("PK__Post_Rep__AF4E25E3B72A40DD");
+                        .HasName("PK__Post_Rep__AF4E25E3E831EA16");
 
                     b.HasIndex("Post_Id");
 
@@ -369,7 +370,7 @@ namespace OnlineBookClub.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Progress_Id")
-                        .HasName("PK__Progress__D558797A78B1BA0E");
+                        .HasName("PK__Progress__D558797A60C7671D");
 
                     b.HasIndex("Learn_Id");
 
@@ -404,7 +405,7 @@ namespace OnlineBookClub.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Reply_Id")
-                        .HasName("PK__Reply__B66332845B1014D1");
+                        .HasName("PK__Reply__B6633284E3C88026");
 
                     b.HasIndex("Post_Id");
 
@@ -437,7 +438,7 @@ namespace OnlineBookClub.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.HasKey("R_Report_Id")
-                        .HasName("PK__Reply_Re__6B66990FC2260C00");
+                        .HasName("PK__Reply_Re__6B66990FED16DBBA");
 
                     b.HasIndex("Reply_Id");
 
@@ -465,7 +466,7 @@ namespace OnlineBookClub.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Statistics_Id")
-                        .HasName("PK__Statisti__A2EC2FD9F1F7BAB4");
+                        .HasName("PK__Statisti__A2EC2FD9D49FAB21");
 
                     b.HasIndex("Plan_Id");
 
@@ -517,7 +518,7 @@ namespace OnlineBookClub.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Topic_Id")
-                        .HasName("PK__Topic__8DEAA4050CB88B32");
+                        .HasName("PK__Topic__8DEAA40577172212");
 
                     b.HasIndex("Learn_Id");
 

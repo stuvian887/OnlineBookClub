@@ -32,6 +32,13 @@ namespace OnlineBookClub.Service
         {
             return await _learnRepository.DeleteLearnAsync(UserId , PlanId , LearnId);
         }
-        public async 
+        public async Task<IEnumerable<Answer_RecordDTO>> GetAnswer_Record(int UserId , int PlanId , int LearnId)
+        {
+            return await _learnRepository.GetRecordAsync(UserId, PlanId, LearnId);
+        }
+        public async Task<IEnumerable<Answer_RecordDTO>> CreateAnswer_Record(int UserId , AnswerSubmissionDTO Answer)
+        {
+            return await _learnRepository.CreateRecordAsync(UserId , Answer);
+        }
     }
 }

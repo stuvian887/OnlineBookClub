@@ -1,15 +1,19 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OnlineBookClub.Models;
+using OnlineBookClub.Service;
 
 namespace OnlineBookClub.Repository
 {
     public class PlanMemberRepository
     {
         private readonly OnlineBookClubContext _context;
+
+        private readonly StatisticService _statisticService;
         [ActivatorUtilitiesConstructor]
-        public PlanMemberRepository(OnlineBookClubContext context)
+        public PlanMemberRepository(OnlineBookClubContext context, StatisticService statisticService)
         {
             _context = context;
+            _statisticService = statisticService;
         }
 
         public async Task<BookPlan> GetPlanByIdAsync(int planId)
@@ -75,6 +79,8 @@ namespace OnlineBookClub.Repository
             };
 
             _context.BookPlan.Add(newPlan);
+            // 統計複製次數 +1
+            await _statisticService.AddCopyCountAsync(planId);
             await _context.SaveChangesAsync();
             return newPlan.Plan_Id;
         }

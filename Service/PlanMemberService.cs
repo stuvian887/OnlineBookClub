@@ -9,11 +9,13 @@ namespace OnlineBookClub.Service
     {
         private readonly PlanMemberRepository _planMembersRepository;
         private readonly LearnRepository _learnRepository;
+        private readonly StatisticService _statisticService;
 
-        public PlanMemberService(PlanMemberRepository planMembersRepository ,LearnRepository learnRepository)
+        public PlanMemberService(PlanMemberRepository planMembersRepository ,LearnRepository learnRepository , StatisticService  statisticService)
         {
             _planMembersRepository = planMembersRepository;
             _learnRepository = learnRepository;
+            _statisticService = statisticService;
         }
 
         public async Task<(bool Success, string Message)> JoinPlanAsync(PlanMembers joinPlanDto)
@@ -41,6 +43,7 @@ namespace OnlineBookClub.Service
 
             // 4. 加入計畫
             await _planMembersRepository.AddUserToPlanAsync(joinPlanDto.User_Id, joinPlanDto.Plan_Id);
+            await _statisticService.AddUserCountAsync(joinPlanDto.Plan_Id);
             await _learnRepository.CreateAllProgressTrackAsync(joinPlanDto.User_Id, joinPlanDto.Plan_Id);
             return (true, "成功加入計畫");
         }

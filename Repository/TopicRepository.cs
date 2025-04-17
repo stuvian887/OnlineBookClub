@@ -60,8 +60,7 @@ namespace OnlineBookClub.Repository
                 {
                     return (null, "找不到該學習內容");
                 }
-                var existingTopic = await _context.Topic
-                    .FirstOrDefaultAsync(t => t.Learn_Id == LearnId && t.Question_Id == InsertTopic.Question_Id);
+                var existingTopic = await _context.Topic.FirstOrDefaultAsync(t => t.Learn_Id == LearnId && t.Question_Id == InsertTopic.Question_Id);
                 if (existingTopic != null)
                 {
                     return (null, "該題號已存在");
@@ -79,7 +78,6 @@ namespace OnlineBookClub.Repository
                 };
                 await _context.Topic.AddAsync(topic);
                 await _context.SaveChangesAsync();
-
                 TopicDTO resultDTO = new TopicDTO
                 {
                     Question_Id = topic.Question_Id,
@@ -117,8 +115,7 @@ namespace OnlineBookClub.Repository
                 {
                     return (null, "找不到該學習內容");
                 }
-                var topic = await _context.Topic
-                    .FirstOrDefaultAsync(t => t.Learn_Id == LearnId && t.Question_Id == EditTopic.Question_Id);
+                var topic = await _context.Topic.FirstOrDefaultAsync(t => t.Learn_Id == LearnId && t.Question_Id == EditTopic.Question_Id);
                 if (topic != null)
                 {
                     topic.Learn_Id = LearnId;
@@ -198,47 +195,7 @@ namespace OnlineBookClub.Repository
                 return (null, "找不到你是誰");
             }
         }
-        public async Task<Answer_RecordDTO> GetRecordAsync(int UserId, int PlanId, int LearnId, int TopicId)
-        {
-            var Plan = await _context.BookPlan.FindAsync(PlanId);
-            if (Plan != null)
-            {
-                var Learn = await _context.Learn.FindAsync(LearnId);
-                if (Learn != null)
-                {
-                    Answer_Record Record = await _context.Answer_Record.FindAsync(UserId, TopicId);
-                    if (Record != null)
-                    {
-                        var result = (from a in _context.Answer_Record.
-                                      Where(a => a.User_Id == UserId && a.Topic_Id == TopicId)
-                                      select new Answer_RecordDTO
-                                      {
-                                          User_Id = UserId,
-                                          Topic_Id = TopicId,
-                                          Learn_Id = LearnId,
-                                          AnswerDate = a.AnswerDate,
-                                          Answer = a.Answer,
-                                          times = a.times,
-                                          Pass = a.Pass
-                                      });
-                        return (Answer_RecordDTO)result;
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            else
-            {
-                return null;
-            }
-        }
-
+        
     }
 }
 

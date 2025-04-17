@@ -9,6 +9,7 @@
         public int Learn_Id { get; set; }
 
         public int Topic_Id { get; set; }
+        public int Question_Id { get; set; }
 
         public DateTime AnswerDate { get; set; }
 

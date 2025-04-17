@@ -74,6 +74,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             
         };
     });
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://127.0.0.1:5500") // 允許前端的來源網址
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 builder.Services.AddMvc(options =>
 {
     options.Filters.Add(new AuthorizeFilter());
@@ -87,7 +96,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
     
 }
-
+app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
 
 app.UseCookiePolicy();

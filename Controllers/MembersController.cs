@@ -80,12 +80,12 @@ namespace OnlineBookClub.Controllers
                             where a.Email == LoginMember.Email
                             && a.Password == MemberService.HashPassword( LoginMember.Password)
                             select a).SingleOrDefault();
-                // 使用 JwtService 產生 Token
+                // 使用 JwtService 產生 Token   
                 string token = _jwtService.GenerateJwtToken(user);
 
                 // 設定 Cookie
-                _jwtService.SetJwtCookie(Response, token);
-                return Ok(); // 已登入則重新導向
+                 _jwtService.SetJwtCookie(Response, token);
+                return Ok(new { token }); // 已登入則重新導向
 
             }
             else
@@ -93,7 +93,7 @@ namespace OnlineBookClub.Controllers
                 // 有驗證錯誤訊息，加入頁面模型中
                 ModelState.AddModelError("", ValidateStr);
                 // 將資料回填至 View 中
-                return BadRequest(ValidateStr);
+                return BadRequest(new { ValidateStr });
             }
         }
        

@@ -49,11 +49,6 @@ namespace OnlineBookClub.Repository
             var list = await result.ToListAsync();
             return list.Select(a => GetProgressTrack(a));
         }
-        public async Task<Learn> GetLearnByLearnIdAsync(int Learn_Index)
-        {
-            var result = await _context.Learn.SingleOrDefaultAsync(l => l.Learn_Index == Learn_Index);
-            return result;
-        }
         public async Task<BookPlan> CheckLearnByPlanIdAsync(int PlanId)
         {
             return await _context.BookPlan.Include(bp => bp.Learn).SingleOrDefaultAsync(p => p.Plan_Id == PlanId);
@@ -262,7 +257,33 @@ namespace OnlineBookClub.Repository
             }
             else { return null; }
         }
-        
+        public async Task<ProgressTrackingDTO> PassProgressAsync (int UserId, int PlanId , int LearnIndex)
+        {
+            var User = await _planMemberRepository.GetUserRoleAsync(UserId , PlanId);
+            if(User != null)
+            {
+                var Plan = await _context.BookPlan.FindAsync(PlanId);
+                if(Plan != null)
+                {
+                    var Learn = await _context.Learn.Where(l => l.Plan_Id == PlanId).FirstOrDefaultAsync(l => l.Learn_Index == LearnIndex);
+                    if(Learn != null)
+                    {
+                        var PassTheProgress = await _context.ProgressTracking.Where(pt => pt.Learn_Id == Learn.Learn_Id).FirstOrDefaultAsync(pt => pt.Learn_Id == Learn.Learn_Id);
+                        PassTheProgress.Status = true;
+                        _context.ProgressTracking.Update(PassTheProgress);
+                        await _context.SaveChangesAsync();
+                        ProgressTrackingDTO resultDTO = new ProgressTrackingDTO
+                        {
+                            Status = PassTheProgress.Status,
+                        };
+                        return resultDTO;
+                    }
+                    return null;
+                }
+                return null;
+            }
+            return null;
+        }
         public async Task<IEnumerable<Answer_RecordDTO>> CreateRecordAsync(int UserId, AnswerSubmissionDTO submission)
         {
             List<Answer_RecordDTO> resultDTOs = new List<Answer_RecordDTO>();

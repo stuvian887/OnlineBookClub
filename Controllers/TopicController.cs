@@ -19,19 +19,19 @@ namespace OnlineBookClub.Controllers
             _service = service;
         }
         // GET: api/<TopicController>
-        [HttpGet("{PlanId}/{LearnId}")]
-        public async Task<IEnumerable<TopicDTO>> GetTopic(int PlanId, int LearnId)
+        [HttpGet("{PlanId}/{Learn_Index}")]
+        public async Task<IEnumerable<TopicDTO>> GetTopic(int PlanId, int Learn_Index)
         {
-            return await _service.GetTopicAsync(PlanId, LearnId);
+            return await _service.GetTopicAsync(PlanId, Learn_Index);
         }
 
         // POST api/<TopicController>
-        [HttpPost("{PlanId}/{LearnId}")]
-        public async Task<IActionResult> Create(int PlanId, int LearnId, [FromBody] TopicDTO newData)
+        [HttpPost("{PlanId}/{Learn_Index}")]
+        public async Task<IActionResult> Create(int PlanId, int Learn_Index, [FromBody] TopicDTO newData)
         {
             var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             int UserId = int.Parse(UserIdClaim.Value);
-            var result = await _service.CreateTopic(UserId , PlanId, LearnId, newData);
+            var result = await _service.CreateTopic(UserId , PlanId, Learn_Index, newData);
             if (result.Item1 != null)
             {
                 return Ok(result.Message);
@@ -43,12 +43,12 @@ namespace OnlineBookClub.Controllers
         }
 
         // PUT api/<TopicController>/5
-        [HttpPut("{PlanId}/{LearnId}/{QuestionId}")]
-        public async Task<IActionResult> Update(int PlanId, int LearnId, int QuestionId, [FromBody] TopicDTO updateData)
+        [HttpPut("{PlanId}/{Learn_Index}/{QuestionId}")]
+        public async Task<IActionResult> Update(int PlanId, int Learn_Index, int QuestionId, [FromBody] TopicDTO updateData)
         {
             var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             int UserId = int.Parse(UserIdClaim.Value);
-            var result = await _service.UpdateTopic(UserId , PlanId, LearnId, QuestionId, updateData);
+            var result = await _service.UpdateTopic(UserId , PlanId, Learn_Index, QuestionId, updateData);
             if (result.Item1 != null)
             {
                 return Ok(result.Message);
@@ -60,12 +60,12 @@ namespace OnlineBookClub.Controllers
         }
 
         // DELETE api/<TopicController>/5
-        [HttpDelete("{PlanId}/{LearnId}/{QuestionId}")]
-        public async Task<IActionResult> Delete(int PlanId , int LearnId, int QuestionId)
+        [HttpDelete("{PlanId}/{Learn_Index}/{QuestionId}")]
+        public async Task<IActionResult> Delete(int PlanId , int Learn_Index, int QuestionId)
         {
             var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             int UserId = int.Parse(UserIdClaim.Value);
-            var result = await _service.DeleteTopic(UserId , PlanId, LearnId, QuestionId);
+            var result = await _service.DeleteTopic(UserId , PlanId, Learn_Index, QuestionId);
             if (result.Item1 != null)
             {
                 return Ok(result.Message);

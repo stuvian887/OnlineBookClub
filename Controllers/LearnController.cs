@@ -91,11 +91,18 @@ namespace OnlineBookClub.Controllers
             return await _service.GetAnswer_Record(UserId, PlanId, LearnId);
         }
         [HttpPost("Answer_Record")]
-        public async Task<IEnumerable<Answer_RecordDTO>> CreateAnswer_Record([FromBody]AnswerSubmissionDTO Answer)
+        public async Task<IEnumerable<Answer_RecordDTO>> CreateAnswer_Record([FromBody] AnswerSubmissionDTO Answer)
         {
             var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             int UserId = int.Parse(UserIdClaim.Value);
             return await _service.CreateAnswer_Record(UserId, Answer);
+        }
+        [HttpPut("PassProgress/{PlanId}/{Learn_Index}")]
+        public async Task<IActionResult> PassProgress(int PlanId , int Learn_Index)
+        {
+            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            int UserId = int.Parse(UserIdClaim.Value);
+            return Ok(await _service.PassProgressAsync(UserId, PlanId, Learn_Index));
         }
     }
 }

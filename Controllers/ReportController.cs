@@ -19,20 +19,20 @@ namespace OnlineBookClub.Controllers
 
         // GET: api/<ReportController>
         [HttpGet("{PlanId}/{PostId}")]
-        public async Task<IEnumerable<Post_ReportDTO>> GetPostReport(int PlanId, int PostId)
+        public async Task<IActionResult> GetPostReport(int PlanId, int PostId)
         {
             var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             int UserId = int.Parse(UserIdClaim.Value);
-            return await _service.GetPostReport(UserId, PlanId, PostId);
+            return Ok(await _service.GetPostReport(UserId, PlanId, PostId));
         }
 
         // GET api/<ReportController>/5
         [HttpGet("{PlanId}/{PostId}/{ReplyId}")]
-        public async Task<IEnumerable<Reply_ReportDTO>> GetReplyReport(int PlanId, int PostId, int ReplyId)
+        public async Task<IActionResult> GetReplyReport(int PlanId, int PostId, int ReplyId)
         {
             var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             int UserId = int.Parse(UserIdClaim.Value);
-            return await _service.GetReplyReport(UserId, PlanId, PostId, ReplyId);
+            return Ok(await _service.GetReplyReport(UserId, PlanId, PostId, ReplyId));
         }
 
         // POST api/<ReportController>

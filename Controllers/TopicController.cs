@@ -20,9 +20,9 @@ namespace OnlineBookClub.Controllers
         }
         // GET: api/<TopicController>
         [HttpGet("{PlanId}/{Learn_Index}")]
-        public async Task<IEnumerable<TopicDTO>> GetTopic(int PlanId, int Learn_Index)
+        public async Task<IActionResult> GetTopic(int PlanId, int Learn_Index)
         {
-            return await _service.GetTopicAsync(PlanId, Learn_Index);
+            return Ok(await _service.GetTopicAsync(PlanId, Learn_Index));
         }
 
         // POST api/<TopicController>

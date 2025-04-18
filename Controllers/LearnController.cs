@@ -102,7 +102,8 @@ namespace OnlineBookClub.Controllers
         {
             var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             int UserId = int.Parse(UserIdClaim.Value);
-            return Ok(await _service.PassProgressAsync(UserId, PlanId, Learn_Index));
+            await _service.PassProgressAsync(UserId, PlanId, Learn_Index);
+            return Ok(new { message = "進度通過!" });
         }
     }
 }

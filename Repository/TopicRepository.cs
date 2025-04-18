@@ -17,24 +17,24 @@ namespace OnlineBookClub.Repository
             _context = context;
             _memberRepository = memberRepository;
         }
-        public async Task<IEnumerable<TopicDTO>> GetTopicAsync(int PlanId, int LearnId)
+        public async Task<IEnumerable<TopicDTO>> GetTopicAsync(int PlanId, int Learn_Index)
         {
             var plan = await _context.BookPlan.FindAsync(PlanId);
             if (plan == null)
             {
                 return null;
             }
-            var learn = await _context.Learn.FindAsync(LearnId);
-            if (learn == null || learn.Plan_Id != PlanId)
+            var learn = await _context.Learn.Where(l => l.Plan_Id == PlanId).FirstOrDefaultAsync(l => l.Learn_Index == Learn_Index);
+            if (learn == null)
             {
                 return null;
             }
             var topics = await _context.Topic
-                .Where(t => t.Learn_Id == LearnId)
+                .Where(t => t.Learn_Id == learn.Learn_Id)
                 .ToListAsync();
             var result = topics.Select(t => new TopicDTO
             {
-                Learn_Id = LearnId,
+                Learn_Id = learn.Learn_Id,
                 Question_Id = t.Question_Id,
                 Question = t.Question,
                 Option_A = t.Option_A,
@@ -45,7 +45,7 @@ namespace OnlineBookClub.Repository
             });
             return result;
         }
-        public async Task<(TopicDTO, string Message)> CreateTopicAsync(int UserId, int PlanId, int LearnId, TopicDTO InsertTopic)
+        public async Task<(TopicDTO, string Message)> CreateTopicAsync(int UserId, int PlanId, int Learn_Index, TopicDTO InsertTopic)
         {
             var role = await _memberRepository.GetUserRoleAsync(UserId, PlanId);
             if (role == "組長")
@@ -55,19 +55,19 @@ namespace OnlineBookClub.Repository
                 {
                     return (null, "找不到該計畫");
                 }
-                var learn = await _context.Learn.FindAsync(LearnId);
-                if (learn == null || learn.Plan_Id != PlanId)
+                var learn = await _context.Learn.Where(l => l.Plan_Id == PlanId).FirstOrDefaultAsync(l => l.Learn_Index == Learn_Index);
+                if (learn == null)
                 {
                     return (null, "找不到該學習內容");
                 }
-                var existingTopic = await _context.Topic.FirstOrDefaultAsync(t => t.Learn_Id == LearnId && t.Question_Id == InsertTopic.Question_Id);
+                var existingTopic = await _context.Topic.FirstOrDefaultAsync(t => t.Learn_Id == learn.Learn_Id && t.Question_Id == InsertTopic.Question_Id);
                 if (existingTopic != null)
                 {
                     return (null, "該題號已存在");
                 }
                 Topic topic = new Topic
                 {
-                    Learn_Id = LearnId,
+                    Learn_Id = learn.Learn_Id,
                     Question_Id = InsertTopic.Question_Id,
                     Question = InsertTopic.Question,
                     Option_A = InsertTopic.Option_A,
@@ -100,7 +100,7 @@ namespace OnlineBookClub.Repository
                 return (null, "找不到你是誰");
             }
         }
-        public async Task<(TopicDTO, string Message)> UpdateTopicAsync(int UserId, int PlanId, int LearnId, int QuestionId, TopicDTO EditTopic)
+        public async Task<(TopicDTO, string Message)> UpdateTopicAsync(int UserId, int PlanId, int Learn_Index, int QuestionId, TopicDTO EditTopic)
         {
             var role = await _memberRepository.GetUserRoleAsync(UserId, PlanId);
             if (role == "組長")
@@ -110,15 +110,15 @@ namespace OnlineBookClub.Repository
                 {
                     return (null, "找不到該計畫");
                 }
-                var learn = await _context.Learn.FindAsync(LearnId);
-                if (learn == null || learn.Plan_Id != PlanId)
+                var learn = await _context.Learn.Where(l => l.Plan_Id == PlanId).FirstOrDefaultAsync(l => l.Learn_Index == Learn_Index);
+                if (learn == null)
                 {
                     return (null, "找不到該學習內容");
                 }
-                var topic = await _context.Topic.FirstOrDefaultAsync(t => t.Learn_Id == LearnId && t.Question_Id == EditTopic.Question_Id);
+                var topic = await _context.Topic.FirstOrDefaultAsync(t => t.Learn_Id == learn.Learn_Id && t.Question_Id == EditTopic.Question_Id);
                 if (topic != null)
                 {
-                    topic.Learn_Id = LearnId;
+                    topic.Learn_Id = learn.Learn_Id;
                     topic.Question_Id = QuestionId;
                     topic.Question = EditTopic.Question;
                     topic.Option_A = EditTopic.Option_A;
@@ -153,7 +153,7 @@ namespace OnlineBookClub.Repository
                 return (null, "找不到你是誰");
             }
         }
-        public async Task<(TopicDTO,string Message)> DeleteTopicAsync(int UserId , int PlanId, int LearnId, int QuestionId)
+        public async Task<(TopicDTO,string Message)> DeleteTopicAsync(int UserId , int PlanId, int Learn_Index, int QuestionId)
         {
             var Role = await _memberRepository.GetUserRoleAsync(UserId, PlanId);
             if (Role == "組長")
@@ -164,14 +164,14 @@ namespace OnlineBookClub.Repository
                     return (null, "找不到該計畫");
                 }
 
-                var learn = await _context.Learn.FindAsync(LearnId);
-                if (learn == null || learn.Plan_Id != plan.Plan_Id)
+                var learn = await _context.Learn.Where(l => l.Plan_Id == PlanId).FirstOrDefaultAsync(l => l.Learn_Index == Learn_Index);
+                if (learn == null)
                 {
                     return (null, "找不到該學習內容");
                 }
 
                 var topic = await _context.Topic
-                    .FirstOrDefaultAsync(t => t.Learn_Id == LearnId && t.Question_Id == QuestionId);
+                    .FirstOrDefaultAsync(t => t.Learn_Id == learn.Learn_Id && t.Question_Id == QuestionId);
 
                 if (topic == null)
                 {

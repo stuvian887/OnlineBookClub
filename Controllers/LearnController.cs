@@ -23,16 +23,16 @@ namespace OnlineBookClub.Controllers
         }
         // GET: api/<LearnController>
         [HttpGet("Index")]
-        public async Task<IEnumerable<LearnDTO>> GetAllLearn()
+        public async Task<IActionResult> GetAllLearn()
         {
-            return await _service.GetAllLearn();
+            return Ok(await _service.GetAllLearn()) ;
         }
 
         // GET api/<LearnController>/5
         [HttpGet("Index/{PlanId}")]
-        public async Task<IEnumerable<LearnDTO>> Get(int PlanId)
+        public async Task<IActionResult> Get(int PlanId)
         {
-            return await _service.GetLearn(PlanId);
+            return Ok(await _service.GetLearn(PlanId));
         }
 
         // POST api/<LearnController>
@@ -84,18 +84,25 @@ namespace OnlineBookClub.Controllers
             }
         }
         [HttpGet("Answer_Record/{PlanId}/{LearnId}")]
-        public async Task<IEnumerable<Answer_RecordDTO>> GetAnswer_Record(int PlanId, int LearnId)
+        public async Task<IActionResult> GetAnswer_Record(int PlanId, int LearnId)
         {
             var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             int UserId = int.Parse(UserIdClaim.Value);
-            return await _service.GetAnswer_Record(UserId, PlanId, LearnId);
+            return Ok(await _service.GetAnswer_Record(UserId, PlanId, LearnId));
         }
         [HttpPost("Answer_Record")]
-        public async Task<IEnumerable<Answer_RecordDTO>> CreateAnswer_Record([FromBody]AnswerSubmissionDTO Answer)
+        public async Task<IActionResult> CreateAnswer_Record([FromBody] AnswerSubmissionDTO Answer)
         {
             var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             int UserId = int.Parse(UserIdClaim.Value);
-            return await _service.CreateAnswer_Record(UserId, Answer);
+            return Ok(await _service.CreateAnswer_Record(UserId, Answer));
+        }
+        [HttpPut("PassProgress/{PlanId}/{Learn_Index}")]
+        public async Task<IActionResult> PassProgress(int PlanId , int Learn_Index)
+        {
+            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            int UserId = int.Parse(UserIdClaim.Value);
+            return Ok(await _service.PassProgressAsync(UserId, PlanId, Learn_Index));
         }
     }
 }

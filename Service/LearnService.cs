@@ -40,6 +40,9 @@ namespace OnlineBookClub.Service
         {
             return await _learnRepository.CreateRecordAsync(UserId , Answer);
         }
-        
+        public async Task<ProgressTrackingDTO> PassProgressAsync (int UserId , int PlanId , int Learn_Index)
+        {
+            return await _learnRepository.PassProgressAsync(UserId, PlanId, Learn_Index);
+        }
     }
 }

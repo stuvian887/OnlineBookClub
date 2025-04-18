@@ -84,13 +84,11 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod()
               .AllowCredentials();  // 設定允許攜帶憑證（cookie）
     });
-   
-
 });
-//builder.Services.AddMvc(options =>
-//{
-//    options.Filters.Add(new AuthorizeFilter());
-//});
+builder.Services.AddMvc(options =>
+{
+    options.Filters.Add(new AuthorizeFilter());
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

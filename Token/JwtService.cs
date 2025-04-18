@@ -36,7 +36,7 @@ namespace OnlineBookClub.Token
         return new JwtSecurityTokenHandler().WriteToken(jwt);
     }
 
-    public void SetJwtCookie(HttpResponse response, string token)
+        public void SetJwtCookie(HttpResponse response, string token)
     {
         var cookieOptions = new CookieOptions
         {

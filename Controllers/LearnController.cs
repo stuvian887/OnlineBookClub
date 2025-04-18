@@ -83,12 +83,12 @@ namespace OnlineBookClub.Controllers
                 return BadRequest(result.Message);
             }
         }
-        [HttpGet("Answer_Record/{PlanId}/{LearnId}")]
-        public async Task<IActionResult> GetAnswer_Record(int PlanId, int LearnId)
+        [HttpGet("Answer_Record/{PlanId}/{Learn_Index}")]
+        public async Task<IActionResult> GetAnswer_Record(int PlanId, int Learn_Index)
         {
             var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             int UserId = int.Parse(UserIdClaim.Value);
-            return Ok(await _service.GetAnswer_Record(UserId, PlanId, LearnId));
+            return Ok(await _service.GetAnswer_Record(UserId, PlanId, Learn_Index));
         }
         [HttpPost("Answer_Record")]
         public async Task<IActionResult> CreateAnswer_Record([FromBody] AnswerSubmissionDTO Answer)

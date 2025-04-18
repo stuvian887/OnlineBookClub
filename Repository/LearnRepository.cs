@@ -98,7 +98,7 @@ namespace OnlineBookClub.Repository
                         await _context.SaveChangesAsync();
                         LearnDTO resultDTO = new LearnDTO();
                         resultDTO.Learn_Name = UpdateLearn.Learn_Name;
-                        return (resultDTO, "修改計畫成功");
+                        return (resultDTO, "修改學習內容成功");
                     }
                     else
                     {
@@ -331,7 +331,7 @@ namespace OnlineBookClub.Repository
                 return null;
             }
         }
-        public async Task<IEnumerable<Answer_RecordDTO>> GetRecordAsync(int UserId, int PlanId, int LearnId)
+        public async Task<IEnumerable<Answer_RecordDTO>> GetRecordAsync(int UserId, int PlanId, int Learn_Index)
         {
             var User = await _planMemberRepository.GetUserRoleAsync(UserId, PlanId);
             if (User != null)
@@ -339,8 +339,8 @@ namespace OnlineBookClub.Repository
                 var Plan = await _context.BookPlan.FindAsync(PlanId);
                 if (Plan != null)
                 {
-                    var Learn = await _context.Learn.FindAsync(LearnId);
-                    if (Learn != null && Plan.Plan_Id == Learn.Plan_Id)
+                    var Learn = await _context.Learn.Where(l => l.Plan_Id == PlanId).FirstOrDefaultAsync(l => l.Learn_Index == Learn_Index);
+                    if (Learn != null)
                     {
                         var result = (from a in _context.Answer_Record.       
                                       Where(a => a.User_Id == UserId)

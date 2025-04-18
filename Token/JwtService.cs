@@ -41,9 +41,11 @@ namespace OnlineBookClub.Token
         var cookieOptions = new CookieOptions
         {
             HttpOnly = true,  // 避免 JavaScript 讀取，防止 XSS 攻擊
-            Secure = false,   // 僅在 HTTPS 傳輸（開發環境可設 false）
-            SameSite = SameSiteMode.Strict, // 限制跨站請求
+            Secure = true,   // 僅在 HTTPS 傳輸（開發環境可設 false）
+            SameSite = SameSiteMode.None, // 限制跨站請求
             Expires = DateTime.Now.AddMinutes(30)
+            ,Path = "/"
+
         };
         response.Cookies.Append("JWT", token, cookieOptions);
     }

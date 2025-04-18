@@ -56,9 +56,11 @@ namespace OnlineBookClub.Controllers
                 string ValidateUrl = $"{Request.Scheme}://{Request.Host}/api/members/EmailValidate?Email={Register.Email}&AuthCode={authcode}";
                 string MailBody = MailService.GetRegisterMailBody(TempMail, Register.UserName, ValidateUrl);
                 MailService.SendRegisterMail(MailBody, Register.Email);
-                return Ok("註冊成功，請去收信以驗證Email");
+                
+                return Ok(new { str = "註冊成功，請去收信以驗證Email" });
             }
-            return BadRequest("註冊失敗，請重新註冊");
+
+            return BadRequest(new { str = "帳號已註冊請重新註冊" });
         }
         [HttpGet("EmailValidate")]
         [AllowAnonymous]
@@ -82,9 +84,9 @@ namespace OnlineBookClub.Controllers
                             select a).SingleOrDefault();
                 // 使用 JwtService 產生 Token   
                 string token = _jwtService.GenerateJwtToken(user);
-
+               
                 // 設定 Cookie
-                 _jwtService.SetJwtCookie(Response, token);
+                _jwtService.SetJwtCookie(Response, token);
                 return Ok(new { token }); // 已登入則重新導向
 
             }

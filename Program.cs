@@ -48,46 +48,49 @@ builder.Services.AddScoped<StatisticService>();
 //    // options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
 //});
 
-
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidIssuer = builder.Configuration["JWT:Issuer"],
-            ValidateAudience = true,
-            ValidAudience = builder.Configuration["JWT:Audience"],
-            ValidateLifetime = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:KEY"]))
+   .AddJwtBearer(options =>
+   {
+       options.TokenValidationParameters = new TokenValidationParameters
+       {
+           ValidateIssuer = true,
+           ValidIssuer = builder.Configuration["JWT:Issuer"],
+           ValidateAudience = true,
+           ValidAudience = builder.Configuration["JWT:Audience"],
+           ValidateLifetime = true,
+           ValidateIssuerSigningKey = true,
+           IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:KEY"]))
 
-        };
-        options.Events = new JwtBearerEvents
-        {
-            OnMessageReceived = context =>
-            {
-                if (context.Request.Cookies.ContainsKey("JWT"))
-                {
-                    context.Token = context.Request.Cookies["JWT"];
-                }
-                return Task.CompletedTask;
-            },
-            
-        };
-    });
+       };
+       options.Events = new JwtBearerEvents
+       {
+           OnMessageReceived = context =>
+           {
+               if (context.Request.Cookies.ContainsKey("JWT"))
+               {
+                   context.Token = context.Request.Cookies["JWT"];
+               }
+               return Task.CompletedTask;
+           },
+
+       };
+   });
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://127.0.0.1:5500") // 允許前端的來源網址
+        policy.WithOrigins("http://127.0.0.1:5500", "http://localhost:5500") // 允許前端的來源網址
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();  // 設定允許攜帶憑證（cookie）
     });
+   
+
 });
-builder.Services.AddMvc(options =>
-{
-    options.Filters.Add(new AuthorizeFilter());
-});
+//builder.Services.AddMvc(options =>
+//{
+//    options.Filters.Add(new AuthorizeFilter());
+//});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

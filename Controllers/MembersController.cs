@@ -12,6 +12,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using OnlineBookClub.Token;
 using Microsoft.AspNetCore.Identity;
+using Azure;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -100,17 +101,29 @@ namespace OnlineBookClub.Controllers
         }
        
         
-        [HttpDelete]
+        [HttpDelete("logout")]
         public ActionResult logout()
         {
-            Response.Cookies.Delete("JWT");
+            
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,  // 避免 JavaScript 讀取，防止 XSS 攻擊
+                Secure = true,   // 僅在 HTTPS 傳輸（開發環境可設 false）
+                SameSite = SameSiteMode.None, // 限制跨站請求
+                Expires = DateTime.Now.AddMinutes(30)
+           ,
+                Path = "/"
+
+            };
+            
+            Response.Cookies.Delete("JWT",cookieOptions);
             return Ok("登出成功");
 
         }
 
         [HttpPost("ForgetPassword")]
         [AllowAnonymous]
-        public ActionResult ForgetPassword(string emaill) 
+        public ActionResult ForgetPassword([FromForm] string emaill) 
         {
             if (!MemberService.EmailCheck(emaill)) 
             {
@@ -122,10 +135,11 @@ namespace OnlineBookClub.Controllers
                 
                 string MailBody = MailService.GetRegisterMailBody(TempMail, member.UserName, ValidateUrl);
                 MailService.SendRegisterMail(MailBody, emaill);
-                return Ok("輸入成功，請去收信以驗證Email");
+                string str1 = "輸入成功，請去收信以驗證Email";
+                return Ok(new { str1 });
             }
-
-            return BadRequest("無此帳號");
+            string str = "無此帳號";
+            return BadRequest(new { str });
         }
         [HttpGet("PSValidate")]
         [AllowAnonymous]

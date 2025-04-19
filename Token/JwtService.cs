@@ -49,6 +49,7 @@ namespace OnlineBookClub.Token
         };
         response.Cookies.Append("JWT", token, cookieOptions);
     }
+
         public string GetUserIdFromToken(string token)
         {
             var handler = new JwtSecurityTokenHandler();

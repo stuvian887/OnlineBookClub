@@ -146,6 +146,7 @@ namespace OnlineBookClub.Controllers
         public IActionResult PSValidate(string Email, string AuthCode)
         {
             string Validatestr = MemberService.forgetpsEmailValidate(Email, AuthCode);
+
             return Ok(Validatestr);
         }
         [HttpPut("changeps")]

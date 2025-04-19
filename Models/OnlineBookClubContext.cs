@@ -45,6 +45,10 @@ public partial class OnlineBookClubContext : DbContext
         {
             entity.HasKey(e => e.AR_Id).HasName("PK__Answer_R__003ED5F200B194C2");
 
+            entity.HasIndex(e => e.Learn_Id, "IX_Answer_Record_Learn_Id");
+
+            entity.HasIndex(e => e.User_Id, "IX_Answer_Record_User_Id");
+
             entity.Property(e => e.Answer)
                 .IsRequired()
                 .HasMaxLength(1);
@@ -64,6 +68,8 @@ public partial class OnlineBookClubContext : DbContext
         {
             entity.HasKey(e => e.Book_Id).HasName("PK__Book__C223F3B4CBA24285");
 
+            entity.HasIndex(e => e.Plan_Id, "IX_Book_Plan_Id");
+
             entity.Property(e => e.BookName).HasMaxLength(100);
             entity.Property(e => e.Description).HasMaxLength(1000);
             entity.Property(e => e.Link).IsRequired();
@@ -76,6 +82,8 @@ public partial class OnlineBookClubContext : DbContext
         modelBuilder.Entity<BookPlan>(entity =>
         {
             entity.HasKey(e => e.Plan_Id).HasName("PK__BookPlan__9BAF9B031DE0303A");
+
+            entity.HasIndex(e => e.User_Id, "IX_BookPlan_User_Id");
 
             entity.Property(e => e.Plan_Goal)
                 .IsRequired()
@@ -98,6 +106,8 @@ public partial class OnlineBookClubContext : DbContext
         modelBuilder.Entity<Learn>(entity =>
         {
             entity.HasKey(e => e.Learn_Id).HasName("PK__Learn__319993005E050ACF");
+
+            entity.HasIndex(e => e.Plan_Id, "IX_Learn_Plan_Id");
 
             entity.Property(e => e.DueTime).HasColumnType("datetime");
             entity.Property(e => e.Learn_Name)
@@ -132,6 +142,8 @@ public partial class OnlineBookClubContext : DbContext
         {
             entity.HasKey(e => e.Notice_Id).HasName("PK__Notice__E9930CABD96445D5");
 
+            entity.HasIndex(e => e.User_Id, "IX_Notice_User_Id");
+
             entity.Property(e => e.Message)
                 .IsRequired()
                 .HasMaxLength(200);
@@ -145,6 +157,8 @@ public partial class OnlineBookClubContext : DbContext
         modelBuilder.Entity<PlanMembers>(entity =>
         {
             entity.HasKey(e => new { e.User_Id, e.Plan_Id }).HasName("PK__PlanMemb__09D768C06B5D99B1");
+
+            entity.HasIndex(e => e.Plan_Id, "IX_PlanMembers_Plan_Id");
 
             entity.Property(e => e.JoinDate).HasColumnType("datetime");
             entity.Property(e => e.Role)
@@ -164,6 +178,10 @@ public partial class OnlineBookClubContext : DbContext
         modelBuilder.Entity<Post>(entity =>
         {
             entity.HasKey(e => e.Post_Id).HasName("PK__Post__5875F7AD1838C391");
+
+            entity.HasIndex(e => e.Plan_Id, "IX_Post_Plan_Id");
+
+            entity.HasIndex(e => e.User_Id, "IX_Post_User_Id");
 
             entity.Property(e => e.Content)
                 .IsRequired()
@@ -187,6 +205,8 @@ public partial class OnlineBookClubContext : DbContext
         {
             entity.HasKey(e => e.P_Report_Id).HasName("PK__Post_Rep__AF4E25E3E831EA16");
 
+            entity.HasIndex(e => e.Post_Id, "IX_Post_Report_Post_Id");
+
             entity.Property(e => e.Action)
                 .IsRequired()
                 .HasMaxLength(10)
@@ -204,6 +224,10 @@ public partial class OnlineBookClubContext : DbContext
         {
             entity.HasKey(e => e.Progress_Id).HasName("PK__Progress__D558797A60C7671D");
 
+            entity.HasIndex(e => e.Learn_Id, "IX_ProgressTracking_Learn_Id");
+
+            entity.HasIndex(e => e.User_Id, "IX_ProgressTracking_User_Id");
+
             entity.Property(e => e.CompletionDate).HasColumnType("datetime");
 
             entity.HasOne(d => d.Learn).WithMany(p => p.ProgressTracking)
@@ -219,6 +243,10 @@ public partial class OnlineBookClubContext : DbContext
         modelBuilder.Entity<Reply>(entity =>
         {
             entity.HasKey(e => e.Reply_Id).HasName("PK__Reply__B6633284E3C88026");
+
+            entity.HasIndex(e => e.Post_Id, "IX_Reply_Post_Id");
+
+            entity.HasIndex(e => e.User_Id, "IX_Reply_User_Id");
 
             entity.Property(e => e.ReplyContent)
                 .IsRequired()
@@ -239,6 +267,8 @@ public partial class OnlineBookClubContext : DbContext
         {
             entity.HasKey(e => e.R_Report_Id).HasName("PK__Reply_Re__6B66990FED16DBBA");
 
+            entity.HasIndex(e => e.Reply_Id, "IX_Reply_Report_Reply_Id");
+
             entity.Property(e => e.Action)
                 .IsRequired()
                 .HasMaxLength(10)
@@ -256,6 +286,8 @@ public partial class OnlineBookClubContext : DbContext
         {
             entity.HasKey(e => e.Statistics_Id).HasName("PK__Statisti__A2EC2FD9D49FAB21");
 
+            entity.HasIndex(e => e.Plan_Id, "IX_Statistic_Plan_Id");
+
             entity.HasOne(d => d.Plan).WithMany(p => p.Statistic)
                 .HasForeignKey(d => d.Plan_Id)
                 .HasConstraintName("FK__Statistic__Plan___76969D2E");
@@ -264,6 +296,8 @@ public partial class OnlineBookClubContext : DbContext
         modelBuilder.Entity<Topic>(entity =>
         {
             entity.HasKey(e => e.Topic_Id).HasName("PK__Topic__8DEAA40577172212");
+
+            entity.HasIndex(e => e.Learn_Id, "IX_Topic_Learn_Id");
 
             entity.Property(e => e.Answer)
                 .IsRequired()

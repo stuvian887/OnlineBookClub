@@ -154,6 +154,7 @@ namespace OnlineBookClub.Service
             {
                 Name = m.UserName,
                 Birthday = m.Birthday,
+                email=m.Email,
                 Gender = m.Gender,
                 ProfilePictureUrl = m.ProfilePictureUrl
             })

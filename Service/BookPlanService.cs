@@ -36,6 +36,13 @@ namespace OnlineBookClub.Service
             return await _repository.GetById(id);
         }
 
+        public async Task<List<BookPlan>> GetuserById(int userid)
+        {
+            
+
+            return await _repository.GetByuserId(userid);
+        }
+
         public async Task<BookPlan> Create(BookPlanDTO bookPlanDto,int id)
         {
            

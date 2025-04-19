@@ -18,17 +18,17 @@ namespace OnlineBookClub.Service
             _statisticService = statisticService;
         }
 
-        public async Task<(bool Success, string Message)> JoinPlanAsync(int UserId , PlanMembers joinPlanDto)
+        public async Task<(bool Success, string Message)> JoinPlanAsync(int UserId , int planid)
         {
             // 1. 檢查計畫是否存在且為公開
-            var plan = await _planMembersRepository.GetPlanByIdAsync(joinPlanDto.Plan_Id);
+            var plan = await _planMembersRepository.GetPlanByIdAsync(planid);
             if (plan == null || !plan.IsPublic)
             {
                 return (false, "計畫不存在或不是公開計畫");
             }
 
             // 2. 檢查是否已經加入
-            var isMember = await _planMembersRepository.IsUserInPlanAsync(UserId, joinPlanDto.Plan_Id);
+            var isMember = await _planMembersRepository.IsUserInPlanAsync(UserId, planid);
             if (isMember)
             {
                 return (false, "你已經加入此計畫");
@@ -42,19 +42,19 @@ namespace OnlineBookClub.Service
             }
 
             // 4. 加入計畫
-            await _planMembersRepository.AddUserToPlanAsync(UserId, joinPlanDto.Plan_Id);
-            await _statisticService.AddUserCountAsync(joinPlanDto.Plan_Id);
-            await _learnRepository.CreateAllProgressTrackAsync(UserId, joinPlanDto.Plan_Id);
+            await _planMembersRepository.AddUserToPlanAsync(UserId, planid);
+                await _statisticService.AddUserCountAsync(planid);
+                await _learnRepository.CreateAllProgressTrackAsync(UserId, planid);
             return (true, "成功加入計畫");
         }
-        public async Task<(bool Success, string Message)> LeavePlanAsync(int UserId , PlanMembers leavePlanDto)
+        public async Task<(bool Success, string Message)> LeavePlanAsync(int UserId , int planid)
         {
-            var role = await _planMembersRepository.GetUserRoleAsync(UserId, leavePlanDto.Plan_Id);
+            var role = await _planMembersRepository.GetUserRoleAsync(UserId, planid);
             if (role == null) return (false, "你不是該計畫的成員");
 
             if (role == "組長") return (false, "組長無法退出計畫，請刪除計畫");
 
-            await _planMembersRepository.RemoveUserFromPlanAsync(UserId, leavePlanDto.Plan_Id);
+            await _planMembersRepository.RemoveUserFromPlanAsync(UserId, planid);
             return (true, "已成功退出計畫");
         }
         public async Task<bool> IsUserInPlanAsync(int userId, int planId)
@@ -62,12 +62,12 @@ namespace OnlineBookClub.Service
             return await _planMembersRepository.IsUserInPlanAsync(userId, planId);
         }
 
-        public async Task<(bool Success, string Message)> CopyPlanAsync(int UserId , PlanMembers copyPlanDto)
+        public async Task<(bool Success, string Message)> CopyPlanAsync(int UserId , int planid)
         {
-            var isMember = await _planMembersRepository.IsUserInPlanAsync(UserId, copyPlanDto.Plan_Id);
+            var isMember = await _planMembersRepository.IsUserInPlanAsync(UserId, planid);
             if (!isMember) return (false, "你必須先加入此計畫才能複製");
 
-            var newPlanId = await _planMembersRepository.CopyPlanWithoutTopics(copyPlanDto.Plan_Id, UserId);
+            var newPlanId = await _planMembersRepository.CopyPlanWithoutTopics(planid, UserId);
             return newPlanId > 0 ? (true, "計畫複製成功") : (false, "複製失敗");
         }
 

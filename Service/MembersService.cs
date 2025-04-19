@@ -78,7 +78,7 @@ namespace OnlineBookClub.Service
                 var update = (from a in _OnlineBookClubContext.Members where a.Email == ValidateMember.Email select a).SingleOrDefault();
                 update.AuthCode = string.Empty;  // 清空驗證碼，標記為已驗證
                 _OnlineBookClubContext.SaveChanges(); // 儲存變更
-                return "帳號信箱驗證成功，請點擊下方連結前往更改密碼";
+                return "帳號信箱驗證成功請回到剛剛頁面修改密碼";
             }
             else
             {

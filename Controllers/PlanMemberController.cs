@@ -22,28 +22,36 @@ namespace OnlineBookClub.Controllers
         [HttpPost("join")]
         public async Task<IActionResult> JoinPlan([FromBody] PlanMembers joinPlanDto)
         {
-            var result = await _planMembersService.JoinPlanAsync(joinPlanDto);
+            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            int UserId = int.Parse(UserIdClaim.Value);
+            var result = await _planMembersService.JoinPlanAsync(UserId , joinPlanDto);
             return result.Success ? Ok(result.Message) : BadRequest(result.Message);
         }
 
         [HttpDelete("leave")]
         public async Task<IActionResult> LeavePlan([FromBody] PlanMembers leavePlanDto)
         {
-            var result = await _planMembersService.LeavePlanAsync(leavePlanDto);
+            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            int UserId = int.Parse(UserIdClaim.Value);
+            var result = await _planMembersService.LeavePlanAsync(UserId , leavePlanDto);
             return result.Success ? Ok(result.Message) : BadRequest(result.Message);
         }
 
         [HttpGet("isMember")]
-        public async Task<IActionResult> IsMember(int userId, int planId)
+        public async Task<IActionResult> IsMember(int planId)
         {
-            var isMember = await _planMembersService.IsUserInPlanAsync(userId, planId);
+            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            int UserId = int.Parse(UserIdClaim.Value);
+            var isMember = await _planMembersService.IsUserInPlanAsync(UserId, planId);
             return Ok(new { IsMember = isMember });
         }
 
         [HttpPost("copyPlan")]
         public async Task<IActionResult> CopyPlan([FromBody] PlanMembers copyPlanDto)
         {
-            var result = await _planMembersService.CopyPlanAsync(copyPlanDto);
+            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            int UserId = int.Parse(UserIdClaim.Value);
+            var result = await _planMembersService.CopyPlanAsync(UserId , copyPlanDto);
             return result.Success ? Ok(result.Message) : BadRequest(result.Message);
         }
     }

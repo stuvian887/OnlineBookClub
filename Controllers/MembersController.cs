@@ -214,16 +214,14 @@ namespace OnlineBookClub.Controllers
             
         }
         [HttpPut("Update-profile")]
-        public IActionResult Updateprofile([FromForm]ProfileDTO data, ICollection<IFormFile> files )
+        public IActionResult Updateprofile([FromForm] ProfileDTO data, ICollection<IFormFile> files)
         {
             var rootPath = env.ContentRootPath + "\\wwwroot\\";
             var token = HttpContext.Request.Cookies["JWT"];
             var email = _jwtService.GetemailFromToken(token);
-            
-            
-            
-            
-            
+            string savedFilePath = null;
+
+            // 如果上傳了圖片
             if (data.ProfilePictureUrl != null && files.Count > 0)
             {
                 var uploadFolder = Path.Combine(rootPath, "uploads");
@@ -233,29 +231,32 @@ namespace OnlineBookClub.Controllers
                     Directory.CreateDirectory(uploadFolder);
                 }
 
-                foreach (var file in files)
+                var file = files.First(); // 只用第一張圖
+                if (file.Length > 0)
                 {
-                    if (file.Length > 0)
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                    var filePath = Path.Combine(uploadFolder, fileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
                     {
-                        var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-                        var filePath = Path.Combine(uploadFolder, fileName);
-
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            file.CopyTo(stream);
-                        }
-
-                        // 生成存入資料庫的路徑 (相對於 wwwroot)
-                        string savedFilePath = "/uploads/" + fileName;
-
-                        // 將大頭照路徑更新到會員資料
-                        bool isUpdated = MemberService.UpdateProfile(data, email, savedFilePath);
+                        file.CopyTo(stream);
                     }
+
+                    savedFilePath = "/uploads/" + fileName;
                 }
+            }
+
+            bool result = MemberService.UpdateProfile(data, email, savedFilePath);
+
+            if (!result)
+            {
+                return NotFound(new { message = "找不到會員，更新失敗" });
             }
 
             return Ok(new { message = "會員資料更新成功" });
         }
+
+
 
 
 

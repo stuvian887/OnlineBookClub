@@ -162,7 +162,7 @@ namespace OnlineBookClub.Service
 
             return member;  
         }
-        public bool UpdateProfile(ProfileDTO profileDto,string email, string savedFilePath)
+        public bool UpdateProfile(ProfileDTO profileDto, string email, string savedFilePath)
         {
             var member = GetDataEmail(email);
 
@@ -171,11 +171,17 @@ namespace OnlineBookClub.Service
                 return false; // 找不到會員
             }
 
-            // 更新會員資料
+            // 更新基本資料
             member.UserName = profileDto.Name;
             member.Birthday = profileDto.Birthday;
             member.Gender = profileDto.Gender;
-            member.ProfilePictureUrl = savedFilePath;
+
+            // 如果有上傳新圖片，才更新圖片網址
+            if (!string.IsNullOrEmpty(savedFilePath))
+            {
+                member.ProfilePictureUrl = savedFilePath;
+            }
+
             _MembersRepository.Update(member);
             return true;
         }

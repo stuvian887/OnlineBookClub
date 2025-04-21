@@ -24,9 +24,9 @@ namespace OnlineBookClub.Service
             _statisticService = statisticService;
         }
 
-        public async Task<IEnumerable<BookPlan>> GetAllPublicPlans()
+        public async Task<IEnumerable<BookPlanDTO>> GetAllPublicPlans()
         {
-            return await _repository.GetAllPublicPlans();
+            return await _repository.GetAllPublicPlansWithCreatorName();
         }
 
         public async Task<BookPlan> GetById(int id)

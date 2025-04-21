@@ -38,7 +38,7 @@ namespace OnlineBookClub.Service
                 var fileName = $"{Guid.NewGuid()}{Path.GetExtension(bookDto.BookCover.FileName)}";
                 var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
 
-                // ✅ 檢查資料夾是否存在，不存在就建立
+                //檢查資料夾是否存在，不存在就建立
                 if (!Directory.Exists(folderPath))
                 {
                     Directory.CreateDirectory(folderPath);
@@ -60,7 +60,7 @@ namespace OnlineBookClub.Service
                 BookName = bookDto.BookName,
                 Description = bookDto.Description,
                 Link = bookDto.Link,
-                 bookpath= savedFilePath  // 這個欄位要在 Book Model 裡加上
+                bookpath= savedFilePath  // 這個欄位要在 Book Model 裡加上
             };
 
             await _bookRepository.AddBookAsync(planId, book);

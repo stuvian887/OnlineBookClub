@@ -24,9 +24,9 @@ namespace OnlineBookClub.Service
             _statisticService = statisticService;
         }
 
-        public async Task<IEnumerable<BookPlan>> GetAllPublicPlans()
+        public async Task<IEnumerable<BookPlanDTO>> GetAllPublicPlans()
         {
-            return await _repository.GetAllPublicPlans();
+            return await _repository.GetAllPublicPlansWithCreatorName();
         }
 
         public async Task<BookPlan> GetById(int id)
@@ -36,11 +36,11 @@ namespace OnlineBookClub.Service
             return await _repository.GetById(id);
         }
 
-        public async Task<List<BookPlan>> GetuserById(int userid)
+        public async Task<List<BookPlanDTO>> GetuserById(int userid)
         {
             
 
-            return await _repository.GetByuserId(userid);
+            return await _repository.GetPlansWithCreatorNameByUserId(userid);
         }
 
         public async Task<BookPlan> Create(BookPlanDTO bookPlanDto,int id)

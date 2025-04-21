@@ -39,14 +39,14 @@ namespace OnlineBookClub.Controllers
         [HttpPost("Create/{PlanId}")]
         public async Task<IActionResult> CreateLearn(int PlanId, [FromBody] LearnDTO newData)
         {
-            LearnDTO result = await _service.CreateLearn(PlanId, newData);
-            if (result != null)
+            var result = await _service.CreateLearn(PlanId, newData);
+            if (result.Item1 != null)
             {
-                return Ok(new { message = "學習內容新增成功" });
+                return Ok(new { message = result.Message });
             }
             else
             {
-                return BadRequest(new { Message = "發生錯誤" });
+                return BadRequest(new { message = result.Message });
             }
         }
 

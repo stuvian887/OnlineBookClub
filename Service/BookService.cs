@@ -1,10 +1,9 @@
-﻿using Azure.Core;
+
 using Microsoft.EntityFrameworkCore;
+using Azure.Core;
 using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
 using OnlineBookClub.Repository;
-using System.IO;
-using System;
 using static System.Reflection.Metadata.BlobBuilder;
 
 namespace OnlineBookClub.Service
@@ -33,13 +32,12 @@ namespace OnlineBookClub.Service
             return bookDto;
         }
 
-        public async Task<(Book , string Message)> AddBookAsync(int planId, BookDTO bookDto)
+        public async Task<(Book, string Message)> AddBookAsync(int planId, BookDTO bookDto)
         {
             var Plan = await _context.BookPlan.FindAsync(planId);
             if (Plan != null)
             {
                 string? savedFilePath = null;
-
                 if (bookDto.BookCover != null)
                 {
                     var fileName = $"{Guid.NewGuid()}{Path.GetExtension(bookDto.BookCover.FileName)}";
@@ -50,9 +48,7 @@ namespace OnlineBookClub.Service
                     {
                         Directory.CreateDirectory(folderPath);
                     }
-
                     var filePath = Path.Combine(folderPath, fileName);
-
                     using (var stream = new FileStream(filePath, FileMode.Create))
                     {
                         await bookDto.BookCover.CopyToAsync(stream);
@@ -77,4 +73,3 @@ namespace OnlineBookClub.Service
         }
     }
 }
-

@@ -1,4 +1,5 @@
-﻿using OnlineBookClub.DTO;
+﻿using Microsoft.EntityFrameworkCore;
+using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
 using OnlineBookClub.Repository;
 
@@ -7,10 +8,11 @@ namespace OnlineBookClub.Service
     public class BookService
     {
         private readonly BookRepository _bookRepository;
-
-        public BookService(BookRepository bookRepository)
+        private readonly OnlineBookClubContext _context;
+        public BookService(BookRepository bookRepository , OnlineBookClubContext context)
         {
             _bookRepository = bookRepository;
+            _context = context;
         }
         public async Task<BookDTO?> GetBookByPlanIdAsync(int planId)
         {
@@ -26,16 +28,25 @@ namespace OnlineBookClub.Service
             };
         }
 
-        public async Task AddBookAsync(int planId, BookDTO bookDto)
+        public async Task<(Book,string Message)> AddBookAsync(int planId, BookDTO bookDto)
         {
-            var book = new Book
+            var Plan = await _context.BookPlan.FindAsync(planId);
+            if (Plan != null)
             {
-                BookName = bookDto.BookName,
-                Description = bookDto.Description,
-                Link = bookDto.Link
-            };
+                var book = new Book
+                {
+                    BookName = bookDto.BookName,
+                    Description = bookDto.Description,
+                    Link = bookDto.Link
+                };
 
-            await _bookRepository.AddBookAsync(planId, book);
+                await _bookRepository.AddBookAsync(planId, book);
+                return (book , "書籍新增成功");
+            }
+            else
+            {
+                return (null , "書籍新增失敗，找不到該書籍");
+            }
         }
     }
 }

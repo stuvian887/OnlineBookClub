@@ -28,8 +28,15 @@ namespace OnlineBookClub.Controllers
         [HttpPost("{planId}")]
         public async Task<IActionResult> AddBook(int planId, [FromBody] BookDTO bookDto)
         {
-            await _bookService.AddBookAsync(planId, bookDto);
-            return Ok(new { message = "書籍儲存成功！" });
+            var result = await _bookService.AddBookAsync(planId, bookDto);
+            if (result.Item1 != null)
+            {
+                return Ok(result.Message);
+            }
+            else
+            {
+                return BadRequest(result.Message);
+            }
         }
     }
 }

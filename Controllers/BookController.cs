@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OnlineBookClub.DTO;
 using OnlineBookClub.Service;
+using System.Numerics;
 
 namespace OnlineBookClub.Controllers
 {
@@ -26,9 +27,10 @@ namespace OnlineBookClub.Controllers
         }
 
         [HttpPost("{planId}")]
-        public async Task<IActionResult> AddBook(int planId, [FromForm] BookDTO bookDto)
+        public async Task<IActionResult> AddBook(int planId,[FromBody]BookDTO bookDto)
         {
-            var result = await _bookService.AddBookAsync(planId, bookDto);
+            bookDto.platid = planId;
+            var result = await _bookService.AddBookAsync(bookDto.platid, bookDto);
             if (result.Item1 != null)
             {
                 return Ok(result.Message);

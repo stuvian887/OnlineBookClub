@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
 using System;
+using System.Linq;
 
 namespace OnlineBookClub.Repository
 {
@@ -24,6 +26,48 @@ namespace OnlineBookClub.Repository
         {
             return await _context.BookPlan.FindAsync(id);
         }
+
+        public async Task<List<BookPlanDTO>> GetPlansWithCreatorNameByUserId(int userId)
+        {
+            var createdPlans = await _context.BookPlan
+                .Where(p => p.User_Id == userId)
+                .ToListAsync();
+
+            var joinedPlanIds = await _context.PlanMembers
+                .Where(m => m.User_Id == userId)
+                .Select(m => m.Plan_Id)
+                .ToListAsync();
+
+            var joinedPlans = await _context.BookPlan
+                .Where(p => joinedPlanIds.Contains(p.Plan_Id))
+                .ToListAsync();
+
+            var allPlans = createdPlans.Concat(joinedPlans).Distinct().ToList();
+
+            //  取得所有相關的創建者 ID
+            var creatorIds = allPlans.Select(p => p.User_Id).Distinct().ToList();
+
+            //  查出所有創建者的名字
+            var users = await _context.Members
+                .Where(u => creatorIds.Contains(u.User_Id))
+                .ToDictionaryAsync(u => u.User_Id, u => u.UserName);
+
+            //組成 DTO
+            var result = allPlans.Select(p => new BookPlanDTO
+            {
+              
+                Plan_Name = p.Plan_Name,
+                Plan_Goal = p.Plan_Goal,
+                Plan_Type = p.Plan_Type,
+                Plan_Suject = p.Plan_suject,
+                IsPublic = p.IsPublic,
+                IsComplete = p.IsComplete,
+                CreatorName = users.ContainsKey(p.User_Id) ? users[p.User_Id] : "未知使用者"
+            }).ToList();
+
+            return result;
+        }
+
 
         public async Task<BookPlan> Create(BookPlan bookPlan)
         {

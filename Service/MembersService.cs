@@ -78,7 +78,9 @@ namespace OnlineBookClub.Service
                 var update = (from a in _OnlineBookClubContext.Members where a.Email == ValidateMember.Email select a).SingleOrDefault();
                 update.AuthCode = string.Empty;  // 清空驗證碼，標記為已驗證
                 _OnlineBookClubContext.SaveChanges(); // 儲存變更
-                return "帳號信箱驗證成功，請點擊下方連結前往更改密碼";
+                string redirectUrl = $"http://127.0.0.1:5500/Login/newpassword.html?email={Uri.EscapeDataString(Email)}";
+                
+                return "帳號信箱驗證成功請回到剛剛頁面修改密碼 \n"+ redirectUrl;
             }
             else
             {
@@ -152,6 +154,7 @@ namespace OnlineBookClub.Service
             {
                 Name = m.UserName,
                 Birthday = m.Birthday,
+                email=m.Email,
                 Gender = m.Gender,
                 ProfilePictureUrl = m.ProfilePictureUrl
             })
@@ -159,7 +162,7 @@ namespace OnlineBookClub.Service
 
             return member;  
         }
-        public bool UpdateProfile(ProfileDTO profileDto,string email, string savedFilePath)
+        public bool UpdateProfile(ProfileDTO profileDto, string email, string savedFilePath)
         {
             var member = GetDataEmail(email);
 
@@ -168,11 +171,17 @@ namespace OnlineBookClub.Service
                 return false; // 找不到會員
             }
 
-            // 更新會員資料
+            // 更新基本資料
             member.UserName = profileDto.Name;
             member.Birthday = profileDto.Birthday;
             member.Gender = profileDto.Gender;
-            member.ProfilePictureUrl = savedFilePath;
+
+            // 如果有上傳新圖片，才更新圖片網址
+            if (!string.IsNullOrEmpty(savedFilePath))
+            {
+                member.ProfilePictureUrl = savedFilePath;
+            }
+
             _MembersRepository.Update(member);
             return true;
         }

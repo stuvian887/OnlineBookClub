@@ -17,7 +17,7 @@ namespace OnlineBookClub.Controllers
         [HttpGet("{planId}")]
         public async Task<IActionResult> GetBookByPlanId(int planId)
         {
-            var book = await _bookService.GetBookByPlanIdAsync(planId);
+            var book = await _bookService.GetBookByPlanIdAsync(planId, Request);
 
             if (book == null)
                 return NotFound(new { message = "找不到該計畫的書籍資料。" });
@@ -26,7 +26,7 @@ namespace OnlineBookClub.Controllers
         }
 
         [HttpPost("{planId}")]
-        public async Task<IActionResult> AddBook(int planId, [FromBody] BookDTO bookDto)
+        public async Task<IActionResult> AddBook(int planId, [FromForm] BookDTO bookDto)
         {
             var result = await _bookService.AddBookAsync(planId, bookDto);
             if (result.Item1 != null)

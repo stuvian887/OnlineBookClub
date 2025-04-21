@@ -12,6 +12,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using OnlineBookClub.Token;
 using Microsoft.AspNetCore.Identity;
+using Azure;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -100,17 +101,29 @@ namespace OnlineBookClub.Controllers
         }
        
         
-        [HttpDelete]
+        [HttpDelete("logout")]
         public ActionResult logout()
         {
-            Response.Cookies.Delete("JWT");
+            
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,  // 避免 JavaScript 讀取，防止 XSS 攻擊
+                Secure = true,   // 僅在 HTTPS 傳輸（開發環境可設 false）
+                SameSite = SameSiteMode.None, // 限制跨站請求
+                Expires = DateTime.Now.AddMinutes(30)
+           ,
+                Path = "/"
+
+            };
+            
+            Response.Cookies.Delete("JWT",cookieOptions);
             return Ok("登出成功");
 
         }
 
         [HttpPost("ForgetPassword")]
         [AllowAnonymous]
-        public ActionResult ForgetPassword(string emaill) 
+        public ActionResult ForgetPassword([FromForm] string emaill) 
         {
             if (!MemberService.EmailCheck(emaill)) 
             {
@@ -122,16 +135,18 @@ namespace OnlineBookClub.Controllers
                 
                 string MailBody = MailService.GetRegisterMailBody(TempMail, member.UserName, ValidateUrl);
                 MailService.SendRegisterMail(MailBody, emaill);
-                return Ok("輸入成功，請去收信以驗證Email");
+                string str1 = "輸入成功，請去收信以驗證Email";
+                return Ok(new { str1 });
             }
-
-            return BadRequest("無此帳號");
+            string str = "無此帳號";
+            return BadRequest(new { str });
         }
         [HttpGet("PSValidate")]
         [AllowAnonymous]
         public IActionResult PSValidate(string Email, string AuthCode)
         {
             string Validatestr = MemberService.forgetpsEmailValidate(Email, AuthCode);
+
             return Ok(Validatestr);
         }
         [HttpPut("changeps")]
@@ -199,16 +214,14 @@ namespace OnlineBookClub.Controllers
             
         }
         [HttpPut("Update-profile")]
-        public IActionResult Updateprofile([FromForm]ProfileDTO data, ICollection<IFormFile> files )
+        public IActionResult Updateprofile([FromForm] ProfileDTO data, ICollection<IFormFile> files)
         {
             var rootPath = env.ContentRootPath + "\\wwwroot\\";
             var token = HttpContext.Request.Cookies["JWT"];
             var email = _jwtService.GetemailFromToken(token);
-            
-            
-            
-            
-            
+            string savedFilePath = null;
+
+            // 如果上傳了圖片
             if (data.ProfilePictureUrl != null && files.Count > 0)
             {
                 var uploadFolder = Path.Combine(rootPath, "uploads");
@@ -218,29 +231,32 @@ namespace OnlineBookClub.Controllers
                     Directory.CreateDirectory(uploadFolder);
                 }
 
-                foreach (var file in files)
+                var file = files.First(); // 只用第一張圖
+                if (file.Length > 0)
                 {
-                    if (file.Length > 0)
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                    var filePath = Path.Combine(uploadFolder, fileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
                     {
-                        var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-                        var filePath = Path.Combine(uploadFolder, fileName);
-
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            file.CopyTo(stream);
-                        }
-
-                        // 生成存入資料庫的路徑 (相對於 wwwroot)
-                        string savedFilePath = "/uploads/" + fileName;
-
-                        // 將大頭照路徑更新到會員資料
-                        bool isUpdated = MemberService.UpdateProfile(data, email, savedFilePath);
+                        file.CopyTo(stream);
                     }
+
+                    savedFilePath = "/uploads/" + fileName;
                 }
+            }
+
+            bool result = MemberService.UpdateProfile(data, email, savedFilePath);
+
+            if (!result)
+            {
+                return NotFound(new { message = "找不到會員，更新失敗" });
             }
 
             return Ok(new { message = "會員資料更新成功" });
         }
+
+
 
 
 

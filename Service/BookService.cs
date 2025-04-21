@@ -1,7 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+
+using Microsoft.EntityFrameworkCore;
+using Azure.Core;
 using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
 using OnlineBookClub.Repository;
+using static System.Reflection.Metadata.BlobBuilder;
 
 namespace OnlineBookClub.Service
 {
@@ -14,18 +17,19 @@ namespace OnlineBookClub.Service
             _bookRepository = bookRepository;
             _context = context;
         }
-        public async Task<BookDTO?> GetBookByPlanIdAsync(int planId)
+        public async Task<BookDTO?> GetBookByPlanIdAsync(int planId, HttpRequest request)
         {
             var book = await _bookRepository.GetBookByPlanIdAsync(planId);
-
-            if (book == null) return null;
-
-            return new BookDTO
+            var hostUrl = $"{request.Scheme}://{request.Host}"; // ex: https://localhost:7009
+            var bookDto = new BookDTO
             {
                 BookName = book.BookName,
                 Description = book.Description,
-                Link = book.Link
+                Link = book.Link,
+                bookurl = string.IsNullOrEmpty(book.bookpath) ? null : $"{hostUrl}{book.bookpath}"
             };
+
+            return bookDto;
         }
 
         public async Task<(Book,string Message)> AddBookAsync(int planId, BookDTO bookDto)
@@ -33,20 +37,38 @@ namespace OnlineBookClub.Service
             var Plan = await _context.BookPlan.FindAsync(planId);
             if (Plan != null)
             {
-                var book = new Book
+                string? savedFilePath = null;
+                if (bookDto.BookCover != null)
                 {
-                    BookName = bookDto.BookName,
-                    Description = bookDto.Description,
-                    Link = bookDto.Link
-                };
+                    var fileName = $"{Guid.NewGuid()}{Path.GetExtension(bookDto.BookCover.FileName)}";
+                    var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
 
-                await _bookRepository.AddBookAsync(planId, book);
-                return (book , "書籍新增成功");
+                    // ✅ 檢查資料夾是否存在，不存在就建立
+                    if (!Directory.Exists(folderPath))
+                    {
+                        Directory.CreateDirectory(folderPath);
+                    }
+                    var filePath = Path.Combine(folderPath, fileName);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await bookDto.BookCover.CopyToAsync(stream);
+                    }
+
+                    // 儲存圖片的相對網址
+                    savedFilePath = $"/images/{fileName}";
             }
-            else
+            var book = new Book
             {
-                return (null , "書籍新增失敗，找不到該書籍");
-            }
+                BookName = bookDto.BookName,
+                Description = bookDto.Description,
+                Link = bookDto.Link
+            };
+            await _bookRepository.AddBookAsync(planId, book);
+            return (book, "書籍新增成功");
+        }
+        else
+        {
+            return (null, "書籍新增失敗，找不到該書籍");
         }
     }
 }

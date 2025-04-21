@@ -15,5 +15,7 @@ public partial class Book
 
     public string Link { get; set; }
 
+    public string bookpath { get; set; }
+
     public virtual BookPlan Plan { get; set; }
 }

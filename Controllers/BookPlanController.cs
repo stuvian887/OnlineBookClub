@@ -28,10 +28,25 @@ namespace OnlineBookClub.Controllers
             return Ok(plans);
         }
 
+
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
             var plan = await _service.GetById(id);
+            if (plan == null) return NotFound();
+            return Ok(plan);
+        }
+
+        [HttpGet("youbookplan")]
+
+        public async Task<IActionResult> GetByUserId()
+        {
+
+            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            int UserId = int.Parse(UserIdClaim.Value);
+            var plan = await _service.GetuserById(UserId);
+
             if (plan == null) return NotFound();
             return Ok(plan);
         }

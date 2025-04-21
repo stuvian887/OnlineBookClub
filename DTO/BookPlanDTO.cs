@@ -4,6 +4,7 @@ namespace OnlineBookClub.DTO
 {
     public class BookPlanDTO
     {
+        public int Plan_ID { get; set; }
         public string Plan_Name { get; set; }
         public string Plan_Goal { get; set; }
         public string Plan_Type { get; set; }

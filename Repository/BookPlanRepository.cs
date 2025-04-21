@@ -55,7 +55,7 @@ namespace OnlineBookClub.Repository
             //組成 DTO
             var result = allPlans.Select(p => new BookPlanDTO
             {
-              
+                Plan_ID=p.Plan_Id,
                 Plan_Name = p.Plan_Name,
                 Plan_Goal = p.Plan_Goal,
                 Plan_Type = p.Plan_Type,
@@ -63,6 +63,7 @@ namespace OnlineBookClub.Repository
                 IsPublic = p.IsPublic,
                 IsComplete = p.IsComplete,
                 CreatorName = users.ContainsKey(p.User_Id) ? users[p.User_Id] : "未知使用者"
+            
             }).ToList();
 
             return result;

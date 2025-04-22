@@ -166,13 +166,24 @@ namespace OnlineBookClub.Repository
 
         public async Task<bool> Delete(int PlanId)
         {
-            var bookPlan = await _context.BookPlan.FindAsync(PlanId);
+            var bookPlan = await _context.BookPlan
+                                          .Include(bp => bp.PlanMembers)  // 確保加載相關的 PlanMembers
+                                          .FirstOrDefaultAsync(bp => bp.Plan_Id == PlanId);
+
             if (bookPlan == null)
                 return false;
 
+            // 先刪除相關的 PlanMembers
+            _context.PlanMembers.RemoveRange(bookPlan.PlanMembers);
+
+            // 然後刪除 BookPlan
             _context.BookPlan.Remove(bookPlan);
+
+            // 保存變更到資料庫
             await _context.SaveChangesAsync();
+
             return true;
         }
+
     }
 }

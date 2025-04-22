@@ -41,7 +41,7 @@ namespace OnlineBookClub.Service
                 if (bookDto.BookCover != null)
                 {
                     var fileName = $"{Guid.NewGuid()}{Path.GetExtension(bookDto.BookCover.FileName)}";
-                    var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
+                    var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Book/images");
 
                     // ✅ 檢查資料夾是否存在，不存在就建立
                     if (!Directory.Exists(folderPath))
@@ -55,7 +55,7 @@ namespace OnlineBookClub.Service
                     }
 
                     // 儲存圖片的相對網址
-                    savedFilePath = $"/images/{fileName}";
+                    savedFilePath = $"/Book/images/{fileName}";
                 }
                 var book = new Book
                 {

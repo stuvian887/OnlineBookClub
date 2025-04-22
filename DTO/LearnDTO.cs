@@ -1,4 +1,6 @@
 ﻿using OnlineBookClub.Models;
+using System.Data;
+using System.Text.Json.Serialization;
 
 namespace OnlineBookClub.DTO
 {
@@ -13,7 +15,9 @@ namespace OnlineBookClub.DTO
 
         public int Pass_Standard { get; set; }
         public DateTime DueTime { get; set; }
+        public string RecentlyLearn { get; set; }
         public bool Manual_Check { get; set; }
+        [JsonIgnore]
         public virtual ICollection<ProgressTracking> ProgressTracking { get; set; }
     }
 }

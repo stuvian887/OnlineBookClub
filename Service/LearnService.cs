@@ -20,7 +20,7 @@ namespace OnlineBookClub.Service
         {
             return await _learnRepository.GetLearnByPlanIdAsync(PlanId);
         }
-        public async Task<LearnDTO> CreateLearn(int PlanId , LearnDTO newData)
+        public async Task<(LearnDTO, string Message)> CreateLearn(int PlanId , LearnDTO newData)
         {
             return await _learnRepository.CreateLearnAsync(PlanId, newData);
         }

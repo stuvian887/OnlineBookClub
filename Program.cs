@@ -9,6 +9,7 @@ using OnlineBookClub.Service;
 using OnlineBookClub.Services;
 using OnlineBookClub.Token;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHttpContextAccessor();
@@ -41,6 +42,11 @@ builder.Services.AddScoped<ReportRepository>();
 builder.Services.AddScoped<ReportService>();
 builder.Services.AddScoped<StatisticRepository>();
 builder.Services.AddScoped<StatisticService>();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    options.JsonSerializerOptions.WriteIndented = true; // 可選，讓輸出的 JSON 更易讀
+});
 //builder.Services.AddControllers().AddJsonOptions(options =>
 //{
 //    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;

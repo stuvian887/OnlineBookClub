@@ -30,6 +30,7 @@ public partial class BookPlan
     public virtual ICollection<PlanMembers> PlanMembers { get; set; } = new List<PlanMembers>();
 
     public virtual ICollection<Post> Post { get; set; } = new List<Post>();
+    [JsonIgnore]
 
     public virtual ICollection<Statistic> Statistic { get; set; } = new List<Statistic>();
 

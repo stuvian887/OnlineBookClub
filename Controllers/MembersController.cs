@@ -224,7 +224,7 @@ namespace OnlineBookClub.Controllers
             // 如果上傳了圖片
             if (data.ProfilePictureUrl != null && files.Count > 0)
             {
-                var uploadFolder = Path.Combine(rootPath, "uploads");
+                var uploadFolder = Path.Combine(rootPath, "Members/imgs");
 
                 if (!Directory.Exists(uploadFolder))
                 {
@@ -242,7 +242,7 @@ namespace OnlineBookClub.Controllers
                         file.CopyTo(stream);
                     }
 
-                    savedFilePath = "/uploads/" + fileName;
+                    savedFilePath = "/Members/imgs/" + fileName;
                 }
             }
 

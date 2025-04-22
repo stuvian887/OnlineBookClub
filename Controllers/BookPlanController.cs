@@ -21,14 +21,15 @@ namespace OnlineBookClub.Controllers
             _jwtService = jwtService;
         }
 
-        [HttpGet("public/{keyword}")]
-        public async Task<IActionResult> GetAllPublicPlans(string? keyword, int page )
+        [HttpGet("public")]
+        public async Task<IActionResult> GetAllPublicPlans([FromQuery]string? keyword, [FromQuery] int page)
         {
             // 呼叫 Service 取得資料
             var result = await _service.GetPublicPlansAsync(keyword, page);
 
             return Ok(result); // 回傳分頁資料
         }
+        
 
 
 
@@ -41,9 +42,9 @@ namespace OnlineBookClub.Controllers
             return Ok(plan);
         }
 
-        [HttpGet("youbookplan/{keyword}")]
+        [HttpGet("youbookplan")]
 
-        public async Task<IActionResult> GetByUserId(string? keyword, int page )
+        public async Task<IActionResult> GetByUserId([FromQuery] string? keyword, [FromQuery] int page )
         {
 
             var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);

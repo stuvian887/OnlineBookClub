@@ -81,7 +81,7 @@ namespace OnlineBookClub.Repository
                     if(FindRecentlyLearnTime.TotalSeconds >= 0 && FindRecentlyLearnTime.TotalSeconds <= TempTime)
                     {
                         TempTime = FindRecentlyLearnTime.TotalSeconds;
-                        TempLearn = learns.Learn_Name;
+                        TempLearn = learns.DueTime.Date.ToString("yyyy/MM/dd") + " " + learns.Learn_Name;
                     }
                 }
                 return TempLearn;

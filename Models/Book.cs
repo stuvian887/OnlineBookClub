@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace OnlineBookClub.Models;
 
@@ -16,6 +17,6 @@ public partial class Book
     public string Link { get; set; }
 
     public string bookpath { get; set; }
-
+    [JsonIgnore]
     public virtual BookPlan Plan { get; set; }
 }

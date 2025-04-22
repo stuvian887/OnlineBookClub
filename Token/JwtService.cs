@@ -86,7 +86,7 @@ namespace OnlineBookClub.Token
 
             var jwtToken = (JwtSecurityToken)validatedToken;
 
-            // 从 JWT token 中提取 User_Id
+            
             var userIdClaim = jwtToken.Claims.First(c => c.Type == JwtRegisteredClaimNames.Name).Value;
             return userIdClaim; // 返回 UserId
         }
@@ -106,7 +106,7 @@ namespace OnlineBookClub.Token
 
             var jwtToken = (JwtSecurityToken)validatedToken;
 
-            // 从 JWT token 中提取 User_Id
+            
             var userIdClaim = jwtToken.Claims.First(c => c.Type == JwtRegisteredClaimNames.Email).Value;
             return userIdClaim; // 返回 UserId
         }

@@ -17,25 +17,39 @@ namespace OnlineBookClub.Repository
             _planMemberRepsitory = planMemberRepsitory;
         }
 
-        public async Task<IEnumerable<BookPlanDTO>> GetAllPublicPlansWithCreatorName()
+        public async Task<List<BookPlanDTO>> GetPublicPlansBySearchAsync(string keyword, ForPaging paging)
         {
-            // 1. 取得所有公開的 BookPlan
-            var publicPlans = await _context.BookPlan
-                .Where(p => p.IsPublic)
+            var query = _context.BookPlan.Where(p => p.IsPublic);
+
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                query = query.Where(p =>
+                    p.Plan_Name.Contains(keyword) ||
+                    p.Plan_Goal.Contains(keyword));
+            }
+
+            // 計算總筆數，設定 MaxPage
+            int totalCount = await query.CountAsync();
+            paging.MaxPage = (int)Math.Ceiling((double)totalCount / paging.ItemNum);
+            paging.SetRightPage();
+
+            // 查詢目前頁的資料
+            var pagedPlans = await query
+                .OrderByDescending(p => p.Plan_Id)
+                .Skip((paging.NowPage - 1) * paging.ItemNum)
+                .Take(paging.ItemNum)
                 .ToListAsync();
 
-            // 2. 找出所有創建者的 User_Id
-            var creatorIds = publicPlans.Select(p => p.User_Id).Distinct().ToList();
-
-            // 3. 從 User 資料表取得對應的 User_Name（記得確認你的 User 表叫什麼）
+            // 查出創建者名稱
+            var creatorIds = pagedPlans.Select(p => p.User_Id).Distinct().ToList();
             var userMap = await _context.Members
                 .Where(u => creatorIds.Contains(u.User_Id))
                 .ToDictionaryAsync(u => u.User_Id, u => u.UserName);
 
-            // 4. 組成 DTO
-            var dtoList = publicPlans.Select(p => new BookPlanDTO
+            // 將資料轉成 DTO
+            var dtoList = pagedPlans.Select(p => new BookPlanDTO
             {
-                Plan_ID=p.Plan_Id,
+                Plan_ID = p.Plan_Id,
                 Plan_Name = p.Plan_Name,
                 Plan_Goal = p.Plan_Goal,
                 Plan_Type = p.Plan_Type,
@@ -47,6 +61,20 @@ namespace OnlineBookClub.Repository
 
             return dtoList;
         }
+        public async Task<int> GetPublicPlansCountAsync(string keyword)
+        {
+            var query = _context.BookPlan.Where(p => p.IsPublic);
+
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                query = query.Where(p =>
+                    p.Plan_Name.Contains(keyword) ||
+                    p.Plan_Goal.Contains(keyword));
+            }
+
+            return await query.CountAsync();
+        }
+
 
 
         public async Task<BookPlan> GetById(int id)

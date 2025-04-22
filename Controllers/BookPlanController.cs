@@ -22,7 +22,7 @@ namespace OnlineBookClub.Controllers
         }
 
         [HttpGet("public/{keyword}")]
-        public async Task<IActionResult> GetAllPublicPlans(string? keyword, int page = 1)
+        public async Task<IActionResult> GetAllPublicPlans(string? keyword, int page )
         {
             // 呼叫 Service 取得資料
             var result = await _service.GetPublicPlansAsync(keyword, page);
@@ -43,7 +43,7 @@ namespace OnlineBookClub.Controllers
 
         [HttpGet("youbookplan/{keyword}")]
 
-        public async Task<IActionResult> GetByUserId(string? keyword, int page = 1)
+        public async Task<IActionResult> GetByUserId(string? keyword, int page )
         {
 
             var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);

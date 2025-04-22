@@ -27,7 +27,7 @@ namespace OnlineBookClub.Controllers
         }
 
         [HttpPost("{planId}")]
-        public async Task<IActionResult> AddBook(int planId,[FromBody]BookDTO bookDto)
+        public async Task<IActionResult> AddBook([FromForm]BookDTO bookDto, int planId)
         {
             bookDto.platid = planId;
             var result = await _bookService.AddBookAsync(bookDto.platid, bookDto);

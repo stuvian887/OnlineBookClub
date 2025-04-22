@@ -12,8 +12,8 @@ using OnlineBookClub.Models;
 namespace OnlineBookClub.Migrations
 {
     [DbContext(typeof(OnlineBookClubContext))]
-    [Migration("20250416091518_AddUser_AnswerToAnswerRecord")]
-    partial class AddUser_AnswerToAnswerRecord
+    [Migration("20250422131453_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -50,9 +50,6 @@ namespace OnlineBookClub.Migrations
                     b.Property<int>("Topic_Id")
                         .HasColumnType("int");
 
-                    b.Property<string>("User_Answer")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("User_Id")
                         .HasColumnType("int");
 
@@ -62,9 +59,9 @@ namespace OnlineBookClub.Migrations
                     b.HasKey("AR_Id")
                         .HasName("PK__Answer_R__003ED5F200B194C2");
 
-                    b.HasIndex("Learn_Id");
+                    b.HasIndex(new[] { "Learn_Id" }, "IX_Answer_Record_Learn_Id");
 
-                    b.HasIndex("User_Id");
+                    b.HasIndex(new[] { "User_Id" }, "IX_Answer_Record_User_Id");
 
                     b.ToTable("Answer_Record");
                 });
@@ -92,10 +89,13 @@ namespace OnlineBookClub.Migrations
                     b.Property<int>("Plan_Id")
                         .HasColumnType("int");
 
+                    b.Property<string>("bookpath")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Book_Id")
                         .HasName("PK__Book__C223F3B4CBA24285");
 
-                    b.HasIndex("Plan_Id");
+                    b.HasIndex(new[] { "Plan_Id" }, "IX_Book_Plan_Id");
 
                     b.ToTable("Book");
                 });
@@ -140,7 +140,7 @@ namespace OnlineBookClub.Migrations
                     b.HasKey("Plan_Id")
                         .HasName("PK__BookPlan__9BAF9B031DE0303A");
 
-                    b.HasIndex("User_Id");
+                    b.HasIndex(new[] { "User_Id" }, "IX_BookPlan_User_Id");
 
                     b.ToTable("BookPlan");
                 });
@@ -176,7 +176,7 @@ namespace OnlineBookClub.Migrations
                     b.HasKey("Learn_Id")
                         .HasName("PK__Learn__319993005E050ACF");
 
-                    b.HasIndex("Plan_Id");
+                    b.HasIndex(new[] { "Plan_Id" }, "IX_Learn_Plan_Id");
 
                     b.ToTable("Learn");
                 });
@@ -249,7 +249,7 @@ namespace OnlineBookClub.Migrations
                     b.HasKey("Notice_Id")
                         .HasName("PK__Notice__E9930CABD96445D5");
 
-                    b.HasIndex("User_Id");
+                    b.HasIndex(new[] { "User_Id" }, "IX_Notice_User_Id");
 
                     b.ToTable("Notice");
                 });
@@ -273,7 +273,7 @@ namespace OnlineBookClub.Migrations
                     b.HasKey("User_Id", "Plan_Id")
                         .HasName("PK__PlanMemb__09D768C06B5D99B1");
 
-                    b.HasIndex("Plan_Id");
+                    b.HasIndex(new[] { "Plan_Id" }, "IX_PlanMembers_Plan_Id");
 
                     b.ToTable("PlanMembers");
                 });
@@ -311,9 +311,9 @@ namespace OnlineBookClub.Migrations
                     b.HasKey("Post_Id")
                         .HasName("PK__Post__5875F7AD1838C391");
 
-                    b.HasIndex("Plan_Id");
+                    b.HasIndex(new[] { "Plan_Id" }, "IX_Post_Plan_Id");
 
-                    b.HasIndex("User_Id");
+                    b.HasIndex(new[] { "User_Id" }, "IX_Post_User_Id");
 
                     b.ToTable("Post");
                 });
@@ -344,7 +344,7 @@ namespace OnlineBookClub.Migrations
                     b.HasKey("P_Report_Id")
                         .HasName("PK__Post_Rep__AF4E25E3E831EA16");
 
-                    b.HasIndex("Post_Id");
+                    b.HasIndex(new[] { "Post_Id" }, "IX_Post_Report_Post_Id");
 
                     b.ToTable("Post_Report");
                 });
@@ -372,9 +372,9 @@ namespace OnlineBookClub.Migrations
                     b.HasKey("Progress_Id")
                         .HasName("PK__Progress__D558797A60C7671D");
 
-                    b.HasIndex("Learn_Id");
+                    b.HasIndex(new[] { "Learn_Id" }, "IX_ProgressTracking_Learn_Id");
 
-                    b.HasIndex("User_Id");
+                    b.HasIndex(new[] { "User_Id" }, "IX_ProgressTracking_User_Id");
 
                     b.ToTable("ProgressTracking");
                 });
@@ -407,9 +407,9 @@ namespace OnlineBookClub.Migrations
                     b.HasKey("Reply_Id")
                         .HasName("PK__Reply__B6633284E3C88026");
 
-                    b.HasIndex("Post_Id");
+                    b.HasIndex(new[] { "Post_Id" }, "IX_Reply_Post_Id");
 
-                    b.HasIndex("User_Id");
+                    b.HasIndex(new[] { "User_Id" }, "IX_Reply_User_Id");
 
                     b.ToTable("Reply");
                 });
@@ -440,7 +440,7 @@ namespace OnlineBookClub.Migrations
                     b.HasKey("R_Report_Id")
                         .HasName("PK__Reply_Re__6B66990FED16DBBA");
 
-                    b.HasIndex("Reply_Id");
+                    b.HasIndex(new[] { "Reply_Id" }, "IX_Reply_Report_Reply_Id");
 
                     b.ToTable("Reply_Report");
                 });
@@ -468,7 +468,7 @@ namespace OnlineBookClub.Migrations
                     b.HasKey("Statistics_Id")
                         .HasName("PK__Statisti__A2EC2FD9D49FAB21");
 
-                    b.HasIndex("Plan_Id");
+                    b.HasIndex(new[] { "Plan_Id" }, "IX_Statistic_Plan_Id");
 
                     b.ToTable("Statistic");
                 });
@@ -520,7 +520,7 @@ namespace OnlineBookClub.Migrations
                     b.HasKey("Topic_Id")
                         .HasName("PK__Topic__8DEAA40577172212");
 
-                    b.HasIndex("Learn_Id");
+                    b.HasIndex(new[] { "Learn_Id" }, "IX_Topic_Learn_Id");
 
                     b.ToTable("Topic");
                 });

@@ -61,7 +61,8 @@ namespace OnlineBookClub.Service
                 {
                     BookName = bookDto.BookName,
                     Description = bookDto.Description,
-                    Link = bookDto.Link
+                    Link = bookDto.Link,
+                    bookpath = savedFilePath
                 };
                 await _bookRepository.AddBookAsync(planId, book);
                 return (book, "書籍新增成功");

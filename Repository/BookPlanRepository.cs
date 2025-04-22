@@ -82,12 +82,14 @@ namespace OnlineBookClub.Repository
             return await _context.BookPlan.FindAsync(id);
         }
 
-        public async Task<List<BookPlanDTO>> GetPlansWithCreatorNameByUserId(int userId)
+        public async Task<List<BookPlanDTO>> GetPlansWithCreatorNameByUserId(int userId, string keyword, ForPaging paging)
         {
+            // 1. 找出自己創建的計畫
             var createdPlans = await _context.BookPlan
                 .Where(p => p.User_Id == userId)
                 .ToListAsync();
 
+            // 2. 找出自己參與的計畫
             var joinedPlanIds = await _context.PlanMembers
                 .Where(m => m.User_Id == userId)
                 .Select(m => m.Plan_Id)
@@ -97,20 +99,39 @@ namespace OnlineBookClub.Repository
                 .Where(p => joinedPlanIds.Contains(p.Plan_Id))
                 .ToListAsync();
 
+            // 3. 合併 + 避免重複
             var allPlans = createdPlans.Concat(joinedPlans).Distinct().ToList();
 
-            //  取得所有相關的創建者 ID
-            var creatorIds = allPlans.Select(p => p.User_Id).Distinct().ToList();
+            // 4. 如果有關鍵字就過濾（搜尋名稱或目標）
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                allPlans = allPlans
+                    .Where(p => (p.Plan_Name?.Contains(keyword) ?? false)
+                             || (p.Plan_Goal?.Contains(keyword) ?? false))
+                    .ToList();
+            }
 
-            //  查出所有創建者的名字
+            // 5. 分頁：先計算總數，設定 MaxPage，再取範圍資料
+            paging.MaxPage = (int)Math.Ceiling((double)allPlans.Count / paging.ItemNum);
+            paging.SetRightPage();
+
+            var pagePlans = allPlans
+                .OrderByDescending(p => p.Plan_Id)
+                .Skip((paging.NowPage - 1) * paging.ItemNum)
+                .Take(paging.ItemNum)
+                .ToList();
+
+            // 6. 查創建者名稱
+            var creatorIds = pagePlans.Select(p => p.User_Id).Distinct().ToList();
+
             var users = await _context.Members
                 .Where(u => creatorIds.Contains(u.User_Id))
                 .ToDictionaryAsync(u => u.User_Id, u => u.UserName);
 
-            //組成 DTO
-            var result = allPlans.Select(p => new BookPlanDTO
+            // 7. 組成 DTO
+            var result = pagePlans.Select(p => new BookPlanDTO
             {
-                Plan_ID=p.Plan_Id,
+                Plan_ID = p.Plan_Id,
                 Plan_Name = p.Plan_Name,
                 Plan_Goal = p.Plan_Goal,
                 Plan_Type = p.Plan_Type,
@@ -118,11 +139,13 @@ namespace OnlineBookClub.Repository
                 IsPublic = p.IsPublic,
                 IsComplete = p.IsComplete,
                 CreatorName = users.ContainsKey(p.User_Id) ? users[p.User_Id] : "未知使用者"
-            
             }).ToList();
 
             return result;
         }
+
+        
+
 
 
         public async Task<BookPlan> Create(BookPlan bookPlan)

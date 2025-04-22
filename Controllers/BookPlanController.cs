@@ -21,7 +21,7 @@ namespace OnlineBookClub.Controllers
             _jwtService = jwtService;
         }
 
-        [HttpGet("public")]
+        [HttpGet("public/{keyword}")]
         public async Task<IActionResult> GetAllPublicPlans(string? keyword, int page = 1)
         {
             // 呼叫 Service 取得資料
@@ -41,14 +41,14 @@ namespace OnlineBookClub.Controllers
             return Ok(plan);
         }
 
-        [HttpGet("youbookplan")]
+        [HttpGet("youbookplan/{keyword}")]
 
-        public async Task<IActionResult> GetByUserId()
+        public async Task<IActionResult> GetByUserId(string? keyword, int page = 1)
         {
 
             var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             int UserId = int.Parse(UserIdClaim.Value);
-            var plan = await _service.GetuserById(UserId);
+            var plan = await _service.GetuserById(UserId, keyword, page);
 
             if (plan == null) return NotFound();
             return Ok(plan);

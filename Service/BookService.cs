@@ -43,7 +43,7 @@ namespace OnlineBookClub.Service
                     var fileName = $"{Guid.NewGuid()}{Path.GetExtension(bookDto.BookCover.FileName)}";
                     var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Book/images");
 
-                    // ✅ 檢查資料夾是否存在，不存在就建立
+                    // 檢查資料夾是否存在，不存在就建立
                     if (!Directory.Exists(folderPath))
                     {
                         Directory.CreateDirectory(folderPath);
@@ -83,7 +83,7 @@ namespace OnlineBookClub.Service
                     var fileName = $"{Guid.NewGuid()}{Path.GetExtension(bookDto.BookCover.FileName)}";
                     var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Book/images");
 
-                    // ✅ 檢查資料夾是否存在，不存在就建立
+                    // 檢查資料夾是否存在，不存在就建立
                     if (!Directory.Exists(folderPath))
                     {
                         Directory.CreateDirectory(folderPath);

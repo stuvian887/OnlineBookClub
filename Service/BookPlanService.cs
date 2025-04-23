@@ -26,13 +26,13 @@ namespace OnlineBookClub.Service
 
         public async Task<BookPlanPageResultDTO> GetPublicPlansAsync(string keyword, int page)
         {
-            // 1. 準備分頁工具
+           
             ForPaging paging = new ForPaging(page);
 
-            // 2. 取得計畫列表
+            
             var plans = await _repository.GetPublicPlansBySearchAsync(keyword, paging);
 
-            // 3. 包裝成 DTO 回傳
+            
             var result = new BookPlanPageResultDTO
             {
                 Plans = plans,

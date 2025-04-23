@@ -163,19 +163,24 @@ namespace OnlineBookClub.Repository
                 .ToDictionaryAsync(u => u.User_Id, u => u.UserName);
 
             // 7. 組成 DTO
-            var result = pagePlans.Select(p => new BookPlanDTO
+            var dtoList = new List<BookPlanDTO>();
+            foreach(var p in pagePlans)
             {
-                Plan_ID = p.Plan_Id,
-                Plan_Name = p.Plan_Name,
-                Plan_Goal = p.Plan_Goal,
-                Plan_Type = p.Plan_Type,
-                Plan_Suject = p.Plan_suject,
-                IsPublic = p.IsPublic,
-                IsComplete = p.IsComplete,
-                CreatorName = users.ContainsKey(p.User_Id) ? users[p.User_Id] : "未知使用者"
-            }).ToList();
-
-            return result;
+                string recentlylearn = await GetRecentlyLearn(p.Plan_Id);
+                dtoList.Add(new BookPlanDTO
+                {
+                    Plan_ID = p.Plan_Id,
+                    Plan_Name = p.Plan_Name,
+                    Plan_Goal = p.Plan_Goal,
+                    Plan_Type = p.Plan_Type,
+                    Plan_Suject = p.Plan_suject,
+                    IsPublic = p.IsPublic,
+                    RecentlyLearn = recentlylearn,
+                    IsComplete = p.IsComplete,
+                    CreatorName = users.ContainsKey(p.User_Id) ? users[p.User_Id] : "未知使用者"
+                });
+            }
+            return dtoList;
         }
 
         

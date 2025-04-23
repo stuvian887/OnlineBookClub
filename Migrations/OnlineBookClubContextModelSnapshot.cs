@@ -534,6 +534,7 @@ namespace OnlineBookClub.Migrations
                     b.HasOne("OnlineBookClub.Models.Members", "User")
                         .WithMany("Answer_Record")
                         .HasForeignKey("User_Id")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK__Answer_Re__User___5FB337D6");
 
@@ -595,6 +596,7 @@ namespace OnlineBookClub.Migrations
                     b.HasOne("OnlineBookClub.Models.BookPlan", "Plan")
                         .WithMany("PlanMembers")
                         .HasForeignKey("Plan_Id")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK__PlanMembe__Plan___70DDC3D8");
 
@@ -622,6 +624,7 @@ namespace OnlineBookClub.Migrations
                     b.HasOne("OnlineBookClub.Models.Members", "User")
                         .WithMany("Post")
                         .HasForeignKey("User_Id")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK__Post__User_Id__5070F446");
 
@@ -654,6 +657,7 @@ namespace OnlineBookClub.Migrations
                     b.HasOne("OnlineBookClub.Models.Members", "User")
                         .WithMany("ProgressTracking")
                         .HasForeignKey("User_Id")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK__ProgressT__User___6383C8BA");
 
@@ -674,6 +678,7 @@ namespace OnlineBookClub.Migrations
                     b.HasOne("OnlineBookClub.Models.Members", "User")
                         .WithMany("Reply")
                         .HasForeignKey("User_Id")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK__Reply__User_Id__5CD6CB2B");
 

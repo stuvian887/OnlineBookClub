@@ -109,7 +109,8 @@ namespace OnlineBookClub.Repository
             {
                 allPlans = allPlans
                     .Where(p => (p.Plan_Name?.Contains(keyword) ?? false)
-                             || (p.Plan_Goal?.Contains(keyword) ?? false))
+                             || (p.Plan_Goal?.Contains(keyword) ?? false)
+                             || (p.Plan_Type?.Contains(keyword) ?? false))
                     .ToList();
             }
 

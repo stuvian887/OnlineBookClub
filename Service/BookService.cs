@@ -21,6 +21,10 @@ namespace OnlineBookClub.Service
         {
             var book = await _bookRepository.GetBookByPlanIdAsync(planId);
             var hostUrl = $"{request.Scheme}://{request.Host}"; // ex: https://localhost:7009
+            if(book == null)
+            {
+                return null;
+            }
             var bookDto = new BookDTO
             {
                 BookName = book.BookName,

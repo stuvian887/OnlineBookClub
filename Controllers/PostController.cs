@@ -23,7 +23,7 @@ namespace OnlineBookClub.Controllers
 
         [HttpPost]
         
-        public async Task<IActionResult> CreatePost([FromBody] PostDTO dto)
+        public async Task<IActionResult> CreatePost([FromForm] PostDTO dto)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
             
@@ -42,8 +42,7 @@ namespace OnlineBookClub.Controllers
         }
 
         [HttpPut("{postId}")]
-        
-        public async Task<IActionResult> UpdatePost(int postId, [FromBody] PostDTO dto)
+        public async Task<IActionResult> UpdatePost(int postId, [FromForm] PostDTO dto)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
             var result = await _service.UpdatePostAsync(postId, userId, dto);

@@ -40,5 +40,19 @@ namespace OnlineBookClub.Controllers
                 return BadRequest(result.Message);
             }
         }
+        [HttpPut("{planId}")]
+        public async Task<IActionResult> updateBook([FromForm] BookDTO bookDto, int planId)
+        {
+            bookDto.platid = planId;
+            var result = await _bookService.updatebookAsync(bookDto.platid, bookDto);
+            if (result.Item1 != null)
+            {
+                return Ok(result.Message);
+            }
+            else
+            {
+                return BadRequest(result.Message);
+            }
+        }
     }
 }

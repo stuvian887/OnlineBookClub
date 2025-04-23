@@ -22,5 +22,24 @@ namespace OnlineBookClub.Repository
             _context.Book.Add(book);
             await _context.SaveChangesAsync();
         }
+        public async Task updateBookAsync(int planId, Book book)
+        {
+            var existingBook = await _context.Book.FirstOrDefaultAsync(b => b.Plan_Id == planId);
+            if (existingBook != null)
+            {
+                existingBook.BookName = book.BookName;
+                existingBook.Description = book.Description;
+                existingBook.Link = book.Link;
+
+                // 只有在新圖有上傳時才更新圖片路徑
+                if (!string.IsNullOrEmpty(book.bookpath))
+                {
+                    existingBook.bookpath = book.bookpath;
+                }
+
+                await _context.SaveChangesAsync();
+            }
+        }
+
     }
 }

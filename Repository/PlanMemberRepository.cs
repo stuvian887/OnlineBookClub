@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
 using OnlineBookClub.Service;
 
@@ -19,6 +20,24 @@ namespace OnlineBookClub.Repository
         public async Task<BookPlan> GetPlanByIdAsync(int planId)
         {
             return await _context.BookPlan.FirstOrDefaultAsync(p => p.Plan_Id == planId);
+        }
+        public async Task<List<PlanMembersDTO>> PlanMembersInPlanAsync(int planid)
+        {
+            var members = await _context.PlanMembers
+                .Where(pm => pm.Plan_Id == planid)
+                .Join(_context.Members,
+                      pm => pm.User_Id,
+                      m => m.User_Id,
+                      (pm, m) => new PlanMembersDTO
+                      {
+                          PlanId = pm.Plan_Id,
+                          UserId = pm.User_Id,
+                          Name = m.UserName,
+                          Role=pm.Role
+                      })
+                .ToListAsync();
+
+            return members;
         }
 
         public async Task<bool> IsUserInPlanAsync(int userId, int planId)
@@ -85,5 +104,6 @@ namespace OnlineBookClub.Repository
             return newPlan.Plan_Id;
         }
     }
+    
 
 }

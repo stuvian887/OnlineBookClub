@@ -55,5 +55,13 @@ namespace OnlineBookClub.Controllers
             var result = await _planMembersService.CopyPlanAsync(planid, UserId);
             return result.Success ? Ok(result.Message) : BadRequest(result.Message);
         }
+        [HttpGet("getmembers/{planId}")]
+        public async Task<IActionResult> getmembers(int planId)
+        {
+            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            int UserId = int.Parse(UserIdClaim.Value);
+            var Memberdata = await _planMembersService.Getmembers(planId);
+            return Ok(new { Memberdata });
+        }
     }
 }

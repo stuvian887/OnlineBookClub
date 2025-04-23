@@ -24,10 +24,10 @@ namespace OnlineBookClub.Controllers
         [HttpGet("public")]
         public async Task<IActionResult> GetAllPublicPlans([FromQuery]string? keyword, [FromQuery] int page)
         {
-            // 呼叫 Service 取得資料
+            
             var result = await _service.GetPublicPlansAsync(keyword, page);
 
-            return Ok(result); // 回傳分頁資料
+            return Ok(result); 
         }
         
 

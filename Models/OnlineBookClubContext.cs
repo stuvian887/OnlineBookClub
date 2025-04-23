@@ -56,12 +56,12 @@ public partial class OnlineBookClubContext : DbContext
 
             entity.HasOne(d => d.Learn).WithMany(p => p.Answer_Record)
                 .HasForeignKey(d => d.Learn_Id)
-                .OnDelete(DeleteBehavior.Cascade)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK__Answer_Re__Learn__60A75C0F");
 
             entity.HasOne(d => d.User).WithMany(p => p.Answer_Record)
                 .HasForeignKey(d => d.User_Id)
-                .OnDelete(DeleteBehavior.Cascade)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK__Answer_Re__User___5FB337D6");
         });
 
@@ -77,7 +77,7 @@ public partial class OnlineBookClubContext : DbContext
 
             entity.HasOne(d => d.Plan).WithMany(p => p.Book)
                 .HasForeignKey(d => d.Plan_Id)
-                 .OnDelete(DeleteBehavior.Cascade) // ← 加上這行
+                 .OnDelete(DeleteBehavior.NoAction) // ← 加上這行
                 .HasConstraintName("FK__Book__Plan_Id__5629CD9C");
         });
 
@@ -102,7 +102,7 @@ public partial class OnlineBookClubContext : DbContext
 
             entity.HasOne(d => d.User).WithMany(p => p.BookPlan)
                 .HasForeignKey(d => d.User_Id)
-                 .OnDelete(DeleteBehavior.Cascade) // ← 加上這行
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK__BookPlan__User_I__4CA06362");
         });
 
@@ -119,7 +119,7 @@ public partial class OnlineBookClubContext : DbContext
 
             entity.HasOne(d => d.Plan).WithMany(p => p.Learn)
                 .HasForeignKey(d => d.Plan_Id)
-                 .OnDelete(DeleteBehavior.Cascade) // ← 加上這行
+                 .OnDelete(DeleteBehavior.NoAction) // ← 加上這行
                 .HasConstraintName("FK__Learn__Plan_Id__59063A47");
         });
 
@@ -155,7 +155,7 @@ public partial class OnlineBookClubContext : DbContext
 
             entity.HasOne(d => d.User).WithMany(p => p.Notice)
                 .HasForeignKey(d => d.User_Id)
-                 .OnDelete(DeleteBehavior.Cascade) // ← 加上這行
+                 .OnDelete(DeleteBehavior.NoAction) // ← 加上這行
                 .HasConstraintName("FK__Notice__User_Id__534D60F1");
         });
 
@@ -170,14 +170,14 @@ public partial class OnlineBookClubContext : DbContext
                 .IsRequired()
                 .HasMaxLength(10);
 
-            entity.HasOne(d => d.Plan).WithMany(p => p.PlanMembers)
+                 entity.HasOne(d => d.Plan).WithMany(p => p.PlanMembers)
                 .HasForeignKey(d => d.Plan_Id)
-                .OnDelete(DeleteBehavior.Cascade)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK__PlanMembe__Plan___70DDC3D8");
 
             entity.HasOne(d => d.User).WithMany(p => p.PlanMembers)
                 .HasForeignKey(d => d.User_Id)
-                .OnDelete(DeleteBehavior.Cascade) // ← 加上這行
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK__PlanMembe__User___6FE99F9F");
         });
 
@@ -199,12 +199,12 @@ public partial class OnlineBookClubContext : DbContext
 
             entity.HasOne(d => d.Plan).WithMany(p => p.Post)
                 .HasForeignKey(d => d.Plan_Id)
-                 .OnDelete(DeleteBehavior.Cascade) // ← 加上這行
+                 .OnDelete(DeleteBehavior.NoAction) // ← 加上這行
                 .HasConstraintName("FK__Post__Plan_Id__4F7CD00D");
 
             entity.HasOne(d => d.User).WithMany(p => p.Post)
                 .HasForeignKey(d => d.User_Id)
-                .OnDelete(DeleteBehavior.Cascade)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK__Post__User_Id__5070F446");
         });
 
@@ -224,7 +224,7 @@ public partial class OnlineBookClubContext : DbContext
 
             entity.HasOne(d => d.Post).WithMany(p => p.Post_Report)
                 .HasForeignKey(d => d.Post_Id)
-                 .OnDelete(DeleteBehavior.Cascade) // ← 加上這行
+                 .OnDelete(DeleteBehavior.NoAction) // ← 加上這行
                 .HasConstraintName("FK__Post_Repo__Post___6C190EBB");
         });
 
@@ -240,12 +240,12 @@ public partial class OnlineBookClubContext : DbContext
 
             entity.HasOne(d => d.Learn).WithMany(p => p.ProgressTracking)
                 .HasForeignKey(d => d.Learn_Id)
-                .OnDelete(DeleteBehavior.Cascade)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK__ProgressT__Learn__6477ECF3");
 
             entity.HasOne(d => d.User).WithMany(p => p.ProgressTracking)
                 .HasForeignKey(d => d.User_Id)
-                .OnDelete(DeleteBehavior.Cascade)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK__ProgressT__User___6383C8BA");
         });
 
@@ -264,12 +264,12 @@ public partial class OnlineBookClubContext : DbContext
 
             entity.HasOne(d => d.Post).WithMany(p => p.Reply)
                 .HasForeignKey(d => d.Post_Id)
-                .OnDelete(DeleteBehavior.Cascade)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK__Reply__Post_Id__5BE2A6F2");
 
             entity.HasOne(d => d.User).WithMany(p => p.Reply)
                 .HasForeignKey(d => d.User_Id)
-                .OnDelete(DeleteBehavior.Cascade)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK__Reply__User_Id__5CD6CB2B");
         });
 
@@ -289,7 +289,7 @@ public partial class OnlineBookClubContext : DbContext
 
             entity.HasOne(d => d.Reply).WithMany(p => p.Reply_Report)
                 .HasForeignKey(d => d.Reply_Id)
-                 .OnDelete(DeleteBehavior.Cascade) // ← 加上這行
+                 .OnDelete(DeleteBehavior.NoAction) // ← 加上這行
                 .HasConstraintName("FK__Reply_Rep__Reply__68487DD7");
         });
 
@@ -301,7 +301,7 @@ public partial class OnlineBookClubContext : DbContext
 
             entity.HasOne(d => d.Plan).WithMany(p => p.Statistic)
                 .HasForeignKey(d => d.Plan_Id)
-                 .OnDelete(DeleteBehavior.Cascade) // ← 加上這行
+                 .OnDelete(DeleteBehavior.NoAction) // ← 加上這行
                 .HasConstraintName("FK__Statistic__Plan___76969D2E");
         });
 
@@ -332,7 +332,7 @@ public partial class OnlineBookClubContext : DbContext
 
             entity.HasOne(d => d.Learn).WithMany(p => p.Topic)
                 .HasForeignKey(d => d.Learn_Id)
-                 .OnDelete(DeleteBehavior.Cascade) // ← 加上這行
+                 .OnDelete(DeleteBehavior.NoAction) // ← 加上這行
                 .HasConstraintName("FK__Topic__Learn_Id__73BA3083");
         });
 

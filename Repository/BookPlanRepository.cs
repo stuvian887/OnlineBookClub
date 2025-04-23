@@ -48,19 +48,50 @@ namespace OnlineBookClub.Repository
                 .Take(paging.ItemNum)
                 .ToListAsync();
 
-            var dtoList = pagedPlans.Select(p => new BookPlanDTO
+            var dtoList = new List<BookPlanDTO>();
+            foreach (var p in pagedPlans)
             {
-                Plan_ID = p.Plan.Plan_Id,
-                Plan_Name = p.Plan.Plan_Name,
-                Plan_Goal = p.Plan.Plan_Goal,
-                Plan_Type = p.Plan.Plan_Type,
-                Plan_Suject = p.Plan.Plan_suject,
-                IsPublic = p.Plan.IsPublic,
-                IsComplete = p.Plan.IsComplete,
-                CreatorName = p.CreatorName
-            }).ToList();
+                string recentlyLearn = await GetRecentlyLearn(p.Plan.Plan_Id);
+                dtoList.Add(new BookPlanDTO
+                {
+                    Plan_ID = p.Plan.Plan_Id,
+                    Plan_Name = p.Plan.Plan_Name,
+                    Plan_Goal = p.Plan.Plan_Goal,
+                    Plan_Type = p.Plan.Plan_Type,
+                    Plan_Suject = p.Plan.Plan_suject,
+                    IsPublic = p.Plan.IsPublic,
+                    RecentlyLearn = recentlyLearn,
+                    IsComplete = p.Plan.IsComplete,
+                    CreatorName = p.CreatorName
+                });
+            }
 
             return dtoList;
+        }
+
+        public async Task<string> GetRecentlyLearn(int PlanId)
+        {
+            string TempLearn = "";
+            double TempTime = 99999999f;
+            var PlanOfLearns = await _context.Learn.Where(l => l.Plan_Id == PlanId).ToListAsync();
+            if (PlanOfLearns != null)
+            {
+                foreach (var learns in PlanOfLearns)
+                {
+                    System.DateTime NowTime = DateTime.Now;
+                    System.TimeSpan FindRecentlyLearnTime = learns.DueTime.Subtract(NowTime);
+                    if (FindRecentlyLearnTime.TotalSeconds >= 0 && FindRecentlyLearnTime.TotalSeconds <= TempTime)
+                    {
+                        TempTime = FindRecentlyLearnTime.TotalSeconds;
+                        TempLearn = learns.DueTime.Date.ToString("yyyy/MM/dd") + " " + learns.Learn_Name;
+                    }
+                }
+                return TempLearn;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         public async Task<int> GetPublicPlansCountAsync(string keyword)

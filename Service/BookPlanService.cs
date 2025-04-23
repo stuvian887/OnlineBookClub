@@ -43,6 +43,7 @@ namespace OnlineBookClub.Service
         }
 
 
+
         public async Task<BookPlan> GetById(int id)
         {
             await _statisticService.AddViewTimesAsync(id);

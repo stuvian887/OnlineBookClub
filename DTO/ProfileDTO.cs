@@ -10,5 +10,6 @@ namespace OnlineBookClub.DTO
         public DateTime? Birthday { get; set; }  
         public bool? Gender { get; set; }
         public string ProfilePictureUrl { get; set; }
+        public IFormFile ProfilePicture { get; set; }
     }
 }

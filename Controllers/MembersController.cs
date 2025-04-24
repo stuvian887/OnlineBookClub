@@ -214,24 +214,24 @@ namespace OnlineBookClub.Controllers
             
         }
         [HttpPut("Update-profile")]
-        public IActionResult Updateprofile([FromForm] ProfileDTO data, ICollection<IFormFile> files)
+        public IActionResult Updateprofile([FromForm] ProfileDTO data)
         {
-            var rootPath = env.ContentRootPath + "\\wwwroot\\";
             var token = HttpContext.Request.Cookies["JWT"];
             var email = _jwtService.GetemailFromToken(token);
+
+            
             string savedFilePath = null;
 
-            // 如果上傳了圖片
-            if (data.ProfilePictureUrl != null && files.Count > 0)
+            if (data.ProfilePicture != null)
             {
-                var uploadFolder = Path.Combine(rootPath, "Members/imgs");
+                var uploadFolder = Path.Combine(env.ContentRootPath, "wwwroot", "Members", "imgs");
 
                 if (!Directory.Exists(uploadFolder))
                 {
                     Directory.CreateDirectory(uploadFolder);
                 }
 
-                var file = files.First(); // 只用第一張圖
+                var file = data.ProfilePicture;
                 if (file.Length > 0)
                 {
                     var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
@@ -242,7 +242,9 @@ namespace OnlineBookClub.Controllers
                         file.CopyTo(stream);
                     }
 
-                    savedFilePath = "/Members/imgs/" + fileName;
+                    var request = HttpContext.Request;
+                    var hosturl = $"{request.Scheme}://{request.Host}";
+                    savedFilePath = $"{hosturl}/Members/imgs/{fileName}";
                 }
             }
 
@@ -255,10 +257,5 @@ namespace OnlineBookClub.Controllers
 
             return Ok(new { message = "會員資料更新成功" });
         }
-
-
-
-
-
     }
 }

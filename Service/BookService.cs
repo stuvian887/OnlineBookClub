@@ -21,6 +21,10 @@ namespace OnlineBookClub.Service
         {
             var book = await _bookRepository.GetBookByPlanIdAsync(planId);
             var hostUrl = $"{request.Scheme}://{request.Host}"; // ex: https://localhost:7009
+            if(book == null)
+            {
+                return null;
+            }
             var bookDto = new BookDTO
             {
                 BookName = book.BookName,
@@ -43,7 +47,7 @@ namespace OnlineBookClub.Service
                     var fileName = $"{Guid.NewGuid()}{Path.GetExtension(bookDto.BookCover.FileName)}";
                     var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Book/images");
 
-                    // ✅ 檢查資料夾是否存在，不存在就建立
+                    // 檢查資料夾是否存在，不存在就建立
                     if (!Directory.Exists(folderPath))
                     {
                         Directory.CreateDirectory(folderPath);
@@ -83,7 +87,7 @@ namespace OnlineBookClub.Service
                     var fileName = $"{Guid.NewGuid()}{Path.GetExtension(bookDto.BookCover.FileName)}";
                     var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Book/images");
 
-                    // ✅ 檢查資料夾是否存在，不存在就建立
+                    // 檢查資料夾是否存在，不存在就建立
                     if (!Directory.Exists(folderPath))
                     {
                         Directory.CreateDirectory(folderPath);

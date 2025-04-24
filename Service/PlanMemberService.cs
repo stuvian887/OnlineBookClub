@@ -70,6 +70,9 @@ namespace OnlineBookClub.Service
             var newPlanId = await _planMembersRepository.CopyPlanWithoutTopics(planid, UserId);
             return newPlanId > 0 ? (true, "計畫複製成功") : (false, "複製失敗");
         }
-
+        public async Task<List<PlanMembersDTO>>Getmembers(int planid) 
+        {
+            return await _planMembersRepository.PlanMembersInPlanAsync(planid);
+        }
     }
 }

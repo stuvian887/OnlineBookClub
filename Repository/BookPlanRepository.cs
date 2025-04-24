@@ -19,48 +19,81 @@ namespace OnlineBookClub.Repository
 
         public async Task<List<BookPlanDTO>> GetPublicPlansBySearchAsync(string keyword, ForPaging paging)
         {
-            var query = _context.BookPlan.Where(p => p.IsPublic);
+            var query = from plan in _context.BookPlan
+                        join member in _context.Members on plan.User_Id equals member.User_Id
+                        where plan.IsPublic
+                        select new
+                        {
+                            Plan = plan,
+                            CreatorName = member.UserName
+                        };
 
             if (!string.IsNullOrEmpty(keyword))
             {
                 query = query.Where(p =>
-                    p.Plan_Name.Contains(keyword) ||
-                    p.Plan_Goal.Contains(keyword));
+                    (p.Plan.Plan_Name ?? "").Contains(keyword) ||
+                    (p.Plan.Plan_Goal ?? "").Contains(keyword) ||
+                    (p.Plan.Plan_Type ?? "").Contains(keyword) ||
+                    (p.CreatorName ?? "").Contains(keyword)
+                );
             }
 
-            // 計算總筆數，設定 MaxPage
             int totalCount = await query.CountAsync();
             paging.MaxPage = (int)Math.Ceiling((double)totalCount / paging.ItemNum);
             paging.SetRightPage();
 
-            // 查詢目前頁的資料
             var pagedPlans = await query
-                .OrderByDescending(p => p.Plan_Id)
+                .OrderByDescending(p => p.Plan.Plan_Id)
                 .Skip((paging.NowPage - 1) * paging.ItemNum)
                 .Take(paging.ItemNum)
                 .ToListAsync();
 
-            // 查出創建者名稱
-            var creatorIds = pagedPlans.Select(p => p.User_Id).Distinct().ToList();
-            var userMap = await _context.Members
-                .Where(u => creatorIds.Contains(u.User_Id))
-                .ToDictionaryAsync(u => u.User_Id, u => u.UserName);
-
-            // 將資料轉成 DTO
-            var dtoList = pagedPlans.Select(p => new BookPlanDTO
+            var dtoList = new List<BookPlanDTO>();
+            foreach (var p in pagedPlans)
             {
-                Plan_ID = p.Plan_Id,
-                Plan_Name = p.Plan_Name,
-                Plan_Goal = p.Plan_Goal,
-                Plan_Type = p.Plan_Type,
-                Plan_Suject = p.Plan_suject,
-                IsPublic = p.IsPublic,
-                IsComplete = p.IsComplete,
-                CreatorName = userMap.ContainsKey(p.User_Id) ? userMap[p.User_Id] : "未知使用者"
-            }).ToList();
+                string recentlyLearn = await GetRecentlyLearn(p.Plan.Plan_Id);
+                dtoList.Add(new BookPlanDTO
+                {
+                    Plan_ID = p.Plan.Plan_Id,
+                    Plan_Name = p.Plan.Plan_Name,
+                    Plan_Goal = p.Plan.Plan_Goal,
+                    Plan_Type = p.Plan.Plan_Type,
+                    Plan_Suject = p.Plan.Plan_suject,
+                    IsPublic = p.Plan.IsPublic,
+                    RecentlyLearn = recentlyLearn,
+                    IsComplete = p.Plan.IsComplete,
+                    CreatorName = p.CreatorName
+                });
+            }
 
             return dtoList;
         }
+
+        public async Task<string> GetRecentlyLearn(int PlanId)
+        {
+            string TempLearn = "";
+            double TempTime = 99999999f;
+            var PlanOfLearns = await _context.Learn.Where(l => l.Plan_Id == PlanId).ToListAsync();
+            if (PlanOfLearns != null)
+            {
+                foreach (var learns in PlanOfLearns)
+                {
+                    System.DateTime NowTime = DateTime.Now;
+                    System.TimeSpan FindRecentlyLearnTime = learns.DueTime.Subtract(NowTime);
+                    if (FindRecentlyLearnTime.TotalSeconds >= 0 && FindRecentlyLearnTime.TotalSeconds <= TempTime)
+                    {
+                        TempTime = FindRecentlyLearnTime.TotalSeconds;
+                        TempLearn = learns.DueTime.Date.ToString("yyyy/MM/dd") + " " + learns.Learn_Name;
+                    }
+                }
+                return TempLearn;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         public async Task<int> GetPublicPlansCountAsync(string keyword)
         {
             var query = _context.BookPlan.Where(p => p.IsPublic);
@@ -107,7 +140,8 @@ namespace OnlineBookClub.Repository
             {
                 allPlans = allPlans
                     .Where(p => (p.Plan_Name?.Contains(keyword) ?? false)
-                             || (p.Plan_Goal?.Contains(keyword) ?? false))
+                             || (p.Plan_Goal?.Contains(keyword) ?? false)
+                             || (p.Plan_Type?.Contains(keyword) ?? false))
                     .ToList();
             }
 
@@ -129,19 +163,24 @@ namespace OnlineBookClub.Repository
                 .ToDictionaryAsync(u => u.User_Id, u => u.UserName);
 
             // 7. 組成 DTO
-            var result = pagePlans.Select(p => new BookPlanDTO
+            var dtoList = new List<BookPlanDTO>();
+            foreach(var p in pagePlans)
             {
-                Plan_ID = p.Plan_Id,
-                Plan_Name = p.Plan_Name,
-                Plan_Goal = p.Plan_Goal,
-                Plan_Type = p.Plan_Type,
-                Plan_Suject = p.Plan_suject,
-                IsPublic = p.IsPublic,
-                IsComplete = p.IsComplete,
-                CreatorName = users.ContainsKey(p.User_Id) ? users[p.User_Id] : "未知使用者"
-            }).ToList();
-
-            return result;
+                string recentlylearn = await GetRecentlyLearn(p.Plan_Id);
+                dtoList.Add(new BookPlanDTO
+                {
+                    Plan_ID = p.Plan_Id,
+                    Plan_Name = p.Plan_Name,
+                    Plan_Goal = p.Plan_Goal,
+                    Plan_Type = p.Plan_Type,
+                    Plan_Suject = p.Plan_suject,
+                    IsPublic = p.IsPublic,
+                    RecentlyLearn = recentlylearn,
+                    IsComplete = p.IsComplete,
+                    CreatorName = users.ContainsKey(p.User_Id) ? users[p.User_Id] : "未知使用者"
+                });
+            }
+            return dtoList;
         }
 
         

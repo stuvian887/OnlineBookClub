@@ -10,6 +10,7 @@ namespace OnlineBookClub.DTO
         public string Plan_Type { get; set; }
         public string Plan_Suject { get; set; }
         public bool IsPublic { get; set; }
+        public string RecentlyLearn { get; set; }
         public bool IsComplete { get; set; }
         public string CreatorName { get; set; }
 

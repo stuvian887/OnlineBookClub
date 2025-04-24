@@ -83,7 +83,7 @@ namespace OnlineBookClub.Migrations
                     Plan_Id = table.Column<int>(type: "int", nullable: false),
                     BookName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
-                    Link = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Link = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     bookpath = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>

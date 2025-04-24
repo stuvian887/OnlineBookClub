@@ -30,6 +30,10 @@ namespace OnlineBookClub.Controllers
         public async Task<IActionResult> AddBook([FromForm]BookDTO bookDto, int planId)
         {
             bookDto.platid = planId;
+            if (bookDto.BookName == null)
+            {
+
+            }
             var result = await _bookService.AddBookAsync(bookDto.platid, bookDto);
             if (result.Item1 != null)
             {

@@ -4,12 +4,12 @@
     {
     
         public int platid { get; set; }
-        public string BookName { get; set; }
+        public string BookName { get; set; } = "null";
 
-        public string Description { get; set; }
+        public string Description { get; set; } = "null";
 
-        public string Link { get; set; }      
-        public string bookurl { get; set; }
-        public IFormFile? BookCover { get; set; }
+        public string Link { get; set; } = "null";
+        public string bookurl { get; set; } = "null";
+        public IFormFile? BookCover { get; set; } 
     }
 }

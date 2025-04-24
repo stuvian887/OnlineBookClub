@@ -12,7 +12,7 @@ using OnlineBookClub.Models;
 namespace OnlineBookClub.Migrations
 {
     [DbContext(typeof(OnlineBookClubContext))]
-    [Migration("20250423124722_111")]
+    [Migration("20250424145612_111")]
     partial class _111
     {
         /// <inheritdoc />
@@ -83,7 +83,6 @@ namespace OnlineBookClub.Migrations
                         .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("Link")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Plan_Id")

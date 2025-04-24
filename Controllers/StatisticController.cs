@@ -19,6 +19,7 @@ namespace OnlineBookClub.Controllers
         [HttpGet("{planId}")]
         public async Task<IActionResult> GetByPlanId(int planId)
         {
+
             var stat = await _service.GetStatisticByPlanIdAsync(planId);
             if (stat == null)
                 return NotFound();

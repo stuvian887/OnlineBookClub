@@ -15,10 +15,13 @@ namespace OnlineBookClub.Controllers
         private readonly BookPlanService _service;
         private readonly JwtService _jwtService;
         [ActivatorUtilitiesConstructor]
-        public BookPlanController(BookPlanService service, JwtService jwtService)
+        private readonly StatisticService _statisticService;
+        
+        public BookPlanController(BookPlanService service, JwtService jwtService, StatisticService statisticService )
         {
             _service = service;
             _jwtService = jwtService;
+            _statisticService = statisticService;
         }
 
         [HttpGet("public")]
@@ -39,6 +42,7 @@ namespace OnlineBookClub.Controllers
         {
             var plan = await _service.GetById(id);
             if (plan == null) return NotFound();
+            await _statisticService.AddViewTimesAsync(id);
             return Ok(plan);
         }
 
@@ -65,6 +69,8 @@ namespace OnlineBookClub.Controllers
 
             int id = Convert.ToInt32(userId);
             var plan = await _service.Create(bookPlanDto,id);
+            int planid = plan.Plan_Id;
+            await _statisticService.CreateStatistic(planid);
             return CreatedAtAction(nameof(GetById), new { id = plan.Plan_Id }, plan);
         }
 

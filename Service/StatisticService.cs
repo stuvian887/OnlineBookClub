@@ -2,6 +2,7 @@
 using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
 using OnlineBookClub.Repository;
+using System.Numerics;
 namespace OnlineBookClub.Service
 { 
 public class StatisticService
@@ -13,6 +14,18 @@ public class StatisticService
         _repo = repo;
     }
 
+    public async Task CreateStatistic(int planid)
+        {
+            var stat = await _repo.GetByPlanIdAsync(planid);
+            if (stat == null)
+            {
+                stat = new Statistic { Plan_Id = planid, CopyCount =0,  UserCount = 0, ViewTimes = 0 };
+                await _repo.AddAsync(stat);
+            }
+          
+            await _repo.SaveChangesAsync();
+        }
+        
     public async Task AddCopyCountAsync(int planId)
     {
         var stat = await _repo.GetByPlanIdAsync(planId);

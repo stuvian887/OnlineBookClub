@@ -24,7 +24,7 @@ namespace OnlineBookClub.Repository
             {
                 foreach (var all in AllLearnsOfAllPlans)
                 {
-                    string RecentlyLearn = await GetRecentlyLearn(all.Plan_Id);
+                    (string RecentlyLearnDate, string RecentlyLearn) = await GetRecentlyLearn(all.Plan_Id);
                     var result = (from a in _context.Learn
                                   where all.Plan_Id == a.Plan_Id
                                   select new LearnDTO
@@ -34,6 +34,7 @@ namespace OnlineBookClub.Repository
                                       Learn_Name = a.Learn_Name,
                                       Pass_Standard = a.Pass_Standard,
                                       DueTime = a.DueTime,
+                                      RecentlyLearnDate = RecentlyLearnDate,
                                       RecentlyLearn = RecentlyLearn,
                                       Manual_Check = a.Manual_Check,
                                       ProgressTracking = a.ProgressTracking
@@ -50,7 +51,7 @@ namespace OnlineBookClub.Repository
         }
         public async Task<IEnumerable<LearnDTO>> GetLearnByPlanIdAsync(int PlanId)
         {
-            string RecentlyLearn = await GetRecentlyLearn(PlanId);
+            (string RecentlyLearnDate , string RecentlyLearn) = await GetRecentlyLearn(PlanId);
             var result = (from a in _context.Learn
                           where PlanId == a.Plan_Id
                           select new LearnDTO
@@ -60,6 +61,7 @@ namespace OnlineBookClub.Repository
                               Learn_Name = a.Learn_Name,
                               Pass_Standard = a.Pass_Standard,
                               DueTime = a.DueTime,
+                              RecentlyLearnDate = RecentlyLearnDate,
                               RecentlyLearn = RecentlyLearn,
                               Manual_Check = a.Manual_Check,
                               ProgressTracking = a.ProgressTracking
@@ -67,9 +69,10 @@ namespace OnlineBookClub.Repository
             var list = await result.ToListAsync();
             return list.Select(a => GetProgressTrack(a));
         }
-        public async Task<string> GetRecentlyLearn(int PlanId)
+        public async Task<(string , string)> GetRecentlyLearn(int PlanId)
         {
             string TempLearn = "";
+            string LearnDate = " ";
             double TempTime = 99999999f;
             var PlanOfLearns = await _context.Learn.Where(l => l.Plan_Id == PlanId).ToListAsync();
             if(PlanOfLearns != null)
@@ -81,14 +84,15 @@ namespace OnlineBookClub.Repository
                     if(FindRecentlyLearnTime.TotalSeconds >= 0 && FindRecentlyLearnTime.TotalSeconds <= TempTime)
                     {
                         TempTime = FindRecentlyLearnTime.TotalSeconds;
-                        TempLearn = learns.DueTime.Date.ToString("yyyy/MM/dd") + " " + learns.Learn_Name;
+                        LearnDate = learns.DueTime.ToString("yyyy/MM/dd");
+                        TempLearn = learns.Learn_Name;
                     }
                 }
-                return TempLearn;
+                return (LearnDate , TempLearn);
             }
             else
             {
-                return null;
+                return (null,null);
             }
         }
         public async Task<BookPlan> CheckLearnByPlanIdAsync(int PlanId)
@@ -117,7 +121,7 @@ namespace OnlineBookClub.Repository
                     learn.Learn_Name = InsertData.Learn_Name;
                     learn.Learn_Index = InsertData.Learn_Index;
                     learn.Pass_Standard = InsertData.Pass_Standard;
-                    learn.DueTime = InsertData.DueTime;
+                    learn.DueTime = InsertData.DueTime.AddDays(1).AddSeconds(-1);
                     await _context.Learn.AddAsync(learn);
                     await _context.SaveChangesAsync();
                     LearnDTO resultDTO = new LearnDTO()
@@ -163,7 +167,7 @@ namespace OnlineBookClub.Repository
                             UpdateLearn.Plan_Id = UpdateDataPlan.Plan_Id;
                             UpdateLearn.Learn_Name = UpdateData.Learn_Name;
                             UpdateLearn.Pass_Standard = UpdateData.Pass_Standard;
-                            UpdateLearn.DueTime = UpdateData.DueTime;
+                            UpdateLearn.DueTime = UpdateData.DueTime.AddDays(1).AddSeconds(-1);
                             UpdateLearn.Manual_Check = UpdateData.Manual_Check;
                             _context.Update(UpdateLearn);
                             await _context.SaveChangesAsync();

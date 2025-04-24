@@ -3,6 +3,7 @@ using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
 using System;
 using System.Linq;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace OnlineBookClub.Repository
 {
@@ -51,7 +52,7 @@ namespace OnlineBookClub.Repository
             var dtoList = new List<BookPlanDTO>();
             foreach (var p in pagedPlans)
             {
-                string recentlyLearn = await GetRecentlyLearn(p.Plan.Plan_Id);
+                (string recentlyLearnDate , string recentlyLearn) = await GetRecentlyLearn(p.Plan.Plan_Id);
                 dtoList.Add(new BookPlanDTO
                 {
                     Plan_ID = p.Plan.Plan_Id,
@@ -60,6 +61,7 @@ namespace OnlineBookClub.Repository
                     Plan_Type = p.Plan.Plan_Type,
                     Plan_Suject = p.Plan.Plan_suject,
                     IsPublic = p.Plan.IsPublic,
+                    RecentlyLearnDate = recentlyLearnDate,
                     RecentlyLearn = recentlyLearn,
                     IsComplete = p.Plan.IsComplete,
                     CreatorName = p.CreatorName
@@ -69,28 +71,30 @@ namespace OnlineBookClub.Repository
             return dtoList;
         }
 
-        public async Task<string> GetRecentlyLearn(int PlanId)
+        public async Task<(string,string)> GetRecentlyLearn(int PlanId)
         {
             string TempLearn = "";
             double TempTime = 99999999f;
+            string LearnDate = "";
             var PlanOfLearns = await _context.Learn.Where(l => l.Plan_Id == PlanId).ToListAsync();
             if (PlanOfLearns != null)
             {
                 foreach (var learns in PlanOfLearns)
                 {
-                    System.DateTime NowTime = DateTime.Now;
+                    DateTime NowTime = DateTime.UtcNow.Date.ToLocalTime();
                     System.TimeSpan FindRecentlyLearnTime = learns.DueTime.Subtract(NowTime);
                     if (FindRecentlyLearnTime.TotalSeconds >= 0 && FindRecentlyLearnTime.TotalSeconds <= TempTime)
                     {
                         TempTime = FindRecentlyLearnTime.TotalSeconds;
-                        TempLearn = learns.DueTime.Date.ToString("yyyy/MM/dd") + " " + learns.Learn_Name;
+                        LearnDate = learns.DueTime.ToString("yyyy/MM/dd");
+                        TempLearn = learns.Learn_Name;
                     }
                 }
-                return TempLearn;
+                return (LearnDate,TempLearn);
             }
             else
             {
-                return null;
+                return (LearnDate,null);
             }
         }
 
@@ -166,7 +170,7 @@ namespace OnlineBookClub.Repository
             var dtoList = new List<BookPlanDTO>();
             foreach(var p in pagePlans)
             {
-                string recentlylearn = await GetRecentlyLearn(p.Plan_Id);
+                (string recentlyLearnDate, string recentlylearn) = await GetRecentlyLearn(p.Plan_Id);
                 dtoList.Add(new BookPlanDTO
                 {
                     Plan_ID = p.Plan_Id,
@@ -175,6 +179,7 @@ namespace OnlineBookClub.Repository
                     Plan_Type = p.Plan_Type,
                     Plan_Suject = p.Plan_suject,
                     IsPublic = p.IsPublic,
+                    RecentlyLearnDate = recentlyLearnDate,
                     RecentlyLearn = recentlylearn,
                     IsComplete = p.IsComplete,
                     CreatorName = users.ContainsKey(p.User_Id) ? users[p.User_Id] : "未知使用者"
@@ -182,11 +187,6 @@ namespace OnlineBookClub.Repository
             }
             return dtoList;
         }
-
-        
-
-
-
         public async Task<BookPlan> Create(BookPlan bookPlan)
         {
 

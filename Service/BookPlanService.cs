@@ -47,10 +47,9 @@ namespace OnlineBookClub.Service
 
 
 
-        public async Task<BookPlan> GetById(int id)
+        public async Task<BookPlanDTO> GetById(int id)
         {
-            await _statisticService.AddViewTimesAsync(id);
-
+            
             return await _repository.GetById(id);
         }
 
@@ -84,7 +83,7 @@ namespace OnlineBookClub.Service
 
         public async Task<BookPlan> Update(int id, BookPlanDTO bookPlanDto)
         {
-            var bookPlan = await _repository.GetById(id);
+            var bookPlan = await _repository.GetEntityById(id);
             if (bookPlan == null) return null;
 
             bookPlan.Plan_Name = bookPlanDto.Plan_Name;
@@ -115,7 +114,7 @@ namespace OnlineBookClub.Service
 
                 Plan_Name = originalPlan.Plan_Name,
                 Plan_Goal = originalPlan.Plan_Goal,
-                Plan_suject = originalPlan.Plan_suject,
+                Plan_suject = originalPlan.Plan_Suject,
                 Plan_Type= originalPlan.Plan_Type,
                 IsPublic = false, // 預設複製後為私人
                 User_Id = userId,

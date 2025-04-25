@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Mvc;
 using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
 using OnlineBookClub.Repository;
@@ -23,7 +24,7 @@ namespace OnlineBookClub.Controllers
 
         [HttpPost]
         
-        public async Task<IActionResult> CreatePost([FromForm] PostDTO dto)
+        public async Task<IActionResult> CreatePost([FromForm] PostDTO dto )
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
             
@@ -31,13 +32,15 @@ namespace OnlineBookClub.Controllers
              ?? User.FindFirst(ClaimTypes.Name)?.Value
              ?? "Unknown";
             var result = await _service.CreatePostAsync(userId, userName, dto);
+
             return Ok(result);
         }
 
         [HttpGet("{planId}")]
-        public async Task<IActionResult> GetPosts(int planId)
+        public async Task<IActionResult> GetPosts(int planId, HttpRequest request)
         {
-            var posts = await _service.GetPostsByPlanIdAsync(planId);
+            var posts = await _service.GetPostsByPlanIdAsync(planId,request);
+            
             return Ok(posts);
         }
 

@@ -1,4 +1,5 @@
-﻿using OnlineBookClub.DTO;
+﻿using Microsoft.Extensions.Hosting;
+using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
 using OnlineBookClub.Repository;
 
@@ -46,9 +47,17 @@ namespace OnlineBookClub.Service
         }
 
 
-        public async Task<IEnumerable<Post>> GetPostsByPlanIdAsync(int planId)
+        public async Task<IEnumerable<PostDTO>> GetPostsByPlanIdAsync(int planId, HttpRequest request)
         {
-            return await _repository.GetPostsByPlanIdAsync(planId);
+            var post =await _repository.GetPostsByPlanIdAsync(planId);
+            var hostUrl = $"{request.Scheme}://{request.Host}"; // ex: https://localhost:7009
+
+            return post.Select(post => new PostDTO
+            {
+                PlanId = post.Plan_Id,
+                Content = post.Content,
+                 ImgPath = string.IsNullOrEmpty(post.Img_Path) ? null : $"{hostUrl}{post.Img_Path}"
+            }).ToList();
         }
 
         public async Task<bool> UpdatePostAsync(int postId, int userId, PostDTO dto)
@@ -62,7 +71,7 @@ namespace OnlineBookClub.Service
             // 如果有上傳圖片，儲存圖片並更新路徑
             if (dto.PostCover != null && dto.PostCover.Length > 0)
             {   
-                var uploadsFolder = Path.Combine("wwwroot", "postImages");
+                var uploadsFolder = Path.Combine("wwwroot", "Post/imgs");
                 Directory.CreateDirectory(uploadsFolder); // 確保資料夾存在
 
                 var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(dto.PostCover.FileName);
@@ -73,7 +82,7 @@ namespace OnlineBookClub.Service
                     await dto.PostCover.CopyToAsync(stream);
                 }
 
-                post.Img_Path = Path.Combine("postImages", uniqueFileName).Replace("\\", "/");
+                post.Img_Path = Path.Combine("Post/imgs", uniqueFileName).Replace("\\", "/");
             }
             else if (!string.IsNullOrEmpty(dto.ImgPath))
             {

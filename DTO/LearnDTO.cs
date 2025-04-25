@@ -20,6 +20,6 @@ namespace OnlineBookClub.DTO
         public bool Manual_Check { get; set; }
         public double PersentOfMemberPass { get; set; }
         [JsonIgnore]
-        public virtual ICollection<ProgressTracking> ProgressTracking { get; set; }
+        public virtual ICollection<ProgressTrackingDTO> ProgressTracking { get; set; }
     }
 }

@@ -22,34 +22,38 @@ namespace OnlineBookClub.Repository
             var AllLearnsOfAllPlans = await _context.Learn.ToListAsync();
             if (AllLearnsOfAllPlans != null)
             {
-                foreach (var all in AllLearnsOfAllPlans)
+                var resultList = new List<LearnDTO>();
+
+                foreach (var learn in AllLearnsOfAllPlans)
                 {
-                    double PassPersent = await GetPersentOfMemberPass(all.Plan_Id);
-                    (string RecentlyLearnDate, string RecentlyLearn) = await GetRecentlyLearn(all.Plan_Id);
-                    var result = (from a in _context.Learn
-                                  where all.Plan_Id == a.Plan_Id
-                                  select new LearnDTO
-                                  {
-                                      Plan_Id = a.Plan_Id,
-                                      Learn_Index = a.Learn_Index,
-                                      Learn_Name = a.Learn_Name,
-                                      Pass_Standard = a.Pass_Standard,
-                                      DueTime = a.DueTime,
-                                      RecentlyLearnDate = RecentlyLearnDate,
-                                      RecentlyLearn = RecentlyLearn,
-                                      PersentOfMemberPass = PassPersent,
-                                      Manual_Check = a.Manual_Check,
-                                      ProgressTracking = a.ProgressTracking
-                                  });
-                    var list = await result.ToListAsync();
+                    double PassPersent = await GetPersentOfMemberPass(learn.Plan_Id);
+                    (string RecentlyLearnDate, string RecentlyLearn) = await GetRecentlyLearn(learn.Plan_Id);
+
+                    var learnDto = new LearnDTO
+                    {
+                        Plan_Id = learn.Plan_Id,
+                        Learn_Index = learn.Learn_Index,
+                        Learn_Name = learn.Learn_Name,
+                        Pass_Standard = learn.Pass_Standard,
+                        DueTime = learn.DueTime,
+                        RecentlyLearnDate = RecentlyLearnDate,
+                        RecentlyLearn = RecentlyLearn,
+                        PersentOfMemberPass = PassPersent,
+                        Manual_Check = learn.Manual_Check,
+                        ProgressTracking = learn.ProgressTracking?.Select(t => GetProgressTrack(t)).ToList()
+                    };
+
+                    resultList.Add(learnDto);
                 }
-                return null;
+
+                return resultList;
             }
             else
             {
-                return null;
+                return Enumerable.Empty<LearnDTO>();
             }
         }
+
         public async Task<IEnumerable<LearnDTO>> GetLearnByPlanIdAsync(int PlanId)
         {
             var list = new List<LearnDTO>();
@@ -69,7 +73,7 @@ namespace OnlineBookClub.Repository
                     RecentlyLearn = RecentlyLearn,
                     PersentOfMemberPass = PassPersent,
                     Manual_Check = a.Manual_Check,
-                    ProgressTracking = (ICollection<ProgressTracking>)(a.ProgressTracking?.Select(t => GetProgressTrack(t)).ToList())
+                    ProgressTracking =  a.ProgressTracking?.Select(t => GetProgressTrack(t)).ToList()
                 });
             }
             return list;

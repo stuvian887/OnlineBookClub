@@ -16,12 +16,13 @@ namespace OnlineBookClub.Controllers
         private readonly JwtService _jwtService;
         [ActivatorUtilitiesConstructor]
         private readonly StatisticService _statisticService;
-        
-        public BookPlanController(BookPlanService service, JwtService jwtService, StatisticService statisticService )
+        private readonly BookService _bookService;
+        public BookPlanController(BookPlanService service, JwtService jwtService, StatisticService statisticService,BookService bookService )
         {
             _service = service;
             _jwtService = jwtService;
             _statisticService = statisticService;
+            _bookService = bookService;
         }
 
         [HttpGet("public")]
@@ -95,8 +96,11 @@ namespace OnlineBookClub.Controllers
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
 
             var result = await _service.CopyPlanAsync(planId, userId);
-            if (!result)
+            if (result==null)
                 return NotFound("找不到");
+            var book = await _bookService.GetBookByPlanIdAsync(planId, Request);
+            await _bookService.AddBookAsync(result.Plan_Id, book);
+          
 
             return Ok("Plan copied successfully.");
         }

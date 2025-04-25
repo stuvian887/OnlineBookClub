@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
@@ -16,12 +17,14 @@ namespace OnlineBookClub.Service
         private readonly JwtService _jwtService;
         private readonly PlanMemberRepository _memberRepository;
         private readonly StatisticService _statisticService;
-        public BookPlanService(BookPlanRepository repository, JwtService jwtService, PlanMemberRepository memberRepository, StatisticService statisticService)
+        
+        public BookPlanService(BookPlanRepository repository, JwtService jwtService, PlanMemberRepository memberRepository, StatisticService statisticService,BookService bookService)
         {
             _jwtService = jwtService;
             _repository = repository;
             _memberRepository = memberRepository;
             _statisticService = statisticService;
+   
         }
 
         public async Task<BookPlanPageResultDTO> GetPublicPlansAsync(string keyword, int page)
@@ -99,15 +102,17 @@ namespace OnlineBookClub.Service
             return await _repository.Delete(id);
         }
        
-            public async Task<bool> CopyPlanAsync(int planId, int userId)
+            public async Task<BookPlan> CopyPlanAsync(int planId, int userId)
         {
             var originalPlan = await _repository.GetById(planId);
+            
             if (originalPlan == null)
-                return false;
+                return null;
 
             // 建立新計畫（複製基本資訊）
             var newPlan = new BookPlan
             {
+
                 Plan_Name = originalPlan.Plan_Name,
                 Plan_Goal = originalPlan.Plan_Goal,
                 Plan_suject = originalPlan.Plan_suject,
@@ -118,11 +123,11 @@ namespace OnlineBookClub.Service
             };
 
             // 儲存新計畫
-            await _repository.Create(newPlan);
+            var data=await _repository.Create(newPlan);
 
             
 
-            return true;
+            return data;
 
 
         }

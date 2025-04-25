@@ -96,6 +96,15 @@ public class StatisticService
                 ViewTimes = s.ViewTimes
             }).ToList();
         }
+        public async Task DecreaseUserCountAsync(int planId)
+        {
+            var stat = await _repo.GetByPlanIdAsync(planId);
+            if (stat != null && stat.UserCount > 0)
+            {
+                stat.UserCount--;
+                await _repo.SaveChangesAsync();
+            }
+        }
 
 
     }

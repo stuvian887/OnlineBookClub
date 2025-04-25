@@ -18,16 +18,17 @@ namespace OnlineBookClub.Repository
             _planMemberRepsitory = planMemberRepsitory;
         }
 
-        public async Task<List<BookPlanDTO>> GetPublicPlansBySearchAsync(string keyword, ForPaging paging)
+        public async Task<List<BookPlanDTO>> GetPublicPlansBySearchAsync(int userid,string keyword, ForPaging paging)
         {
             var query = from plan in _context.BookPlan
                         join member in _context.Members on plan.User_Id equals member.User_Id
-                        where plan.IsPublic
+                        where plan.IsPublic && plan.User_Id != userid
                         select new
                         {
                             Plan = plan,
                             CreatorName = member.UserName
                         };
+
 
             if (!string.IsNullOrEmpty(keyword))
             {
@@ -114,10 +115,33 @@ namespace OnlineBookClub.Repository
 
 
 
-        public async Task<BookPlan> GetById(int id)
+        public async Task<BookPlanDTO?> GetById(int id)
         {
-            return await _context.BookPlan.FindAsync(id);
+            var plan = await _context.BookPlan.FindAsync(id);
+            if (plan == null) return null;
+
+            var user = await _context.Members
+                .Where(u => u.User_Id == plan.User_Id)
+                .Select(u => u.UserName)
+                .FirstOrDefaultAsync();
+
+            (string recentlyLearnDate, string recentlyLearn) = await GetRecentlyLearn(plan.Plan_Id);
+
+            return new BookPlanDTO
+            {
+                Plan_ID = plan.Plan_Id,
+                Plan_Name = plan.Plan_Name,
+                Plan_Goal = plan.Plan_Goal,
+                Plan_Type = plan.Plan_Type,
+                Plan_Suject = plan.Plan_suject,
+                IsPublic = plan.IsPublic,
+                RecentlyLearnDate = recentlyLearnDate,
+                RecentlyLearn = recentlyLearn,
+                IsComplete = plan.IsComplete,
+                CreatorName = user ?? "未知使用者"
+            };
         }
+
 
         public async Task<List<BookPlanDTO>> GetPlansWithCreatorNameByUserId(int userId, string keyword, ForPaging paging)
         {
@@ -194,6 +218,10 @@ namespace OnlineBookClub.Repository
             await _context.SaveChangesAsync();
             await _planMemberRepsitory.AddUserToPlanAsync(bookPlan.User_Id,bookPlan.Plan_Id);
             return bookPlan;
+        }
+        public async Task<BookPlan?> GetEntityById(int id)
+        {
+            return await _context.BookPlan.FindAsync(id);
         }
 
         public async Task<BookPlan> Update(BookPlan bookPlan)

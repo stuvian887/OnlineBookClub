@@ -18,6 +18,7 @@ namespace OnlineBookClub.DTO
         public string RecentlyLearnDate { get; set; }
         public string RecentlyLearn { get; set; } = null;
         public bool Manual_Check { get; set; }
+        public double PersentOfMemberPass { get; set; }
         [JsonIgnore]
         public virtual ICollection<ProgressTracking> ProgressTracking { get; set; }
     }

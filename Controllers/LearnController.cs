@@ -34,6 +34,13 @@ namespace OnlineBookClub.Controllers
         {
             return Ok(await _service.GetLearn(PlanId));
         }
+        [HttpGet("Calendar")]
+        public async Task<IActionResult> GetLearnByCalendar([FromQuery] DateTime? BeginTime , [FromQuery] DateTime? EndTime)
+        {
+            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            int UserId = int.Parse(UserIdClaim.Value);
+            return Ok(await _service.GetLearnByCalendar(UserId, BeginTime, EndTime));
+        }
 
         // POST api/<LearnController>
         [HttpPost("Create/{PlanId}")]

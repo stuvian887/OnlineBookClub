@@ -16,19 +16,22 @@ namespace OnlineBookClub.Controllers
         private readonly JwtService _jwtService;
         [ActivatorUtilitiesConstructor]
         private readonly StatisticService _statisticService;
-        
-        public BookPlanController(BookPlanService service, JwtService jwtService, StatisticService statisticService )
+        private readonly BookService _bookService;
+        public BookPlanController(BookPlanService service, JwtService jwtService, StatisticService statisticService,BookService bookService )
         {
             _service = service;
             _jwtService = jwtService;
             _statisticService = statisticService;
+            _bookService = bookService;
         }
 
         [HttpGet("public")]
         public async Task<IActionResult> GetAllPublicPlans([FromQuery]string? keyword, [FromQuery] int page)
         {
+            var token = HttpContext.Request.Cookies["JWT"];
+            int userid = Convert.ToInt32(_jwtService.GetUserIdFromToken(token));
             
-            var result = await _service.GetPublicPlansAsync(keyword, page);
+            var result = await _service.GetPublicPlansAsync(userid,keyword, page);
 
             return Ok(result); 
         }
@@ -95,8 +98,11 @@ namespace OnlineBookClub.Controllers
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
 
             var result = await _service.CopyPlanAsync(planId, userId);
-            if (!result)
+            if (result==null)
                 return NotFound("找不到");
+            var book = await _bookService.GetBookByPlanIdAsync(planId, Request);
+            await _bookService.AddBookAsync(result.Plan_Id, book);
+          
 
             return Ok("Plan copied successfully.");
         }

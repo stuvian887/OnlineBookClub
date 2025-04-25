@@ -1,4 +1,6 @@
-﻿namespace OnlineBookClub.DTO
+﻿using OnlineBookClub.Models;
+
+namespace OnlineBookClub.DTO
 {
     public class ProgressTrackingDTO
     {
@@ -12,5 +14,6 @@
         public bool Status { get; set; }
 
         public DateTime? CompletionDate { get; set; }
+
     }
 }

@@ -18,16 +18,17 @@ namespace OnlineBookClub.Repository
             _planMemberRepsitory = planMemberRepsitory;
         }
 
-        public async Task<List<BookPlanDTO>> GetPublicPlansBySearchAsync(string keyword, ForPaging paging)
+        public async Task<List<BookPlanDTO>> GetPublicPlansBySearchAsync(int userid,string keyword, ForPaging paging)
         {
             var query = from plan in _context.BookPlan
                         join member in _context.Members on plan.User_Id equals member.User_Id
-                        where plan.IsPublic
+                        where plan.IsPublic && plan.User_Id != userid
                         select new
                         {
                             Plan = plan,
                             CreatorName = member.UserName
                         };
+
 
             if (!string.IsNullOrEmpty(keyword))
             {

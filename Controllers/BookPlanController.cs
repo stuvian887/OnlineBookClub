@@ -15,17 +15,23 @@ namespace OnlineBookClub.Controllers
         private readonly BookPlanService _service;
         private readonly JwtService _jwtService;
         [ActivatorUtilitiesConstructor]
-        public BookPlanController(BookPlanService service, JwtService jwtService)
+        private readonly StatisticService _statisticService;
+        private readonly BookService _bookService;
+        public BookPlanController(BookPlanService service, JwtService jwtService, StatisticService statisticService,BookService bookService )
         {
             _service = service;
             _jwtService = jwtService;
+            _statisticService = statisticService;
+            _bookService = bookService;
         }
 
         [HttpGet("public")]
         public async Task<IActionResult> GetAllPublicPlans([FromQuery]string? keyword, [FromQuery] int page)
         {
+            var token = HttpContext.Request.Cookies["JWT"];
+            int userid = Convert.ToInt32(_jwtService.GetUserIdFromToken(token));
             
-            var result = await _service.GetPublicPlansAsync(keyword, page);
+            var result = await _service.GetPublicPlansAsync(userid,keyword, page);
 
             return Ok(result); 
         }
@@ -39,6 +45,7 @@ namespace OnlineBookClub.Controllers
         {
             var plan = await _service.GetById(id);
             if (plan == null) return NotFound();
+            await _statisticService.AddViewTimesAsync(id);
             return Ok(plan);
         }
 
@@ -65,6 +72,8 @@ namespace OnlineBookClub.Controllers
 
             int id = Convert.ToInt32(userId);
             var plan = await _service.Create(bookPlanDto,id);
+            int planid = plan.Plan_Id;
+            await _statisticService.CreateStatistic(planid);
             return CreatedAtAction(nameof(GetById), new { id = plan.Plan_Id }, plan);
         }
 
@@ -89,8 +98,11 @@ namespace OnlineBookClub.Controllers
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
 
             var result = await _service.CopyPlanAsync(planId, userId);
-            if (!result)
+            if (result==null)
                 return NotFound("找不到");
+            var book = await _bookService.GetBookByPlanIdAsync(planId, Request);
+            await _bookService.AddBookAsync(result.Plan_Id, book);
+          
 
             return Ok("Plan copied successfully.");
         }

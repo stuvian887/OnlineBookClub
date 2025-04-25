@@ -19,6 +19,7 @@ namespace OnlineBookClub.Controllers
         [HttpGet("{planId}")]
         public async Task<IActionResult> GetByPlanId(int planId)
         {
+
             var stat = await _service.GetStatisticByPlanIdAsync(planId);
             if (stat == null)
                 return NotFound();
@@ -31,7 +32,14 @@ namespace OnlineBookClub.Controllers
             var stats = await _service.GetAllStatisticsAsync();
             return Ok(stats);
         }
-
+        [HttpPost("addview/{planId}")]
+        public async Task<IActionResult> addview(int planId)
+        {
+            await _service.AddUserCountAsync(planId);
+            return Ok("新增觀看數成功") ;
+        }
+        
+       
     }
 
 }

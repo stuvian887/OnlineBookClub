@@ -14,10 +14,11 @@ namespace OnlineBookClub.Controllers
     public class PlanMemberController : ControllerBase
     {
         private readonly PlanMemberService _planMembersService;
-
-        public PlanMemberController(PlanMemberService planMembersService)
+        private readonly StatisticService _statisticService;
+        public PlanMemberController(PlanMemberService planMembersService,StatisticService statisticService)
         {
             _planMembersService = planMembersService;
+            _statisticService = statisticService;
         }
 
         [HttpPost("join")]
@@ -35,6 +36,7 @@ namespace OnlineBookClub.Controllers
             var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             int UserId = int.Parse(UserIdClaim.Value);
             var result = await _planMembersService.LeavePlanAsync(UserId , planid);
+            await _statisticService.DecreaseUserCountAsync(planid);
             return result.Success ? Ok(result.Message) : BadRequest(result.Message);
         }
 

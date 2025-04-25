@@ -80,7 +80,6 @@ namespace OnlineBookClub.Migrations
                         .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("Link")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Plan_Id")

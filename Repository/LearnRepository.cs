@@ -20,10 +20,11 @@ namespace OnlineBookClub.Repository
         public async Task<IEnumerable<LearnDTO>> GetAllLearnAsync()
         {
             var AllLearnsOfAllPlans = await _context.Learn.ToListAsync();
-            if(AllLearnsOfAllPlans != null)
+            if (AllLearnsOfAllPlans != null)
             {
                 foreach (var all in AllLearnsOfAllPlans)
                 {
+                    double PassPersent = await GetPersentOfMemberPass(all.Plan_Id);
                     (string RecentlyLearnDate, string RecentlyLearn) = await GetRecentlyLearn(all.Plan_Id);
                     var result = (from a in _context.Learn
                                   where all.Plan_Id == a.Plan_Id
@@ -36,11 +37,11 @@ namespace OnlineBookClub.Repository
                                       DueTime = a.DueTime,
                                       RecentlyLearnDate = RecentlyLearnDate,
                                       RecentlyLearn = RecentlyLearn,
+                                      PersentOfMemberPass = PassPersent,
                                       Manual_Check = a.Manual_Check,
                                       ProgressTracking = a.ProgressTracking
                                   });
                     var list = await result.ToListAsync();
-                    return list.Select(a => GetProgressTrack(a));
                 }
                 return null;
             }
@@ -51,55 +52,120 @@ namespace OnlineBookClub.Repository
         }
         public async Task<IEnumerable<LearnDTO>> GetLearnByPlanIdAsync(int PlanId)
         {
-            (string RecentlyLearnDate , string RecentlyLearn) = await GetRecentlyLearn(PlanId);
-            var result = (from a in _context.Learn
-                          where PlanId == a.Plan_Id
-                          select new LearnDTO
-                          {
-                              Plan_Id = a.Plan_Id,
-                              Learn_Index = a.Learn_Index,
-                              Learn_Name = a.Learn_Name,
-                              Pass_Standard = a.Pass_Standard,
-                              DueTime = a.DueTime,
-                              RecentlyLearnDate = RecentlyLearnDate,
-                              RecentlyLearn = RecentlyLearn,
-                              Manual_Check = a.Manual_Check,
-                              ProgressTracking = a.ProgressTracking
-                          });
-            var list = await result.ToListAsync();
-            return list.Select(a => GetProgressTrack(a));
+            var list = new List<LearnDTO>();
+            var Learns = await _context.Learn.Where(l => l.Plan_Id == PlanId).ToListAsync();
+            foreach (var a in Learns)
+            {
+                double PassPersent = await GetPersentOfMemberPass(a.Learn_Id);
+                (string RecentlyLearnDate, string RecentlyLearn) = await GetRecentlyLearn(a.Plan_Id);
+                list.Add(new LearnDTO
+                {
+                    Plan_Id = a.Plan_Id,
+                    Learn_Index = a.Learn_Index,
+                    Learn_Name = a.Learn_Name,
+                    Pass_Standard = a.Pass_Standard,
+                    DueTime = a.DueTime,
+                    RecentlyLearnDate = RecentlyLearnDate,
+                    RecentlyLearn = RecentlyLearn,
+                    PersentOfMemberPass = PassPersent,
+                    Manual_Check = a.Manual_Check,
+                    ProgressTracking = (ICollection<ProgressTracking>)(a.ProgressTracking?.Select(t => GetProgressTrack(t)).ToList())
+                });
+            }
+            return list;
         }
-        public async Task<(string , string)> GetRecentlyLearn(int PlanId)
+        public async Task<(IEnumerable<LearnDTO>, string Message)> GetLearnByCalendar(int UserId, DateTime? BeginTime, DateTime? EndTime)
+        {
+            DateTime trueEnd = EndTime.Value.Date.AddDays(1).AddSeconds(-1);
+            if (BeginTime == null)
+            {
+                return (null, "請輸入起始時間");
+            }
+            if (EndTime == null)
+            {
+                return (null, "請輸入結束時間");
+            }
+            var Progresses = await _context.ProgressTracking.Where(p => p.User_Id == UserId).ToListAsync();
+            var Learns = await _context.Learn.ToListAsync();
+            List<LearnDTO> resultdto= new List<LearnDTO>();
+            foreach(var progress in Progresses)
+            {
+                foreach (var learn in Learns)
+                {
+                    if (learn.DueTime >= BeginTime && learn.DueTime <= trueEnd && progress.Learn_Id == learn.Learn_Id)
+                    {
+                        var dto = new LearnDTO
+                        {
+                            Learn_Name = learn.Learn_Name,
+                        };
+                        resultdto.Add(dto);
+                    }
+                }
+            }
+            return (resultdto,"查詢成功");
+        }
+
+        public async Task<double> GetPersentOfMemberPass(int LearnId)
+        {
+            try
+            {
+                var Learn = await _context.Learn.Where(l => l.Learn_Id == LearnId).FirstOrDefaultAsync();
+                int PassCount = 0;
+                if (Learn != null)
+                {
+                    var MembersProgress = await _context.ProgressTracking.Where(p => p.Learn_Id == Learn.Learn_Id).ToListAsync();
+                    foreach (var MemberPass in MembersProgress)
+                    {
+                        if (MemberPass.Status == true)
+                        {
+                            PassCount++;
+                        }
+                    }
+                    int LearnMemberCount = await _context.ProgressTracking.Where(p => p.Learn_Id == Learn.Learn_Id).CountAsync();
+                    double PassPersent = (double)PassCount / LearnMemberCount;
+                    return PassPersent;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message.ToString());
+            }
+        }
+        public async Task<(string, string)> GetRecentlyLearn(int PlanId)
         {
             string TempLearn = "";
             string LearnDate = " ";
             double TempTime = 99999999f;
             var PlanOfLearns = await _context.Learn.Where(l => l.Plan_Id == PlanId).ToListAsync();
-            if(PlanOfLearns != null)
+            if (PlanOfLearns != null)
             {
-                foreach(var learns in PlanOfLearns)
+                foreach (var learns in PlanOfLearns)
                 {
                     System.DateTime NowTime = DateTime.Now;
                     System.TimeSpan FindRecentlyLearnTime = learns.DueTime.Subtract(NowTime);
-                    if(FindRecentlyLearnTime.TotalSeconds >= 0 && FindRecentlyLearnTime.TotalSeconds <= TempTime)
+                    if (FindRecentlyLearnTime.TotalSeconds >= 0 && FindRecentlyLearnTime.TotalSeconds <= TempTime)
                     {
                         TempTime = FindRecentlyLearnTime.TotalSeconds;
                         LearnDate = learns.DueTime.ToString("yyyy/MM/dd");
                         TempLearn = learns.Learn_Name;
                     }
                 }
-                return (LearnDate , TempLearn);
+                return (LearnDate, TempLearn);
             }
             else
             {
-                return (null,null);
+                return (null, null);
             }
         }
         public async Task<BookPlan> CheckLearnByPlanIdAsync(int PlanId)
         {
             return await _context.BookPlan.Include(bp => bp.Learn).SingleOrDefaultAsync(p => p.Plan_Id == PlanId);
         }
-        public async Task<(LearnDTO , string Message)> CreateLearnAsync(int PlanId, LearnDTO InsertData)
+        public async Task<(LearnDTO, string Message)> CreateLearnAsync(int PlanId, LearnDTO InsertData)
         {
             BookPlan FindPlan = await CheckLearnByPlanIdAsync(PlanId);
             if (FindPlan != null)
@@ -129,7 +195,7 @@ namespace OnlineBookClub.Repository
                         Learn_Name = learn.Learn_Name,
                     };
                     await CreateProgressTrackAsync(PlanId, learn.Learn_Id);
-                    return (resultDTO , "學習內容新增成功");
+                    return (resultDTO, "學習內容新增成功");
                 }
                 else
                 {
@@ -257,28 +323,18 @@ namespace OnlineBookClub.Repository
                 return null;
             }
         }
-        public static LearnDTO GetProgressTrack(LearnDTO b)
+        public static ProgressTrackingDTO GetProgressTrack(ProgressTracking temp)
         {
-            List<ProgressTrackingDTO> Progress = new List<ProgressTrackingDTO>();
-            if (b.ProgressTracking != null)
+            if (temp == null) return null;
+
+            return new ProgressTrackingDTO
             {
-                foreach (var temp in b.ProgressTracking)
-                {
-                    if (temp != null)
-                    {
-                        ProgressTrackingDTO progress = new ProgressTrackingDTO
-                        {
-                            Progress_Id = temp.Progress_Id,
-                            User_Id = temp.User_Id,
-                            Learn_Id = temp.Learn_Id,
-                            Status = temp.Status,
-                            CompletionDate = temp.CompletionDate,
-                        };
-                        Progress.Add(progress);
-                    }
-                }
-            }
-            return b;
+                Progress_Id = temp.Progress_Id,
+                User_Id = temp.User_Id,
+                Learn_Id = temp.Learn_Id,
+                Status = temp.Status,
+                CompletionDate = temp.CompletionDate,
+            };
         }
         public async Task<IEnumerable<ProgressTrackingDTO>> CreateAllProgressTrackAsync(int UserId, int PlanId)
         {

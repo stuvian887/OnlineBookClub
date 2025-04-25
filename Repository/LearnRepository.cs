@@ -281,7 +281,10 @@ namespace OnlineBookClub.Repository
                     var DeleteLearn = await _context.Learn.Where(l => l.Plan_Id == PlanId).FirstOrDefaultAsync(l => l.Learn_Index == Learn_Index);
                     if (DeleteLearn != null)
                     {
-                        _context.Remove(DeleteLearn);
+                        var mardata = await _context.ProgressTracking.Where(X => X.Learn_Id == DeleteLearn.Learn_Id).FirstOrDefaultAsync();
+                        _context.ProgressTracking.Remove(mardata);
+                        _context.Learn.Remove(DeleteLearn);
+
                         await _context.SaveChangesAsync();
                         LearnDTO resultDTO = new LearnDTO();
                         resultDTO.Learn_Name = DeleteLearn.Learn_Name;

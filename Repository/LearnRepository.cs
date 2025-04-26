@@ -413,11 +413,13 @@ namespace OnlineBookClub.Repository
                     {
                         var PassTheProgress = await _context.ProgressTracking.Where(pt => pt.Learn_Id == Learn.Learn_Id).FirstOrDefaultAsync(pt => pt.Learn_Id == Learn.Learn_Id);
                         PassTheProgress.Status = true;
+                        PassTheProgress.CompletionDate = DateTime.Now;
                         _context.ProgressTracking.Update(PassTheProgress);
                         await _context.SaveChangesAsync();
                         ProgressTrackingDTO resultDTO = new ProgressTrackingDTO
                         {
                             Status = PassTheProgress.Status,
+                            CompletionDate = PassTheProgress.CompletionDate
                         };
                         return resultDTO;
                     }

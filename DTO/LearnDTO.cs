@@ -15,11 +15,10 @@ namespace OnlineBookClub.DTO
 
         public int Pass_Standard { get; set; }
         public DateTime DueTime { get; set; }
-        public string RecentlyLearnDate { get; set; }
-        public string RecentlyLearn { get; set; } = null;
+        //public string RecentlyLearnDate { get; set; }
+        //public string RecentlyLearn { get; set; } = null;
         public bool Manual_Check { get; set; }
         public double PersentOfMemberPass { get; set; }
-        [JsonIgnore]
-        public virtual ICollection<ProgressTrackingDTO> ProgressTracking { get; set; }
+        public List<ProgressTrackingDTO> ProgressTracking { get; set; } = new();
     }
 }

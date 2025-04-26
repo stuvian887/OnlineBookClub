@@ -11,16 +11,16 @@ namespace OnlineBookClub.Service
         {
             _learnRepository = learnRepository;
         }
-        public async Task<IEnumerable<LearnDTO>> GetAllLearn()
-        {
-            return await _learnRepository.GetAllLearnAsync();
+        //public async Task<IEnumerable<LearnDTO>> GetAllLearn()
+        //{
+        //    return await _learnRepository.GetAllLearnAsync();
 
-        }
+        //}
         public async Task<IEnumerable<LearnDTO>> GetLearn(int PlanId)
         {
             return await _learnRepository.GetLearnByPlanIdAsync(PlanId);
         }
-        public async Task<(IEnumerable<LearnDTO> , string Message)> GetLearnByCalendar(int UserId , DateTime? BeginTime , DateTime? EndTime)
+        public async Task<(IEnumerable<CalendarLearnDTO> , string Message)> GetLearnByCalendar(int UserId , DateTime? BeginTime , DateTime? EndTime)
         {
             return await _learnRepository.GetLearnByCalendar(UserId , BeginTime , EndTime);
         }

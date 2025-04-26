@@ -20,7 +20,7 @@ namespace OnlineBookClub.Controllers
 
         [HttpPost]
         
-        public async Task<IActionResult> CreateReply([FromBody] ReplyDTO dto)
+        public async Task<IActionResult> CreateReply([FromForm] ReplyDTO dto)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
             var reply = await _service.CreateReplyAsync(userId, dto);
@@ -28,9 +28,9 @@ namespace OnlineBookClub.Controllers
         }
 
         [HttpGet("{postId}")]
-        public async Task<IActionResult> GetReplies(int postId)
+        public async Task<IActionResult> GetReplies(int postId, HttpRequest request)
         {
-            var replies = await _service.GetRepliesByPostIdAsync(postId);
+            var replies = await _service.GetRepliesByPostIdAsync(postId, request);
             return Ok(replies);
         }
 

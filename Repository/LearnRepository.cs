@@ -17,39 +17,39 @@ namespace OnlineBookClub.Repository
             _context = context;
             _planMemberRepository = planMemberRepository;
         }
-        //public async Task<IEnumerable<LearnDTO>> GetAllLearnAsync()
-        //{
-        //    var AllLearnsOfAllPlans = await _context.Learn.ToListAsync();
-        //    if (AllLearnsOfAllPlans != null)
-        //    {
-        //        foreach (var all in AllLearnsOfAllPlans)
-        //        {
-        //            double PassPersent = await GetPersentOfMemberPass(all.Plan_Id);
-        //            (string RecentlyLearnDate, string RecentlyLearn) = await GetRecentlyLearn(all.Plan_Id);
-        //            var result = (from a in _context.Learn
-        //                          where all.Plan_Id == a.Plan_Id
-        //                          select new LearnDTO
-        //                          {
-        //                              Plan_Id = a.Plan_Id,
-        //                              Learn_Index = a.Learn_Index,
-        //                              Learn_Name = a.Learn_Name,
-        //                              Pass_Standard = a.Pass_Standard,
-        //                              DueTime = a.DueTime,
-        //                              RecentlyLearnDate = RecentlyLearnDate,
-        //                              RecentlyLearn = RecentlyLearn,
-        //                              PersentOfMemberPass = PassPersent,
-        //                              Manual_Check = a.Manual_Check,
-        //                              ProgressTrackings = a.ProgressTracking?.Select(p => GetProgressTrack(p)).ToList()
-        //                          });
-        //            var list = await result.ToListAsync();
-        //        }
-        //        return null;
-        //    }
-        //    else
-        //    {
-        //        return null;
-        //    }
-        //}
+        public async Task<IEnumerable<LearnDTO>> GetAllLearnAsync()
+        {
+            var AllLearnsOfAllPlans = await _context.Learn.ToListAsync();
+            if (AllLearnsOfAllPlans != null)
+            {
+                foreach (var all in AllLearnsOfAllPlans)
+                {
+                    double PassPersent = await GetPersentOfMemberPass(all.Plan_Id);
+                    (string RecentlyLearnDate, string RecentlyLearn) = await GetRecentlyLearn(all.Plan_Id);
+                    var result = (from a in _context.Learn
+                                  where all.Plan_Id == a.Plan_Id
+                                  select new LearnDTO
+                                  {
+                                      Plan_Id = a.Plan_Id,
+                                      Learn_Index = a.Learn_Index,
+                                      Learn_Name = a.Learn_Name,
+                                      Pass_Standard = a.Pass_Standard,
+                                      DueTime = a.DueTime,
+                                      RecentlyLearnDate = RecentlyLearnDate,
+                                      RecentlyLearn = RecentlyLearn,
+                                      PersentOfMemberPass = PassPersent,
+                                      Manual_Check = a.Manual_Check,
+                                      ProgressTracking = a.ProgressTracking
+                                  });
+                    var list = await result.ToListAsync();
+                }
+                return null;
+            }
+            else
+            {
+                return null;
+            }
+        }
         public async Task<IEnumerable<LearnDTO>> GetLearnByPlanIdAsync(int PlanId)
         {
             var list = new List<LearnDTO>();
@@ -281,7 +281,10 @@ namespace OnlineBookClub.Repository
                     var DeleteLearn = await _context.Learn.Where(l => l.Plan_Id == PlanId).FirstOrDefaultAsync(l => l.Learn_Index == Learn_Index);
                     if (DeleteLearn != null)
                     {
-                        _context.Remove(DeleteLearn);
+                        var mardata = await _context.ProgressTracking.Where(X => X.Learn_Id == DeleteLearn.Learn_Id).FirstOrDefaultAsync();
+                        _context.ProgressTracking.Remove(mardata);
+                        _context.Learn.Remove(DeleteLearn);
+
                         await _context.SaveChangesAsync();
                         LearnDTO resultDTO = new LearnDTO();
                         resultDTO.Learn_Name = DeleteLearn.Learn_Name;

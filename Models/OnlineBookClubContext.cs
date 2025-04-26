@@ -76,7 +76,7 @@ public partial class OnlineBookClubContext : DbContext
 
             entity.HasOne(d => d.Plan).WithMany(p => p.Book)
                 .HasForeignKey(d => d.Plan_Id)
-                 .OnDelete(DeleteBehavior.NoAction) // ← 加上這行
+                .OnDelete(DeleteBehavior.Cascade) // ← 加上這行
                 .HasConstraintName("FK__Book__Plan_Id__5629CD9C");
         });
 
@@ -101,7 +101,7 @@ public partial class OnlineBookClubContext : DbContext
 
             entity.HasOne(d => d.User).WithMany(p => p.BookPlan)
                 .HasForeignKey(d => d.User_Id)
-                .OnDelete(DeleteBehavior.NoAction)
+               .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__BookPlan__User_I__4CA06362");
         });
 
@@ -118,7 +118,7 @@ public partial class OnlineBookClubContext : DbContext
 
             entity.HasOne(d => d.Plan).WithMany(p => p.Learn)
                 .HasForeignKey(d => d.Plan_Id)
-                 .OnDelete(DeleteBehavior.NoAction) // ← 加上這行
+                 .OnDelete(DeleteBehavior.Cascade) // ← 加上這行
                 .HasConstraintName("FK__Learn__Plan_Id__59063A47");
         });
 
@@ -171,7 +171,7 @@ public partial class OnlineBookClubContext : DbContext
 
                  entity.HasOne(d => d.Plan).WithMany(p => p.PlanMembers)
                 .HasForeignKey(d => d.Plan_Id)
-                .OnDelete(DeleteBehavior.NoAction)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__PlanMembe__Plan___70DDC3D8");
 
             entity.HasOne(d => d.User).WithMany(p => p.PlanMembers)
@@ -239,7 +239,7 @@ public partial class OnlineBookClubContext : DbContext
 
             entity.HasOne(d => d.Learn).WithMany(p => p.ProgressTracking)
                 .HasForeignKey(d => d.Learn_Id)
-                .OnDelete(DeleteBehavior.NoAction)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__ProgressT__Learn__6477ECF3");
 
             entity.HasOne(d => d.User).WithMany(p => p.ProgressTracking)
@@ -300,7 +300,7 @@ public partial class OnlineBookClubContext : DbContext
 
             entity.HasOne(d => d.Plan).WithMany(p => p.Statistic)
                 .HasForeignKey(d => d.Plan_Id)
-                 .OnDelete(DeleteBehavior.NoAction) // ← 加上這行
+                 .OnDelete(DeleteBehavior.Cascade) // ← 加上這行
                 .HasConstraintName("FK__Statistic__Plan___76969D2E");
         });
 

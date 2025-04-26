@@ -81,10 +81,12 @@ namespace OnlineBookClub.Repository
             {
                 return (null, "請輸入起始時間");
             }
+
             if (EndTime == null)
             {
                 return (null, "請輸入結束時間");
             }
+
             var Progresses = await _context.ProgressTracking.Where(p => p.User_Id == UserId).ToListAsync();
             var Learns = await _context.Learn.ToListAsync();
             DateTime trueStart = BeginTime.Value.Date;
@@ -119,11 +121,13 @@ namespace OnlineBookClub.Repository
                 {
                     return 0;
                 }
+
                 var MembersProgress = await _context.ProgressTracking.Where(p => p.Learn_Id == Learn.Learn_Id).ToListAsync();
                 foreach (var MemberPass in MembersProgress)
                 {
                     if (MemberPass.Status == true) PassCount++;
                 }
+
                 int LearnMemberCount = await _context.ProgressTracking.Where(p => p.Learn_Id == Learn.Learn_Id).CountAsync();
                 double PassPersent = (double)PassCount / LearnMemberCount;
                 return PassPersent;
@@ -166,14 +170,20 @@ namespace OnlineBookClub.Repository
             {
                 return (null, "錯誤，找不到該計畫");
             }
+
             var AllLearn = await _context.Learn.Where(l => l.Plan_Id == PlanId).ToListAsync();
             foreach (var learns in AllLearn)
             {
                 if (InsertData.Learn_Index == learns.Learn_Index) return (null, "錯誤，此學習編號已經存在");
             }
+
             System.DateTime NowTime = DateTime.Now.Date;
             System.TimeSpan checkdifftime = InsertData.DueTime.Subtract(NowTime);
-            if (checkdifftime.TotalSeconds < 0) return (null, "錯誤，期限不可於今天之前");
+            if (checkdifftime.TotalSeconds < 0)
+            {
+                return (null, "錯誤，期限不可於今天之前");
+            }
+
             Learn learn = new Learn();
             learn.Plan_Id = PlanId;
             learn.Learn_Name = InsertData.Learn_Name;
@@ -199,11 +209,13 @@ namespace OnlineBookClub.Repository
                 {
                     return (null, "錯誤，找不到該計畫");
                 }
+
                 var UpdateLearn = await _context.Learn.Where(l => l.Plan_Id == PlanId).FirstOrDefaultAsync(l => l.Learn_Index == Learn_Index);
                 if (UpdateLearn == null)
                 {
                     return (null, "錯誤，找不到該學習內容");
                 }
+
                 var AllLearn = await _context.Learn.Where(l => l.Plan_Id == PlanId).ToListAsync();
                 //確定使用者真的不會用奇怪的方式讓題號一樣 若不變更題號請不要輸入Learn_Index 不然會做這個if判斷
                 foreach (var learns in AllLearn)
@@ -228,6 +240,7 @@ namespace OnlineBookClub.Repository
                     resultDTO.Learn_Name = UpdateLearn.Learn_Name;
                     return (resultDTO, "修改學習內容成功");
                 }
+
                 else return (null, "錯誤，期限不可於今天之前");
             }
             else if (Role == "組員") return (null, "你沒有權限這麼做");
@@ -243,11 +256,13 @@ namespace OnlineBookClub.Repository
                 {
                     return (null, "找不到此計畫");
                 }
+
                 var DeleteLearn = await _context.Learn.Where(l => l.Plan_Id == PlanId).FirstOrDefaultAsync(l => l.Learn_Index == Learn_Index);
                 if (DeleteLearn == null)
                 {
                     return (null, "找不到此學習");
                 }
+
                 var mardata = await _context.ProgressTracking.Where(X => X.Learn_Id == DeleteLearn.Learn_Id).FirstOrDefaultAsync();
                 _context.ProgressTracking.Remove(mardata);
                 _context.Learn.Remove(DeleteLearn);
@@ -346,7 +361,7 @@ namespace OnlineBookClub.Repository
             var User = await _planMemberRepository.GetUserRoleAsync(UserId, PlanId);
             var Plan = await _context.BookPlan.FindAsync(PlanId);
             var Learn = await _context.Learn.Where(l => l.Plan_Id == PlanId).FirstOrDefaultAsync(l => l.Learn_Index == LearnIndex);
-            if (User != null || Plan != null || Learn != null)
+            if (User != null && Plan != null && Learn != null)
             {
                 var PassTheProgress = await _context.ProgressTracking.Where(pt => pt.Learn_Id == Learn.Learn_Id).FirstOrDefaultAsync(pt => pt.Learn_Id == Learn.Learn_Id);
                 PassTheProgress.Status = true;
@@ -423,7 +438,7 @@ namespace OnlineBookClub.Repository
                                   times = a.times,
                                   Pass = a.Pass
                               });
-                return ((IEnumerable<Answer_RecordDTO>)result);
+                return await result.ToListAsync();
             }
             else { return null; }
         }

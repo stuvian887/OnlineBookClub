@@ -23,7 +23,15 @@ namespace OnlineBookClub.Controllers
         {
             var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             int UserId = int.Parse(UserIdClaim.Value);
-            return Ok(await _service.GetPostReport(UserId, PlanId, PostId));
+            var result = await _service.GetPostReport(UserId, PlanId, PostId);
+            if(result != null)
+            {
+                return Ok(result);
+            }
+            else
+            {
+                return BadRequest(new {message ="發生錯誤"});
+            }
         }
 
         // GET api/<ReportController>/5
@@ -32,7 +40,15 @@ namespace OnlineBookClub.Controllers
         {
             var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             int UserId = int.Parse(UserIdClaim.Value);
-            return Ok(await _service.GetReplyReport(UserId, PlanId, PostId, ReplyId));
+            var result = await _service.GetReplyReport(UserId, PlanId, PostId, ReplyId);
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            else
+            {
+                return BadRequest(new { message = "發生錯誤" });
+            }
         }
 
         // POST api/<ReportController>

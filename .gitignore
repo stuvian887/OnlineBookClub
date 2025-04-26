@@ -362,3 +362,8 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /appsettings.json
+/Migrations/20250426102652_5678.cs
+/Migrations/20250426102652_5678.Designer.cs
+/Migrations/20250426141509_33.cs
+/Migrations/20250426141509_33.Designer.cs
+/Migrations/OnlineBookClubContextModelSnapshot.cs

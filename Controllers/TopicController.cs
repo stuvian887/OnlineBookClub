@@ -22,7 +22,15 @@ namespace OnlineBookClub.Controllers
         [HttpGet("{PlanId}/{Learn_Index}")]
         public async Task<IActionResult> GetTopic(int PlanId, int Learn_Index)
         {
-            return Ok(await _service.GetTopicAsync(PlanId, Learn_Index));
+            var result = await _service.GetTopicAsync(PlanId, Learn_Index);
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            else
+            {
+                return BadRequest(new { message = "發生錯誤" });
+            }
         }
 
         // POST api/<TopicController>

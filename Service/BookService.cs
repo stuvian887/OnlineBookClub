@@ -101,6 +101,10 @@ namespace OnlineBookClub.Service
                     // 儲存圖片的相對網址
                     savedFilePath = $"/Book/images/{fileName}";
                 }
+                else
+                {
+                    savedFilePath = null;
+                }
                 var book = new Book
                 {
                     BookName = bookDto.BookName,

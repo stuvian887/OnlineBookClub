@@ -21,12 +21,12 @@ namespace OnlineBookClub.Controllers
         {
             _service = service;
         }
-        // GET: api/<LearnController>
-        [HttpGet("Index")]
-        public async Task<IActionResult> GetAllLearn()
-        {
-            return Ok(await _service.GetAllLearn()) ;
-        }
+        //// GET: api/<LearnController>
+        //[HttpGet("Index")]
+        //public async Task<IActionResult> GetAllLearn()
+        //{
+        //    return Ok(await _service.GetAllLearn()) ;
+        //}
 
         // GET api/<LearnController>/5
         [HttpGet("Index/{PlanId}")]
@@ -39,7 +39,15 @@ namespace OnlineBookClub.Controllers
         {
             var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             int UserId = int.Parse(UserIdClaim.Value);
-            return Ok(await _service.GetLearnByCalendar(UserId, BeginTime, EndTime));
+            var result = await _service.GetLearnByCalendar(UserId, BeginTime, EndTime);
+            if(result.Item1 != null)
+            {
+                return Ok(result.Item1);
+            }
+            else
+            {
+                return BadRequest(result.Message);
+            }
         }
 
         // POST api/<LearnController>

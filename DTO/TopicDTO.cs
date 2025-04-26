@@ -17,8 +17,6 @@ namespace OnlineBookClub.DTO
         public string Option_D { get; set; }
 
         public string Answer { get; set; }
-
-        public virtual Learn Learn { get; set; }
     }
 }
 

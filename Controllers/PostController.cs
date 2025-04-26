@@ -37,9 +37,9 @@ namespace OnlineBookClub.Controllers
         }
 
         [HttpGet("{planId}")]
-        public async Task<IActionResult> GetPosts(int planId, HttpRequest request)
+        public async Task<IActionResult> GetPosts(int planId)
         {
-            var posts = await _service.GetPostsByPlanIdAsync(planId,request);
+            var posts = await _service.GetPostsByPlanIdAsync(planId, Request);
             
             return Ok(posts);
         }

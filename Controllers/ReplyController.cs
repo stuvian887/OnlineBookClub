@@ -28,9 +28,9 @@ namespace OnlineBookClub.Controllers
         }
 
         [HttpGet("{postId}")]
-        public async Task<IActionResult> GetReplies(int postId, HttpRequest request)
+        public async Task<IActionResult> GetReplies(int postId)
         {
-            var replies = await _service.GetRepliesByPostIdAsync(postId, request);
+            var replies = await _service.GetRepliesByPostIdAsync(postId, Request);
             return Ok(replies);
         }
 

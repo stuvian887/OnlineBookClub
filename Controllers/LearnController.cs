@@ -110,15 +110,30 @@ namespace OnlineBookClub.Controllers
         {
             var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             int UserId = int.Parse(UserIdClaim.Value);
-            return Ok(await _service.CreateAnswer_Record(UserId, Answer));
+            var result = await _service.CreateAnswer_Record(UserId, Answer);
+            if(result != null)
+            {
+                return Ok(result);
+            }
+            else
+            {
+                return BadRequest(new { message = "發生錯誤" });
+            }
         }
         [HttpPut("PassProgress/{PlanId}/{Learn_Index}")]
         public async Task<IActionResult> PassProgress(int PlanId , int Learn_Index)
         {
             var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             int UserId = int.Parse(UserIdClaim.Value);
-            await _service.PassProgressAsync(UserId, PlanId, Learn_Index);
-            return Ok(new { message = "進度通過!" });
+            var result = await _service.PassProgressAsync(UserId, PlanId, Learn_Index);
+            if(result != null)
+            {
+                return Ok(new { message = "進度通過!" });
+            }
+            else
+            {
+                return BadRequest(new { message = "發生錯誤" });
+            }
         }
     }
 }

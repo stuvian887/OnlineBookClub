@@ -21,17 +21,46 @@ namespace OnlineBookClub.Controllers
         {
             _service = service;
         }
+        [HttpGet("post/{postId}")]
+        public async Task<IActionResult> GetPostById(int postId)
+        {
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+            if (string.IsNullOrEmpty(email))
+            {
+                return Unauthorized();
+            }
+
+            var post = await _service.GetPostByIdAsync(email, postId);
+            if (post == null)
+                return NotFound();
+            return Ok(post);
+        }
+
+        [HttpGet("my")]
+        public async Task<IActionResult> GetMyPosts()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                return Unauthorized();
+            }
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+            var userId = int.Parse(userIdClaim.Value);
+            var myPosts = await _service.GetPostsByUserIdAsync(userId,email);
+            return Ok(myPosts);
+        }
+
 
         [HttpPost]
         
-        public async Task<IActionResult> CreatePost([FromForm] PostDTO dto )
+        public async Task<IActionResult> CreatePost([FromForm] CreatePost dto )
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
-            
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
             var userName = User.FindFirst("FullName")?.Value
              ?? User.FindFirst(ClaimTypes.Name)?.Value
              ?? "Unknown";
-            var result = await _service.CreatePostAsync(userId, userName, dto);
+            var result = await _service.CreatePostAsync(email, userId, userName, dto);
 
             return Ok(result);
         }
@@ -39,13 +68,14 @@ namespace OnlineBookClub.Controllers
         [HttpGet("{planId}")]
         public async Task<IActionResult> GetPosts(int planId)
         {
-            var posts = await _service.GetPostsByPlanIdAsync(planId, Request);
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+            var posts = await _service.GetPostsByPlanIdAsync(email,planId, Request);
             
             return Ok(posts);
         }
 
         [HttpPut("{postId}")]
-        public async Task<IActionResult> UpdatePost(int postId, [FromForm] PostDTO dto)
+        public async Task<IActionResult> UpdatePost(int postId, [FromForm] CreatePost dto)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
             var result = await _service.UpdatePostAsync(postId, userId, dto);

@@ -11,6 +11,19 @@ namespace OnlineBookClub.Repository
         {
             _context = context;
         }
+        public async Task<Post?> GetPostByIdWithUserAsync(int postId)
+        {
+            return await _context.Post
+                .Include(p => p.User)
+                .FirstOrDefaultAsync(p => p.Post_Id == postId);
+        }
+        public async Task<IEnumerable<Post>> GetPostsByUserIdAsync(int userId)
+        {
+            return await _context.Post
+                .Where(p => p.User_Id == userId)
+                .OrderByDescending(p => p.CreateTime)
+                .ToListAsync();
+        }
 
         public async Task<Post> CreatePostAsync(Post post)
         {

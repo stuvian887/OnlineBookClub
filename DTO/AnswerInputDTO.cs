@@ -2,7 +2,7 @@
 {
     public class AnswerInputDTO
     {
-        public int Topic_Id { get; set; }
+        public int Question_Id { get; set; }
         public string User_Answer { get; set; }  
     }
 }

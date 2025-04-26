@@ -369,17 +369,17 @@ namespace OnlineBookClub.Repository
             if (Plan == null) { return null; }
             foreach (var answerInput in submission.Answers)
             {
-                int countimes = await _context.Answer_Record.CountAsync(a => a.User_Id == UserId && a.Topic_Id == answerInput.Topic_Id);
-                var topic = await _context.Topic.FindAsync(answerInput.Topic_Id);
                 var Learn = await _context.Learn.Where(l => l.Plan_Id == submission.Plan_Id).FirstOrDefaultAsync(l => l.Learn_Index == submission.Learn_Index);
-                if(Plan == null || topic == null || Learn == null)
+                var topic = await _context.Topic.FirstOrDefaultAsync(t => t.Learn_Id == Learn.Learn_Id && t.Question_Id == answerInput.Question_Id);
+                int countimes = await _context.Answer_Record.CountAsync(a => a.User_Id == UserId && a.Topic_Id == topic.Topic_Id);
+                if (Plan == null || topic == null || Learn == null)
                 {
                     return null;
                 }
                 Answer_Record answer_Record = new Answer_Record();
                 answer_Record.User_Id = UserId;
                 answer_Record.Learn_Id = Learn.Learn_Id;
-                answer_Record.Topic_Id = answerInput.Topic_Id;
+                answer_Record.Topic_Id = topic.Topic_Id;
                 answer_Record.AnswerDate = DateTime.Now;
                 answer_Record.Answer = answerInput.User_Answer;
                 answer_Record.times = countimes + 1;

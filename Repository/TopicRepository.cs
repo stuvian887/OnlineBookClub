@@ -59,7 +59,7 @@ namespace OnlineBookClub.Repository
                 if (learn == null)
                 {
                     return (null, "找不到該學習內容");
-                }
+                }   
                 var existingTopic = await _context.Topic.FirstOrDefaultAsync(t => t.Learn_Id == learn.Learn_Id && t.Question_Id == InsertTopic.Question_Id);
                 if (existingTopic != null)
                 {

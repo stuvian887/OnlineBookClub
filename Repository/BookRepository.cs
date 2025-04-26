@@ -36,6 +36,7 @@ namespace OnlineBookClub.Repository
                 {
                     existingBook.bookpath = book.bookpath;
                 }
+                else existingBook.bookpath = null;
 
                 await _context.SaveChangesAsync();
             }

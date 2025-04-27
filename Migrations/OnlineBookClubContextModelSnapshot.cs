@@ -526,7 +526,7 @@ namespace OnlineBookClub.Migrations
                     b.HasOne("OnlineBookClub.Models.Learn", "Learn")
                         .WithMany("Answer_Record")
                         .HasForeignKey("Learn_Id")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK__Answer_Re__Learn__60A75C0F");
 
@@ -559,7 +559,7 @@ namespace OnlineBookClub.Migrations
                     b.HasOne("OnlineBookClub.Models.Members", "User")
                         .WithMany("BookPlan")
                         .HasForeignKey("User_Id")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
                         .HasConstraintName("FK__BookPlan__User_I__4CA06362");
 
@@ -616,7 +616,7 @@ namespace OnlineBookClub.Migrations
                     b.HasOne("OnlineBookClub.Models.BookPlan", "Plan")
                         .WithMany("Post")
                         .HasForeignKey("Plan_Id")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK__Post__Plan_Id__4F7CD00D");
 
@@ -637,7 +637,7 @@ namespace OnlineBookClub.Migrations
                     b.HasOne("OnlineBookClub.Models.Post", "Post")
                         .WithMany("Post_Report")
                         .HasForeignKey("Post_Id")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK__Post_Repo__Post___6C190EBB");
 
@@ -670,7 +670,7 @@ namespace OnlineBookClub.Migrations
                     b.HasOne("OnlineBookClub.Models.Post", "Post")
                         .WithMany("Reply")
                         .HasForeignKey("Post_Id")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK__Reply__Post_Id__5BE2A6F2");
 
@@ -691,7 +691,7 @@ namespace OnlineBookClub.Migrations
                     b.HasOne("OnlineBookClub.Models.Reply", "Reply")
                         .WithMany("Reply_Report")
                         .HasForeignKey("Reply_Id")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK__Reply_Rep__Reply__68487DD7");
 
@@ -715,7 +715,7 @@ namespace OnlineBookClub.Migrations
                     b.HasOne("OnlineBookClub.Models.Learn", "Learn")
                         .WithMany("Topic")
                         .HasForeignKey("Learn_Id")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK__Topic__Learn_Id__73BA3083");
 

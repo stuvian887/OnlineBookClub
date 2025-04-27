@@ -236,18 +236,26 @@ namespace OnlineBookClub.Repository
             var bookPlan = await _context.BookPlan
                                           .Include(bp => bp.PlanMembers)  // 確保加載相關的 PlanMembers
                                           .FirstOrDefaultAsync(bp => bp.Plan_Id == PlanId);
-
+            var Learn = await _context.Learn
+                             .Include(bp => bp.Topic)  // 確保加載相關的 PlanMembers
+                             .FirstOrDefaultAsync(bp => bp.Plan_Id == PlanId);
+            var pp = await _context.Learn
+                             .Include(bp => bp.ProgressTracking)  // 確保加載相關的 PlanMembers
+                             .FirstOrDefaultAsync(bp => bp.Learn_Id == Learn.Learn_Id);
+            var book = await _context.BookPlan
+                             .Include(bp => bp.Book)  // 確保加載相關的 PlanMembers
+                             .FirstOrDefaultAsync(bp => bp.Plan_Id == bookPlan.Plan_Id);
             if (bookPlan == null)
                 return false;
           
             // 先刪除相關的 PlanMembers
             _context.PlanMembers.RemoveRange(bookPlan.PlanMembers);
-            _context.Book.RemoveRange(bookPlan.Book);
-           _context.Learn.RemoveRange(bookPlan.Learn);
-            var topic = await _context.Learn
-                              .Include(bp => bp.Topic)  // 確保加載相關的 PlanMembers
-                              .FirstOrDefaultAsync(bp => bp.Learn_Id == bookPlan.Plan_Id);
-            _context.Topic.RemoveRange(topic.Topic);
+            _context.Book.RemoveRange(book.Book);
+            _context.ProgressTracking.RemoveRange(pp.ProgressTracking);
+            _context.Topic.RemoveRange(Learn.Topic);
+            _context.Learn.RemoveRange(bookPlan.Learn);
+           
+           
             // 然後刪除 BookPlans
             _context.BookPlan.Remove(bookPlan);
 

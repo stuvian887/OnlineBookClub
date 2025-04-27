@@ -33,6 +33,36 @@ namespace OnlineBookClub.Controllers
                 return BadRequest(new {message ="發生錯誤"});
             }
         }
+        [HttpGet("GetAllPostReport")]
+        public async Task<IActionResult> GetAllPostReport()
+        {
+            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            int UserId = int.Parse(UserIdClaim.Value);
+            var result = await _service.GetAllPostReport(UserId);
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            else
+            {
+                return BadRequest(new { message = "發生錯誤" });
+            }
+        }
+        [HttpGet("GetAllReplyReport")]
+        public async Task<IActionResult> GetAllReplyReport()
+        {
+            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            int UserId = int.Parse(UserIdClaim.Value);
+            var result = await _service.GetAllReplyReport(UserId);
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            else
+            {
+                return BadRequest(new { message = "發生錯誤" });
+            }
+        }
 
         // GET api/<ReportController>/5
         [HttpGet("{PlanId}/{PostId}/{ReplyId}")]

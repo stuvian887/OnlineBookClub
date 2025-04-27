@@ -42,6 +42,53 @@ namespace OnlineBookClub.Repository
             }
             else { return null; }
         }
+        public async Task<IEnumerable<Post_ReportDTO>> GetAllPostReport(int UserId)
+        {
+            var leaderPlanIds = await _context.PlanMembers
+            .Where(pm => pm.User_Id == UserId && pm.Role == "組長")
+            .Select(pm => pm.Plan_Id)
+            .ToListAsync();
+
+            if (leaderPlanIds == null || leaderPlanIds.Count == 0)
+                return null;
+
+            var result = from report in _context.Post_Report
+                         join post in _context.Post on report.Post_Id equals post.Post_Id
+                         where leaderPlanIds.Contains(post.Plan_Id)
+                         select new Post_ReportDTO
+                         {
+                             P_Report_Id = report.P_Report_Id,
+                             Post_Id = report.Post_Id,
+                             Action = report.Action,
+                             Report_text = report.Report_text
+                         };
+
+            return await result.ToListAsync();
+        }
+        public async Task<IEnumerable<Reply_ReportDTO>> GetAllReplyReport(int UserId)
+        {
+            var leaderPlanIds = await _context.PlanMembers
+            .Where(pm => pm.User_Id == UserId && pm.Role == "組長")
+            .Select(pm => pm.Plan_Id)
+            .ToListAsync();
+
+            if (leaderPlanIds == null || leaderPlanIds.Count == 0)
+                return null;
+
+            var result = from report in _context.Reply_Report
+                         join reply in _context.Reply on report.Reply_Id equals reply.Reply_Id
+                         join post in _context.Post on reply.Post_Id equals post.Post_Id
+                         where leaderPlanIds.Contains(post.Plan_Id)
+                         select new Reply_ReportDTO
+                         {
+                             R_Report_Id = report.R_Report_Id,
+                             Reply_Id = report.Reply_Id,
+                             Action = report.Action,
+                             Report_text = report.Report_text
+                         };
+
+            return await result.ToListAsync();
+        }
         public async Task<IEnumerable<Reply_ReportDTO>> GetReplyReport(int UserId, int PlanId, int PostId, int ReplyId)
         {
             var User = await _memberRepository.GetUserRoleAsync(UserId, PlanId);

@@ -9,11 +9,11 @@ namespace OnlineBookClub.Service
     public class PostService 
     {
         private readonly PostRepository _repository;
-        private readonly MembersService _MembersService;
-        public PostService(PostRepository repository, MembersService  membersService )
+        private readonly MembersRepository _membersRepository;
+        public PostService(PostRepository repository, MembersRepository  membersRepository )
         {
             _repository = repository;
-            _MembersService = membersService;
+            _membersRepository = membersRepository;
         }
 
         public async Task<Post> CreatePostAsync(string email,int userId, string userName, CreatePost dto)
@@ -52,22 +52,32 @@ namespace OnlineBookClub.Service
         }
 
 
-        public async Task<IEnumerable<PostDTO>> GetPostsByPlanIdAsync(string email,int planId, HttpRequest request)
+        public async Task<IEnumerable<PostDTO>> GetPostsByPlanIdAsync(string email, int planId, HttpRequest request)
         {
-            var post =await _repository.GetPostsByPlanIdAsync(planId);
+            var posts = await _repository.GetPostsByPlanIdAsync(planId);
             var hostUrl = $"{request.Scheme}://{request.Host}"; // ex: https://localhost:7009
-  
-            return post.Select(post => new PostDTO
+
+            var postDtos = new List<PostDTO>();
+
+            foreach (var post in posts)
             {
-                PostId = post.Post_Id,
-                PlanId = post.Plan_Id,
-                Content = post.Content,
-                CreateTime = post.CreateTime,
-                ImgPath = string.IsNullOrEmpty(post.Img_Path) ? null : $"{hostUrl}{post.Img_Path}",
-                MemberPath = post.User?.ProfilePictureUrl, // 改成拿發文者的資料
-        Name = post.User?.UserName
-            }).ToList();
+                var member =  _membersRepository.getbyid(post.User_Id); // 每一篇都去找作者
+
+                postDtos.Add(new PostDTO
+                {
+                    PostId = post.Post_Id,
+                    PlanId = post.Plan_Id,
+                    Content = post.Content,
+                    CreateTime = post.CreateTime,
+                    ImgPath = string.IsNullOrEmpty(post.Img_Path) ? null : $"{hostUrl}{post.Img_Path}",
+                    MemberPath = member?.ProfilePictureUrl,  // 作者的大頭貼
+                    Name = member?.UserName                  // 作者的名字
+                });
+            }
+
+            return postDtos;
         }
+
 
         public async Task<bool> UpdatePostAsync(int postId, int userId, CreatePost dto)
         {
@@ -134,7 +144,7 @@ namespace OnlineBookClub.Service
         public async Task<IEnumerable<PostDTO>> GetPostsByUserIdAsync(int userId,string email)
         {
             var posts = await _repository.GetPostsByUserIdAsync(userId);
-            var data = _MembersService.profile(email);
+            var data = _membersRepository.getbyid(userId);
             return posts.Select(post => new PostDTO
             {
                 PlanId = post.Plan_Id,
@@ -143,7 +153,7 @@ namespace OnlineBookClub.Service
                 ImgPath = post.Img_Path,
                 CreateTime = post.CreateTime,
                 MemberPath = data.ProfilePictureUrl,
-                Name = data.Name
+                Name = data.UserName
             }).ToList();
         }
 

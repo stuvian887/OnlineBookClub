@@ -27,7 +27,10 @@ namespace OnlineBookClub.Repository
             _OnlineBookClubContext.Members.Update(Member);
             _OnlineBookClubContext.SaveChanges();
         }
-
+        public Members getbyid(int userid)
+        {
+            return  _OnlineBookClubContext.Members.FirstOrDefault(m => m.User_Id==userid);
+        }
         
 
 

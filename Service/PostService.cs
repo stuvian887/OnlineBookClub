@@ -2,19 +2,21 @@
 using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
 using OnlineBookClub.Repository;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace OnlineBookClub.Service
 {
     public class PostService 
     {
         private readonly PostRepository _repository;
-
-        public PostService(PostRepository repository)
+        private readonly MembersRepository _membersRepository;
+        public PostService(PostRepository repository, MembersRepository  membersRepository )
         {
             _repository = repository;
+            _membersRepository = membersRepository;
         }
 
-        public async Task<Post> CreatePostAsync(int userId, string userName, PostDTO dto)
+        public async Task<Post> CreatePostAsync(string email,int userId, string userName, CreatePost dto)
         {
             string imgPath = "";
 
@@ -37,30 +39,47 @@ namespace OnlineBookClub.Service
             {
                 Plan_Id = dto.PlanId,
                 User_Id = userId,
-                Name = userName,
+                Name=userName,
                 Content = dto.Content,
                 Img_Path = imgPath,
                 CreateTime = DateTime.UtcNow
             };
 
             return await _repository.CreatePostAsync(post);
+            
+            
+
         }
 
 
-        public async Task<IEnumerable<PostDTO>> GetPostsByPlanIdAsync(int planId, HttpRequest request)
+        public async Task<IEnumerable<PostDTO>> GetPostsByPlanIdAsync(string email, int planId, HttpRequest request)
         {
-            var post =await _repository.GetPostsByPlanIdAsync(planId);
+            var posts = await _repository.GetPostsByPlanIdAsync(planId);
             var hostUrl = $"{request.Scheme}://{request.Host}"; // ex: https://localhost:7009
 
-            return post.Select(post => new PostDTO
+            var postDtos = new List<PostDTO>();
+
+            foreach (var post in posts)
             {
-                PlanId = post.Plan_Id,
-                Content = post.Content,
-                 ImgPath = string.IsNullOrEmpty(post.Img_Path) ? null : $"{hostUrl}{post.Img_Path}"
-            }).ToList();
+                var member =  _membersRepository.getbyid(post.User_Id); // 每一篇都去找作者
+
+                postDtos.Add(new PostDTO
+                {
+                    PostId = post.Post_Id,
+                    PlanId = post.Plan_Id,
+                    Content = post.Content,
+                    CreateTime = post.CreateTime,
+                    ImgPath = string.IsNullOrEmpty(post.Img_Path) ? null : $"{hostUrl}{post.Img_Path}",
+                    MemberPath = member?.ProfilePictureUrl,  // 作者的大頭貼
+                    Name = member?.UserName                  // 作者的名字
+                });
+            }
+
+            return postDtos;
         }
 
-        public async Task<bool> UpdatePostAsync(int postId, int userId, PostDTO dto)
+
+        public async Task<bool> UpdatePostAsync(int postId, int userId, CreatePost dto)
         {
             var post = await _repository.GetPostByIdAsync(postId);
             if (post == null || post.User_Id != userId)
@@ -84,10 +103,10 @@ namespace OnlineBookClub.Service
 
                 post.Img_Path = Path.Combine("Post/imgs", uniqueFileName).Replace("\\", "/");
             }
-            else if (!string.IsNullOrEmpty(dto.ImgPath))
+            else if (!string.IsNullOrEmpty(post.Img_Path))
             {
                 // 若未上傳圖片但有指定路徑（可能是保留原圖），則保留它
-                post.Img_Path = dto.ImgPath;
+                post.Img_Path = post.Img_Path;
             }
 
             return await _repository.UpdatePostAsync(post);
@@ -102,5 +121,41 @@ namespace OnlineBookClub.Service
 
             return await _repository.DeletePostAsync(postId);
         }
+
+        public async Task<PostDTO?> GetPostByIdAsync(string email, int postId)
+        {
+            var post = await _repository.GetPostByIdWithUserAsync(postId);
+            if (post == null) return null;
+
+            return new PostDTO
+            {
+                PlanId = post.Plan_Id,
+                PostId = post.Post_Id,
+                Content = post.Content,
+                ImgPath = post.Img_Path,
+                CreateTime = post.CreateTime,
+                MemberPath = post.User?.ProfilePictureUrl, // 改成拿發文者的資料
+                Name = post.User?.UserName
+            };
+        }
+
+
+
+        public async Task<IEnumerable<PostDTO>> GetPostsByUserIdAsync(int userId,string email)
+        {
+            var posts = await _repository.GetPostsByUserIdAsync(userId);
+            var data = _membersRepository.getbyid(userId);
+            return posts.Select(post => new PostDTO
+            {
+                PlanId = post.Plan_Id,
+                PostId = post.Post_Id,
+                Content = post.Content,
+                ImgPath = post.Img_Path,
+                CreateTime = post.CreateTime,
+                MemberPath = data.ProfilePictureUrl,
+                Name = data.UserName
+            }).ToList();
+        }
+
     }
 }

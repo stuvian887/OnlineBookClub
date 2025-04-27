@@ -2,9 +2,14 @@
 {
     public class PostDTO
     {
+        public int PostId { get; set; }
+        public int UserId { get; set; }
         public int PlanId { get; set; }
         public string Content { get; set; }
         public string? ImgPath { get; set; }
-        public IFormFile? PostCover { get; set; }
+        public DateTime CreateTime { get; set; }
+
+        public string Name { get; set; }
+        public string MemberPath { get; set; }
     }
 }

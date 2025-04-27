@@ -244,7 +244,11 @@ namespace OnlineBookClub.Repository
             _context.PlanMembers.RemoveRange(bookPlan.PlanMembers);
             _context.Book.RemoveRange(bookPlan.Book);
            _context.Learn.RemoveRange(bookPlan.Learn);
-            // 然後刪除 BookPlan
+            var topic = await _context.Learn
+                              .Include(bp => bp.Topic)  // 確保加載相關的 PlanMembers
+                              .FirstOrDefaultAsync(bp => bp.Learn_Id == bookPlan.Plan_Id);
+            _context.Topic.RemoveRange(topic.Topic);
+            // 然後刪除 BookPlans
             _context.BookPlan.Remove(bookPlan);
 
             // 保存變更到資料庫

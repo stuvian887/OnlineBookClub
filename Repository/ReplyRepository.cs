@@ -14,7 +14,7 @@ namespace OnlineBookClub.Repository
 
         public async Task<Reply> CreateReplyAsync(Reply reply)
         {
-            
+            reply.ReplyTime = DateTime.Now;
             _context.Reply.Add(reply);
             await _context.SaveChangesAsync();
             return reply;
@@ -45,6 +45,20 @@ namespace OnlineBookClub.Repository
             if (reply == null) return false;
             _context.Reply.Remove(reply);
             return await _context.SaveChangesAsync() > 0;
+        }
+
+        public async Task<Reply?> GeReplyByIdWithUserAsync(int ReplyID)
+        {
+            return await _context.Reply
+                .Include(p => p.User)
+                .FirstOrDefaultAsync(p => p.Reply_Id == ReplyID);
+        }
+        public async Task<IEnumerable<Reply>> GetReplyByUserIdAsync(int userId)
+        {
+            return await _context.Reply
+                .Where(p => p.User_Id == userId)
+                .OrderByDescending(p => p.ReplyTime)
+                .ToListAsync();
         }
     }
 }

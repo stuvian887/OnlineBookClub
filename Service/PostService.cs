@@ -108,6 +108,7 @@ namespace OnlineBookClub.Service
                 // 若未上傳圖片但有指定路徑（可能是保留原圖），則保留它
                 post.Img_Path = post.Img_Path;
             }
+            
 
             return await _repository.UpdatePostAsync(post);
         }

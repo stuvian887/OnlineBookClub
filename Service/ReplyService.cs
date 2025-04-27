@@ -35,7 +35,7 @@ public class ReplyService
         {
             Post_Id = dto.PostId,
             User_Id = userId,
-            ReplyContent = dto.Content,
+            ReplyContent = dto.ReplyContent,
             ReplyImg = imgPath,
             ReplyTime = DateTime.UtcNow,
         };
@@ -128,7 +128,7 @@ public class ReplyService
     public async Task<IEnumerable<ReplyDTO>> GetReplyByUserIdAsync(int userId, string email)
     {
         var Replies = await _repository.GetReplyByUserIdAsync(userId);
-        var data = _membersRepository.getbyid(userId);
+        var data =_membersRepository.getbyid(userId);
         return Replies.Select(Reply => new ReplyDTO
         {
             ReplyId = Reply.Reply_Id,

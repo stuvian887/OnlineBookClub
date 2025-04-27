@@ -29,9 +29,9 @@ namespace OnlineBookClub.Repository
         }
         public Members getbyid(int userid)
         {
-            return  _OnlineBookClubContext.Members.FirstOrDefault(m => m.User_Id==userid);
+            return _OnlineBookClubContext.Members.FirstOrDefault(m => m.User_Id == userid);
         }
-        
+
 
 
 

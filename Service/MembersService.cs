@@ -20,7 +20,7 @@ namespace OnlineBookClub.Service
             _config = config;
             _MembersRepository= MembersRepository;
         }
-        public  Members GetUserById(int userid)
+        public async Task<Members> GetUserById(int userid)
         {
             return _MembersRepository.getbyid(userid);
         }

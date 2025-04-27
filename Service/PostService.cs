@@ -37,6 +37,7 @@ namespace OnlineBookClub.Service
 
             var post = new Post
             {
+               
                 Plan_Id = dto.PlanId,
                 User_Id = userId,
                 Name=userName,
@@ -72,6 +73,7 @@ namespace OnlineBookClub.Service
 
                 postDtos.Add(new PostDTO
                 {
+                    UserId = post.User_Id,  
                     PostId = post.Post_Id,
                     PlanId = post.Plan_Id,
                     Content = post.Content,
@@ -139,6 +141,7 @@ namespace OnlineBookClub.Service
 
             return new PostDTO
             {
+                UserId = post.User_Id,
                 PlanId = post.Plan_Id,
                 PostId = post.Post_Id,
                 Content = post.Content,
@@ -157,6 +160,7 @@ namespace OnlineBookClub.Service
             var data = _membersRepository.getbyid(userId);
             return posts.Select(post => new PostDTO
             {
+                UserId=post.User_Id,
                 PlanId = post.Plan_Id,
                 PostId = post.Post_Id,
                 Content = post.Content,

@@ -48,14 +48,17 @@ namespace OnlineBookClub.Controllers
         public async Task<IActionResult> CreateReply([FromForm] CreateReply dto)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
+            
             var post = await _postService.GetPostByIdAsync(dto.PostId);
-            var user = _membersService.GetUserById(post.UserId);
+            var user = await _membersService.GetUserById(post.UserId);
             var reply = await _service.CreateReplyAsync(userId, dto);
             var notification = new Notice
             {
+
                 User_Id = post.UserId,  // 通知給原貼文作者
                 NoticeTime = DateTime.Now,
                 Message = $"{user.UserName} 回覆了您的貼文：{reply.ReplyContent}",
+                User = user,
             };
             await _noticeService.CreateNoticeAsync(notification);  // 保存通知到資料庫
             await _noticeService.GetNoticesByUserIdAsync(post.UserId);

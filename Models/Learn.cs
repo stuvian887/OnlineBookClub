@@ -13,7 +13,7 @@ public partial class Learn
 
     public int Learn_Index { get; set; }
 
-    public int Pass_Standard { get; set; }
+    public double Pass_Standard { get; set; }
 
     public DateTime DueTime { get; set; }
 

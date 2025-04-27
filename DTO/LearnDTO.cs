@@ -13,7 +13,7 @@ namespace OnlineBookClub.DTO
 
         public int Learn_Index { get; set; }
 
-        public int Pass_Standard { get; set; }
+        public double Pass_Standard { get; set; }
         public DateTime DueTime { get; set; }
         //public string RecentlyLearnDate { get; set; }
         //public string RecentlyLearn { get; set; } = null;

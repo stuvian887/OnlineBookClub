@@ -12,8 +12,8 @@ using OnlineBookClub.Models;
 namespace OnlineBookClub.Migrations
 {
     [DbContext(typeof(OnlineBookClubContext))]
-    [Migration("20250424145612_111")]
-    partial class _111
+    [Migration("20250427174214_setpass_standardtodouble")]
+    partial class setpass_standardtodouble
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -166,8 +166,8 @@ namespace OnlineBookClub.Migrations
                     b.Property<bool>("Manual_Check")
                         .HasColumnType("bit");
 
-                    b.Property<int>("Pass_Standard")
-                        .HasColumnType("int");
+                    b.Property<double>("Pass_Standard")
+                        .HasColumnType("float");
 
                     b.Property<int>("Plan_Id")
                         .HasColumnType("int");
@@ -550,7 +550,7 @@ namespace OnlineBookClub.Migrations
                     b.HasOne("OnlineBookClub.Models.BookPlan", "Plan")
                         .WithMany("Book")
                         .HasForeignKey("Plan_Id")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK__Book__Plan_Id__5629CD9C");
 
@@ -562,7 +562,7 @@ namespace OnlineBookClub.Migrations
                     b.HasOne("OnlineBookClub.Models.Members", "User")
                         .WithMany("BookPlan")
                         .HasForeignKey("User_Id")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK__BookPlan__User_I__4CA06362");
 
@@ -574,7 +574,7 @@ namespace OnlineBookClub.Migrations
                     b.HasOne("OnlineBookClub.Models.BookPlan", "Plan")
                         .WithMany("Learn")
                         .HasForeignKey("Plan_Id")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK__Learn__Plan_Id__59063A47");
 
@@ -598,7 +598,7 @@ namespace OnlineBookClub.Migrations
                     b.HasOne("OnlineBookClub.Models.BookPlan", "Plan")
                         .WithMany("PlanMembers")
                         .HasForeignKey("Plan_Id")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK__PlanMembe__Plan___70DDC3D8");
 
@@ -652,7 +652,7 @@ namespace OnlineBookClub.Migrations
                     b.HasOne("OnlineBookClub.Models.Learn", "Learn")
                         .WithMany("ProgressTracking")
                         .HasForeignKey("Learn_Id")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK__ProgressT__Learn__6477ECF3");
 
@@ -706,7 +706,7 @@ namespace OnlineBookClub.Migrations
                     b.HasOne("OnlineBookClub.Models.BookPlan", "Plan")
                         .WithMany("Statistic")
                         .HasForeignKey("Plan_Id")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK__Statistic__Plan___76969D2E");
 

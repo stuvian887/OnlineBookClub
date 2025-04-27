@@ -14,34 +14,40 @@ namespace OnlineBookClub.Repository
             _context = context;
             _memberRepository = memberRepository;
         }
-        public async Task<IEnumerable<Post_ReportDTO>> GetPostReport(int UserId, int PlanId, int PostId)
+        public async Task<Post_ReportDTO> GetPostReportAsync(int userId, int P_ReportId)
         {
-            var User = await _memberRepository.GetUserRoleAsync(UserId, PlanId);
-            if (User == "組長")
+            var reportWithPost = await (from report in _context.Post_Report
+                                        join post in _context.Post
+                                        on report.Post_Id equals post.Post_Id
+                                        where report.P_Report_Id == P_ReportId
+                                        select new
+                                        {
+                                            Report = report,
+                                            Post = post
+                                        }).FirstOrDefaultAsync();
+            if (reportWithPost == null)
             {
-                var bookPlan = await _context.BookPlan.FindAsync(PlanId);
-                if (bookPlan == null)
-                {
-                    return null;
-                }
-                var post = await _context.Post.FindAsync(PostId);
-                if (post == null && bookPlan.Plan_Id == post.Plan_Id)
-                {
-                    return null;
-                }
-                var result = (from a in _context.Post_Report
-                                          .Where(a => a.Post_Id == PostId)
-                              select new Post_ReportDTO
-                              {
-                                  P_Report_Id = a.P_Report_Id,
-                                  Post_Id = a.Post_Id,
-                                  Action = a.Action,
-                                  Report_text = a.Report_text
-                              });
-                return result;
+                return null;
             }
-            else { return null; }
+            var isLeader = await _context.PlanMembers.AnyAsync(pm =>
+                pm.User_Id == userId &&
+                pm.Plan_Id == reportWithPost.Post.Plan_Id &&
+                pm.Role == "組長");
+
+            if (!isLeader)
+            {
+                return null;
+            }
+
+            return new Post_ReportDTO
+            {
+                P_Report_Id = reportWithPost.Report.P_Report_Id,
+                Post_Id = reportWithPost.Report.Post_Id,
+                Action = reportWithPost.Report.Action,
+                Report_text = reportWithPost.Report.Report_text
+            };
         }
+
         public async Task<IEnumerable<Post_ReportDTO>> GetAllPostReport(int UserId)
         {
             var leaderPlanIds = await _context.PlanMembers
@@ -89,26 +95,41 @@ namespace OnlineBookClub.Repository
 
             return await result.ToListAsync();
         }
-        public async Task<IEnumerable<Reply_ReportDTO>> GetReplyReport(int UserId, int PlanId, int PostId, int ReplyId)
+        public async Task<Reply_ReportDTO> GetReplyReportAsync(int UserId, int R_Report_Id)
         {
-            var User = await _memberRepository.GetUserRoleAsync(UserId, PlanId);
-            var bookPlan = await _context.BookPlan.FindAsync(PlanId);
-            var post = await _context.Post.FindAsync(PostId);
-            var reply = await _context.Reply.FindAsync(ReplyId);
-            if (User == "組長" && bookPlan != null && (post != null && bookPlan.Plan_Id == post.Plan_Id) && (reply != null && post.Post_Id == reply.Post_Id))
+            var reportWithReply = await (from report in _context.Reply_Report
+                                        join reply in _context.Reply
+                                        on report.Reply_Id equals reply.Reply_Id
+                                        join post in _context.Post
+                                        on reply.Post_Id equals post.Post_Id
+                                        where report.R_Report_Id == R_Report_Id
+                                        select new
+                                        {
+                                            Report = report,
+                                            Post = post,
+                                            Reply = reply
+                                        }).FirstOrDefaultAsync();
+            if (reportWithReply == null)
             {
-                var replys = (from a in _context.Reply_Report
-                              .Where(a => a.Reply_Id == ReplyId)
-                              select new Reply_ReportDTO
-                              {
-                                  R_Report_Id = a.R_Report_Id,
-                                  Reply_Id = a.Reply_Id,
-                                  Action = a.Action,
-                                  Report_text = a.Report_text
-                              });
-                return replys;
+                return null;
             }
-            else { return null; }
+            var isLeader = await _context.PlanMembers.AnyAsync(pm =>
+                pm.User_Id == UserId &&
+                pm.Plan_Id == reportWithReply.Post.Plan_Id &&
+                pm.Role == "組長");
+
+            if (!isLeader)
+            {
+                return null;
+            }
+
+            return new Reply_ReportDTO
+            {
+                R_Report_Id = reportWithReply.Report.R_Report_Id,
+                Reply_Id = reportWithReply.Report.Reply_Id,
+                Action = reportWithReply.Report.Action,
+                Report_text = reportWithReply.Report.Report_text
+            };
         }
         public async Task<(Post_ReportDTO, string message)> CreatePostReport(int UserId, int PlanId, int PostId, Post_ReportDTO PRData)
         {

@@ -18,12 +18,12 @@ namespace OnlineBookClub.Controllers
         }
 
         // GET: api/<ReportController>
-        [HttpGet("{PlanId}/{PostId}")]
-        public async Task<IActionResult> GetPostReport(int PlanId, int PostId)
+        [HttpGet("Post/{P_Report_Id}")]
+        public async Task<IActionResult> GetPostReport(int P_Report_Id)
         {
             var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             int UserId = int.Parse(UserIdClaim.Value);
-            var result = await _service.GetPostReport(UserId, PlanId, PostId);
+            var result = await _service.GetPostReport(UserId , P_Report_Id);
             if(result != null)
             {
                 return Ok(result);
@@ -65,12 +65,12 @@ namespace OnlineBookClub.Controllers
         }
 
         // GET api/<ReportController>/5
-        [HttpGet("{PlanId}/{PostId}/{ReplyId}")]
-        public async Task<IActionResult> GetReplyReport(int PlanId, int PostId, int ReplyId)
+        [HttpGet("Reply/{R_Report_Id}")]
+        public async Task<IActionResult> GetReplyReport(int R_Report_Id)
         {
             var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             int UserId = int.Parse(UserIdClaim.Value);
-            var result = await _service.GetReplyReport(UserId, PlanId, PostId, ReplyId);
+            var result = await _service.GetReplyReport(UserId, R_Report_Id);
             if (result != null)
             {
                 return Ok(result);

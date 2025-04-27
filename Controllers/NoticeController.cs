@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OnlineBookClub.Models;
 using OnlineBookClub.Services;  // 這裡記得根據你的專案實際的Service位置修改
+using OnlineBookClub.Token;
 using System.Threading.Tasks;
 
 namespace OnlineBookClub.Controllers
@@ -10,17 +11,20 @@ namespace OnlineBookClub.Controllers
     public class NoticeController : ControllerBase
     {
         private readonly NoticeService _noticeService;
-
-        public NoticeController(NoticeService noticeService)
+        private readonly JwtService _jwtService;
+        public NoticeController(NoticeService noticeService, JwtService jwtService)
         {
             _noticeService = noticeService;
+            _jwtService = jwtService;
         }
 
         // 取得特定使用者的通知清單
-        [HttpGet("user/{userId}")]
-        public async Task<IActionResult> GetUserNotices(int userId)
+        [HttpGet]
+        public async Task<IActionResult> GetUserNotices()
         {
-            var notices = await _noticeService.GetNoticesByUserIdAsync(userId);
+            var token = HttpContext.Request.Cookies["JWT"];
+            int userid = Convert.ToInt32(_jwtService.GetUserIdFromToken(token));
+            var notices = await _noticeService.GetNoticesByUserIdAsync(userid);
             return Ok(notices);
         }
 

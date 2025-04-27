@@ -52,16 +52,23 @@ namespace OnlineBookClub.Service
         }
 
 
-        public async Task<IEnumerable<PostDTO>> GetPostsByPlanIdAsync(string email, int planId, HttpRequest request)
+        public async Task<IEnumerable<PostDTO>> GetPostsByPlanIdAsync(string email, int planId, string? keyword, HttpRequest request)
         {
-            var posts = await _repository.GetPostsByPlanIdAsync(planId);
-            var hostUrl = $"{request.Scheme}://{request.Host}"; // ex: https://localhost:7009
+            // 從資料庫查詢與 planId 相關的所有帖子
+            var posts = await _repository.GetPostsByPlanIdAsync(planId, keyword);  // 等待資料庫結果
 
+            // 如果提供了 keyword，則根據帖子的內容進行搜尋
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                posts = posts.Where(p => p.Content.Contains(keyword)).ToList();  // 根據 keyword 過濾內容
+            }
+
+            var hostUrl = $"{request.Scheme}://{request.Host}";  // 獲取主機 URL
             var postDtos = new List<PostDTO>();
 
             foreach (var post in posts)
             {
-                var member =  _membersRepository.getbyid(post.User_Id); // 每一篇都去找作者
+                var member = _membersRepository.getbyid(post.User_Id);  // 獲取作者的資訊
 
                 postDtos.Add(new PostDTO
                 {
@@ -71,12 +78,14 @@ namespace OnlineBookClub.Service
                     CreateTime = post.CreateTime,
                     ImgPath = string.IsNullOrEmpty(post.Img_Path) ? null : $"{hostUrl}{post.Img_Path}",
                     MemberPath = member?.ProfilePictureUrl,  // 作者的大頭貼
-                    Name = member?.UserName                  // 作者的名字
+                    Name = member?.UserName  // 作者的名字
                 });
             }
 
             return postDtos;
         }
+
+
 
 
         public async Task<bool> UpdatePostAsync(int postId, int userId, CreatePost dto)

@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using OnlineBookClub.DTO;
+using OnlineBookClub.Models;
 using OnlineBookClub.Service;
+using OnlineBookClub.Services;
 using System.Diagnostics.Contracts;
 using System.Reflection.Metadata.Ecma335;
 using System.Runtime.CompilerServices;
@@ -17,10 +19,15 @@ namespace OnlineBookClub.Controllers
     public class LearnController : ControllerBase
     {
         private readonly LearnService _service;
-        public LearnController(LearnService service)
+        private readonly NoticeService _noticeService; // 通知服務
+        private readonly BookPlanService _bookPlanService;  
+        public LearnController(LearnService service, NoticeService noticeService, BookPlanService bookPlanService)
         {
             _service = service;
+            _noticeService = noticeService;
+            _bookPlanService = bookPlanService;
         }
+
         //// GET: api/<LearnController>
         //[HttpGet("Index")]
         //public async Task<IActionResult> GetAllLearn()
@@ -40,8 +47,31 @@ namespace OnlineBookClub.Controllers
             var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             int UserId = int.Parse(UserIdClaim.Value);
             var result = await _service.GetLearnByCalendar(UserId, BeginTime, EndTime);
+            
             if(result.Item1 != null)
             {
+                foreach (var plan in result.Item1)
+                {
+                    
+                    if (EndTime.HasValue)
+                    {
+                        
+                        var remainingTime = EndTime.Value - DateTime.Now;
+                        if (remainingTime.TotalDays <= 3) // 剩餘時間小於或等於3天
+                        {
+                            var bookplan = _bookPlanService.GetById(plan.Plan_Id);
+                            // 創建通知，告訴用戶計劃即將結束
+                            var notification = new Notice
+                            {
+                                User_Id = UserId, // 通知當前用戶
+                                NoticeTime = DateTime.Now,
+                                Message = $"提醒：您的學習計劃 '{bookplan.Result.Plan_Name}' 即將於 {EndTime.Value.ToString("yyyy-MM-dd")} 結束，請儘速完成。"
+                            };
+                            await _noticeService.CreateNoticeAsync(notification); // 儲存通知
+                            await _noticeService.GetNoticesByUserIdAsync(UserId);
+                        }
+                    }
+                }
                 return Ok(result.Item1);
             }
             else
@@ -55,8 +85,11 @@ namespace OnlineBookClub.Controllers
         public async Task<IActionResult> CreateLearn(int PlanId, [FromBody] LearnDTO newData)
         {
             var result = await _service.CreateLearn(PlanId, newData);
+
             if (result.Item1 != null)
-            {
+            { // 創建通知
+              
+
                 return Ok(new { message = result.Message });
             }
             else

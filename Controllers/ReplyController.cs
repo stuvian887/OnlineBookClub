@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OnlineBookClub.DTO;
+using OnlineBookClub.Models;
+using OnlineBookClub.Service;
+using OnlineBookClub.Services;
 using System.Security.Claims;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -12,10 +15,16 @@ namespace OnlineBookClub.Controllers
     public class RepliesController : ControllerBase
     {
         private readonly ReplyService _service;
+        private readonly PostService _postService;
+        private readonly MembersService _membersService;
+        private readonly NoticeService _noticeService;
 
-        public RepliesController(ReplyService service)
+        public RepliesController(ReplyService service , PostService postService, MembersService membersService, NoticeService noticeService)
         {
             _service = service;
+            _postService = postService;
+            _membersService = membersService;
+            _noticeService = noticeService;
         }
         [HttpGet("reply/{replyid}")]
         public async Task<IActionResult> GetreplyById(int replyid)
@@ -39,7 +48,18 @@ namespace OnlineBookClub.Controllers
         public async Task<IActionResult> CreateReply([FromForm] CreateReply dto)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
+            var post = await _postService.GetPostByIdAsync(dto.PostId);
+            var user = _membersService.GetUserById(post.UserId);
             var reply = await _service.CreateReplyAsync(userId, dto);
+            var notification = new Notice
+            {
+                User_Id = post.UserId,  // 通知給原貼文作者
+                NoticeTime = DateTime.Now,
+                Message = $"{user.UserName} 回覆了您的貼文：{reply.ReplyContent}",
+            };
+            await _noticeService.CreateNoticeAsync(notification);  // 保存通知到資料庫
+            await _noticeService.GetNoticesByUserIdAsync(post.UserId);
+
             return Ok(reply);
         }
 

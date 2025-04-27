@@ -123,7 +123,7 @@ namespace OnlineBookClub.Service
             return await _repository.DeletePostAsync(postId);
         }
 
-        public async Task<PostDTO?> GetPostByIdAsync(string email, int postId)
+        public async Task<PostDTO?> GetPostByIdAsync( int postId)
         {
             var post = await _repository.GetPostByIdWithUserAsync(postId);
             if (post == null) return null;

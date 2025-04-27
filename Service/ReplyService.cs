@@ -56,7 +56,7 @@ public class ReplyService
             {
                 ReplyId = reply1.Reply_Id,
                 PostId = reply1.Post_Id,
-                Content = reply1.ReplyContent,
+                ReplyContent = reply1.ReplyContent,
                 CreateTime = reply1.ReplyTime,
                 ImgPath = string.IsNullOrEmpty(reply1.ReplyImg) ? null : $"{hostUrl}{reply1.ReplyImg}",
                 MemberPath = member?.ProfilePictureUrl,  // 作者的大頭貼
@@ -115,7 +115,7 @@ public class ReplyService
             
             PostId = Reply.Post_Id,
             ReplyId= Reply.Reply_Id,
-            Content = Reply.ReplyContent,
+            ReplyContent = Reply.ReplyContent,
             ImgPath = Reply.ReplyImg,
             CreateTime = Reply.ReplyTime,
             MemberPath = Reply.User?.ProfilePictureUrl, // 改成拿發文者的資料
@@ -133,7 +133,7 @@ public class ReplyService
         {
             ReplyId = Reply.Reply_Id,
             PostId = Reply.Post_Id,
-            Content = Reply.ReplyContent,
+            ReplyContent = Reply.ReplyContent,
             ImgPath = Reply.ReplyImg,
             CreateTime = Reply.ReplyTime,
             MemberPath = data.ProfilePictureUrl,

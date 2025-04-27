@@ -239,10 +239,11 @@ namespace OnlineBookClub.Repository
 
             if (bookPlan == null)
                 return false;
-
+          
             // 先刪除相關的 PlanMembers
             _context.PlanMembers.RemoveRange(bookPlan.PlanMembers);
             _context.Book.RemoveRange(bookPlan.Book);
+           _context.Learn.RemoveRange(bookPlan.Learn);
             // 然後刪除 BookPlan
             _context.BookPlan.Remove(bookPlan);
 

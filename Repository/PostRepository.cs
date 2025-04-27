@@ -33,12 +33,18 @@ namespace OnlineBookClub.Repository
             return post;
         }
 
-        public async Task<IEnumerable<Post>> GetPostsByPlanIdAsync(int planId)
+        public async Task<IEnumerable<Post>> GetPostsByPlanIdAsync(int planId, string? keyword)
         {
-            return await _context.Post
-                .Where(p => p.Plan_Id == planId)
-                .OrderByDescending(p => p.CreateTime)
-                .ToListAsync();
+            var query = _context.Post
+                .Where(p => p.Plan_Id == planId);
+
+            // 如果有提供 keyword，根據 keyword 過濾內容
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                query = query.Where(p => p.Content.Contains(keyword));  // 搜尋帖子內容
+            }
+
+            return await query.OrderByDescending(p => p.CreateTime).ToListAsync();
         }
 
         public async Task<Post?> GetPostByIdAsync(int postId)

@@ -76,7 +76,6 @@ namespace OnlineBookClub.Repository
         }
         public async Task<(IEnumerable<CalendarLearnDTO>, string Message)> GetLearnByCalendar(int UserId, DateTime? BeginTime, DateTime? EndTime)
         {
-
             if (BeginTime == null)
             {
                 return (null, "請輸入起始時間");
@@ -87,29 +86,66 @@ namespace OnlineBookClub.Repository
                 return (null, "請輸入結束時間");
             }
 
-            var Progresses = await _context.ProgressTracking.Where(p => p.User_Id == UserId).ToListAsync();
-            var Learns = await _context.Learn.ToListAsync();
+            var Progresses = await _context.ProgressTracking
+                .Where(p => p.User_Id == UserId)
+                .Select(p => p.Learn_Id)
+                .Distinct()
+                .ToListAsync(); // 抓出這個人的所有 Learn_Id
+
             DateTime trueStart = BeginTime.Value.Date;
             DateTime trueEnd = EndTime.Value.Date.AddDays(1).AddSeconds(-1);
-            List<CalendarLearnDTO> resultdto = new List<CalendarLearnDTO>();
-            foreach (var progress in Progresses)
-            {
-                foreach (var learn in Learns)
+
+            var Learns = await _context.Learn
+                .Where(learn => Progresses.Contains(learn.Learn_Id) &&
+                                learn.DueTime >= trueStart &&
+                                learn.DueTime <= trueEnd)
+                .Select(learn => new CalendarLearnDTO
                 {
-                    if (learn.DueTime >= trueStart && learn.DueTime <= trueEnd && progress.Learn_Id == learn.Learn_Id)
-                    {
-                        var dto = new CalendarLearnDTO
-                        {
-                            Plan_Id = learn.Plan_Id,
-                            Learn_Name = learn.Learn_Name,
-                            DueTime = learn.DueTime,
-                        };
-                        resultdto.Add(dto);
-                    }
-                }
-            }
-            return (resultdto, "查詢成功");
+                    Plan_Id = learn.Plan_Id,
+                    Learn_Name = learn.Learn_Name,
+                    DueTime = learn.DueTime,
+                })
+                .ToListAsync();
+
+            return (Learns, "查詢成功");
         }
+
+        //public async Task<(IEnumerable<CalendarLearnDTO>, string Message)> GetLearnByCalendar(int UserId, DateTime? BeginTime, DateTime? EndTime)
+        //{
+
+        //    if (BeginTime == null)
+        //    {
+        //        return (null, "請輸入起始時間");
+        //    }
+
+        //    if (EndTime == null)
+        //    {
+        //        return (null, "請輸入結束時間");
+        //    }
+
+        //    var Progresses = await _context.ProgressTracking.Where(p => p.User_Id == UserId).ToListAsync();
+        //    var Learns = await _context.Learn.ToListAsync();
+        //    DateTime trueStart = BeginTime.Value.Date;
+        //    DateTime trueEnd = EndTime.Value.Date.AddDays(1).AddSeconds(-1);
+        //    List<CalendarLearnDTO> resultdto = new List<CalendarLearnDTO>();
+        //    foreach (var progress in Progresses)
+        //    {
+        //        foreach (var learn in Learns)
+        //        {
+        //            if (learn.DueTime >= trueStart && learn.DueTime <= trueEnd && progress.Learn_Id == learn.Learn_Id)
+        //            {
+        //                var dto = new CalendarLearnDTO
+        //                {
+        //                    Plan_Id = learn.Plan_Id,
+        //                    Learn_Name = learn.Learn_Name,
+        //                    DueTime = learn.DueTime,
+        //                };
+        //                resultdto.Add(dto);
+        //            }
+        //        }
+        //    }
+        //    return (resultdto, "查詢成功");
+        //}
 
         public async Task<double> GetPersentOfMemberPass(int LearnId)
         {

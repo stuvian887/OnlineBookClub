@@ -17,10 +17,26 @@ namespace OnlineBookClub.Controllers
         {
             _service = service;
         }
+        [HttpGet("reply/{replyid}")]
+        public async Task<IActionResult> GetreplyById(int replyid)
+        {
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+            if (string.IsNullOrEmpty(email))
+            {
+                return Unauthorized();
+            }
+
+            var post = await _service.GetReplyByIdAsync(email, replyid);
+            if (post == null)
+                return NotFound();
+            return Ok(post);
+        }
+
+        
 
         [HttpPost]
         
-        public async Task<IActionResult> CreateReply([FromForm] ReplyDTO dto)
+        public async Task<IActionResult> CreateReply([FromForm] CreateReply dto)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
             var reply = await _service.CreateReplyAsync(userId, dto);
@@ -36,7 +52,7 @@ namespace OnlineBookClub.Controllers
 
         [HttpPut("{replyId}")]
         
-        public async Task<IActionResult> UpdateReply(int replyId, [FromBody] ReplyDTO dto)
+        public async Task<IActionResult> UpdateReply(int replyId, [FromBody] CreateReply dto)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
             var result = await _service.UpdateReplyAsync(replyId, userId, dto);

@@ -30,7 +30,7 @@ namespace OnlineBookClub.Service
                 BookName = book.BookName,
                 Description = book.Description,
                 Link = book.Link,
-                bookurl = string.IsNullOrEmpty(book.bookpath) ? null : $"{hostUrl}{book.bookpath}"
+                bookurl = string.IsNullOrEmpty(book.bookpath) ? null : $"{hostUrl}{book.bookpath}",
             };
 
             return bookDto;
@@ -38,6 +38,7 @@ namespace OnlineBookClub.Service
 
         public async Task<(Book, string Message)> AddBookAsync(int planId, BookDTO bookDto)
         {
+            var book = new Book();
             var Plan = await _context.BookPlan.FindAsync(planId);
             if (Plan != null)
             {
@@ -60,14 +61,18 @@ namespace OnlineBookClub.Service
 
                     // 儲存圖片的相對網址
                     savedFilePath = $"/Book/images/{fileName}";
+
+                    book.BookName = bookDto.BookName;
+                    book.Description = bookDto.Description;
+                    book.Link = bookDto.Link;
+                    book.bookpath = savedFilePath;
+
                 }
-                var book = new Book
-                {
-                    BookName = bookDto.BookName,
-                    Description = bookDto.Description,
-                    Link = bookDto.Link,
-                    bookpath = savedFilePath
-                };
+                book.BookName = bookDto.BookName;
+                book.Description = bookDto.Description;
+                book.Link = bookDto.Link;
+                book.bookpath = bookDto.bookurl;
+
                 await _bookRepository.AddBookAsync(planId, book);
                 return (book, "書籍新增成功");
             }

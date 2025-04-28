@@ -331,6 +331,50 @@ namespace OnlineBookClub.Repository
             }
             else return null;
         }
+        public async Task<IEnumerable<MemberProgressDTO>> GetMemberPassLearnPersentAsync(int Plan_Id)
+        {
+            //取得所有成員
+            var PlanMembers = await _context.PlanMembers
+                .Where(pm => pm.Plan_Id == Plan_Id)
+                .Select(pm => new 
+                {
+                    pm.User_Id,
+                    pm.Plan_Id,
+                    pm.Role,
+                    pm.JoinDate
+                }).ToListAsync();
+
+            //取得Learn數量
+            var LearnCount = await _context.Learn
+                .Where(l => l.Plan_Id == Plan_Id)
+                .CountAsync();
+
+            if (LearnCount <= 0) return null;
+
+            List<MemberProgressDTO> result = new List<MemberProgressDTO>();
+            foreach(var member in PlanMembers)
+            {
+                var PassCount = await _context.ProgressTracking
+                    .Where(p => p.User_Id == member.User_Id && p.Learn.Plan_Id == Plan_Id && p.Status)
+                    .CountAsync();
+
+                double PassPersent = ((double)PassCount / LearnCount) * 100;
+
+                var MemberName = await _context.Members
+                    .Where(m => m.User_Id == member.User_Id)
+                    .Select(m => m.UserName)
+                    .FirstOrDefaultAsync();
+
+                result.Add(new MemberProgressDTO
+                {
+                    User_Id = member.User_Id,
+                    UserName = MemberName,
+                    JoinDate = member.JoinDate,
+                    ProgressPercent = PassPersent.ToString()
+                });
+            }
+            return result;
+        }
         public static ProgressTrackingDTO GetProgressTrack(ProgressTracking temp)
         {
             if (temp == null) return null;

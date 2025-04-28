@@ -12,6 +12,7 @@ public partial class Reply_Report
     public string Action { get; set; }
 
     public string Report_text { get; set; }
+    public DateTime Report_Time { get; set; }
 
     public virtual Reply Reply { get; set; }
 }

@@ -9,5 +9,6 @@
         public string Action { get; set; }
 
         public string Report_text { get; set; }
+        public DateTime Report_Time { get; set; }
     }
 }

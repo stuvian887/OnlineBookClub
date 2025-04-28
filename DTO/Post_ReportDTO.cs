@@ -7,6 +7,7 @@
         public int Post_Id { get; set; }
         public string Action { get; set; }
 
+        public DateTime Report_Time { get; set; }
         public string Report_text { get; set; }
     }
 }

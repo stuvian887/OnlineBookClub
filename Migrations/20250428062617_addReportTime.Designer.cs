@@ -12,8 +12,8 @@ using OnlineBookClub.Models;
 namespace OnlineBookClub.Migrations
 {
     [DbContext(typeof(OnlineBookClubContext))]
-    [Migration("20250427214802_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250428062617_addReportTime")]
+    partial class addReportTime
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -335,6 +335,9 @@ namespace OnlineBookClub.Migrations
                     b.Property<int>("Post_Id")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("Report_Time")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Report_text")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -430,6 +433,9 @@ namespace OnlineBookClub.Migrations
 
                     b.Property<int>("Reply_Id")
                         .HasColumnType("int");
+
+                    b.Property<DateTime>("Report_Time")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Report_text")
                         .IsRequired()

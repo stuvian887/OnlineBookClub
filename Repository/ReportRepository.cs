@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
 using System.Runtime.CompilerServices;
@@ -174,6 +175,40 @@ namespace OnlineBookClub.Repository
             };
             return (resultDTO, "貼文檢舉成功");
         }
+        public async Task<Post_ReportDTO> DoPost_ReportActionAsync(int UserId , int P_Report_Id , [FromBody]Post_ReportDTO postreportAction)
+        {
+            var report = await _context.Post_Report
+            .Include(r => r.Post)
+            .FirstOrDefaultAsync(r => r.P_Report_Id == P_Report_Id);
+
+            if (report == null)
+            {
+                return null;
+            }
+
+            var isLeader = await _context.PlanMembers.AnyAsync(pm =>
+                pm.User_Id == UserId &&
+                pm.Plan_Id == report.Post.Plan_Id &&
+                pm.Role == "組長");
+
+            if (!isLeader)
+            {
+                return null;
+            }
+
+            report.Action = postreportAction.Action; 
+            _context.Post_Report.Update(report);
+            await _context.SaveChangesAsync();
+
+            return new Post_ReportDTO
+            {
+                P_Report_Id = report.P_Report_Id,
+                Post_Id = report.Post_Id,
+                Action = report.Action,
+                Report_text = report.Report_text,
+                Report_Time = report.Report_Time
+            };
+        }
         public async Task<(Reply_ReportDTO, string message)> CreateReplyReport(int UserId, int PlanId, int PostId, int ReplyId, Reply_ReportDTO RRData)
         {
             var User = await _memberRepository.GetUserRoleAsync(UserId, PlanId);
@@ -225,6 +260,53 @@ namespace OnlineBookClub.Repository
             };
             return (resultDTO, "留言檢舉成功");
 
+        }
+
+        public async Task<Reply_ReportDTO> DoReply_ReportActionAsync(int UserId, int R_Report_Id, [FromBody] Reply_ReportDTO replyreportAction)
+        {
+            var report = await _context.Reply_Report
+            .Include(r => r.Reply)
+            .ThenInclude(rp => rp.Post)
+            .FirstOrDefaultAsync(r => r.R_Report_Id == R_Report_Id);
+
+            if (report == null)
+            {
+                return null;
+            }
+
+            if(report.Reply == null)
+            {
+                return null;
+            }
+            var PlanId = report.Reply?.Post?.Plan_Id;
+            if(PlanId == null)
+            {
+                return null;
+            }
+
+            var isLeader = await _context.PlanMembers.AnyAsync(pm =>
+                pm.User_Id == UserId &&
+                pm.Plan_Id == PlanId &&
+                pm.Role == "組長");
+
+
+            if (!isLeader)
+            {
+                return null;
+            }
+
+            report.Action = replyreportAction.Action;
+            _context.Reply_Report.Update(report);
+            await _context.SaveChangesAsync();
+
+            return new Reply_ReportDTO
+            {
+                R_Report_Id = report.R_Report_Id,
+                Reply_Id = report.Reply_Id,
+                Action = report.Action,
+                Report_text = report.Report_text,
+                Report_Time = report.Report_Time
+            };
         }
     }
 }

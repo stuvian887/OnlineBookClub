@@ -68,10 +68,13 @@ namespace OnlineBookClub.Service
                     book.bookpath = savedFilePath;
 
                 }
-                book.BookName = bookDto.BookName;
-                book.Description = bookDto.Description;
-                book.Link = bookDto.Link;
-                book.bookpath = bookDto.bookurl;
+                else {
+                    book.BookName = bookDto.BookName;
+                    book.Description = bookDto.Description;
+                    book.Link = bookDto.Link;
+                    book.bookpath = bookDto.bookurl.Replace("https://localhost:7009", "");
+                }
+                
 
                 await _bookRepository.AddBookAsync(planId, book);
                 return (book, "書籍新增成功");

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
 using System.Net;
@@ -199,9 +200,14 @@ namespace OnlineBookClub.Repository
         //        return (null, null);
         //    }
         //}
-        public async Task<(LearnDTO, string Message)> CreateLearnAsync(int PlanId, LearnDTO InsertData)
+        public async Task<(LearnDTO, string Message)> CreateLearnAsync(int UserId , int PlanId, LearnDTO InsertData)
         {
-            BookPlan FindPlan = await _context.BookPlan.Include(bp => bp.Learn).SingleOrDefaultAsync(p => p.Plan_Id == PlanId);
+            var Role = await _planMemberRepository.GetUserRoleAsync(UserId, PlanId);
+            if (Role != "組長")
+            {
+                return (null,"錯誤，你不是組長");
+            }
+                BookPlan FindPlan = await _context.BookPlan.Include(bp => bp.Learn).SingleOrDefaultAsync(p => p.Plan_Id == PlanId);
             if (FindPlan == null)
             {
                 return (null, "錯誤，找不到該計畫");
@@ -331,8 +337,13 @@ namespace OnlineBookClub.Repository
             }
             else return null;
         }
-        public async Task<IEnumerable<MemberProgressDTO>> GetMemberPassLearnPersentAsync(int Plan_Id)
+        public async Task<IEnumerable<MemberProgressDTO>> GetMemberPassLearnPersentAsync(int UserId , int Plan_Id)
         {
+            var Role = await _planMemberRepository.GetUserRoleAsync(UserId, Plan_Id);
+            if(Role != "組長")
+            {
+                return null;
+            }
             //取得所有成員
             var PlanMembers = await _context.PlanMembers
                 .Where(pm => pm.Plan_Id == Plan_Id)

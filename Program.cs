@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using OnlineBookClub.Models;
+using OnlineBookClub.Repositories;
 using OnlineBookClub.Repository;
 using OnlineBookClub.Service;
 using OnlineBookClub.Services;
@@ -42,6 +43,8 @@ builder.Services.AddScoped<ReportRepository>();
 builder.Services.AddScoped<ReportService>();
 builder.Services.AddScoped<StatisticRepository>();
 builder.Services.AddScoped<StatisticService>();
+builder.Services.AddScoped<NoticeService>();
+builder.Services.AddScoped<NoticeRepository>();
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;

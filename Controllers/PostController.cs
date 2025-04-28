@@ -30,7 +30,7 @@ namespace OnlineBookClub.Controllers
                 return Unauthorized();
             }
 
-            var post = await _service.GetPostByIdAsync(email, postId);
+            var post = await _service.GetPostByIdAsync( postId);
             if (post == null)
                 return NotFound();
             return Ok(post);
@@ -66,13 +66,13 @@ namespace OnlineBookClub.Controllers
         }
 
         [HttpGet("{planId}")]
-        public async Task<IActionResult> GetPosts(int planId)
+        public async Task<IActionResult> GetPosts(int planId, [FromQuery] string? keyword)
         {
             var email = User.FindFirst(ClaimTypes.Email)?.Value;
-            var posts = await _service.GetPostsByPlanIdAsync(email,planId, Request);
-            
+            var posts = await _service.GetPostsByPlanIdAsync(email, planId, keyword, Request);  // 傳遞 keyword
             return Ok(posts);
         }
+
 
         [HttpPut("{postId}")]
         public async Task<IActionResult> UpdatePost(int postId, [FromForm] CreatePost dto)

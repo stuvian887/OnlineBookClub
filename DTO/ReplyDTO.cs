@@ -5,7 +5,7 @@
         public int ReplyId { get; set; }
         public int UserId { get; set; }
         public int PostId { get; set; }
-        public string Content { get; set; }
+        public string ReplyContent { get; set; }
         public string? ImgPath { get; set; }
         public DateTime CreateTime { get; set; }
 

@@ -300,8 +300,11 @@ namespace OnlineBookClub.Repository
                 }
 
                 var mardata = await _context.ProgressTracking.Where(X => X.Learn_Id == DeleteLearn.Learn_Id).FirstOrDefaultAsync();
+                var topic=await _context.Topic.Where(X => X.Learn_Id == DeleteLearn.Learn_Id).FirstOrDefaultAsync();
                 _context.ProgressTracking.Remove(mardata);
+                _context.Topic.Remove(topic);
                 _context.Learn.Remove(DeleteLearn);
+
                 await _context.SaveChangesAsync();
                 LearnDTO resultDTO = new LearnDTO();
                 resultDTO.Learn_Name = DeleteLearn.Learn_Name;

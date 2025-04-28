@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using OnlineBookClub.DTO;
+using OnlineBookClub.Models;
 using OnlineBookClub.Service;
+using OnlineBookClub.Services;
 using System.Diagnostics.Contracts;
 using System.Reflection.Metadata.Ecma335;
 using System.Runtime.CompilerServices;
@@ -17,10 +19,15 @@ namespace OnlineBookClub.Controllers
     public class LearnController : ControllerBase
     {
         private readonly LearnService _service;
-        public LearnController(LearnService service)
+        private readonly NoticeService _noticeService; // 通知服務
+        private readonly BookPlanService _bookPlanService;  
+        public LearnController(LearnService service, NoticeService noticeService, BookPlanService bookPlanService)
         {
             _service = service;
+            _noticeService = noticeService;
+            _bookPlanService = bookPlanService;
         }
+
         //// GET: api/<LearnController>
         //[HttpGet("Index")]
         //public async Task<IActionResult> GetAllLearn()
@@ -40,8 +47,10 @@ namespace OnlineBookClub.Controllers
             var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             int UserId = int.Parse(UserIdClaim.Value);
             var result = await _service.GetLearnByCalendar(UserId, BeginTime, EndTime);
+            
             if(result.Item1 != null)
             {
+               
                 return Ok(result.Item1);
             }
             else
@@ -55,8 +64,11 @@ namespace OnlineBookClub.Controllers
         public async Task<IActionResult> CreateLearn(int PlanId, [FromBody] LearnDTO newData)
         {
             var result = await _service.CreateLearn(PlanId, newData);
+
             if (result.Item1 != null)
-            {
+            { // 創建通知
+              
+
                 return Ok(new { message = result.Message });
             }
             else

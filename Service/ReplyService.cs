@@ -35,7 +35,7 @@ public class ReplyService
         {
             Post_Id = dto.PostId,
             User_Id = userId,
-            ReplyContent = dto.Content,
+            ReplyContent = dto.ReplyContent,
             ReplyImg = imgPath,
             ReplyTime = DateTime.UtcNow,
         };
@@ -56,7 +56,7 @@ public class ReplyService
             {
                 ReplyId = reply1.Reply_Id,
                 PostId = reply1.Post_Id,
-                Content = reply1.ReplyContent,
+                ReplyContent = reply1.ReplyContent,
                 CreateTime = reply1.ReplyTime,
                 ImgPath = string.IsNullOrEmpty(reply1.ReplyImg) ? null : $"{hostUrl}{reply1.ReplyImg}",
                 MemberPath = member?.ProfilePictureUrl,  // 作者的大頭貼
@@ -115,7 +115,7 @@ public class ReplyService
             
             PostId = Reply.Post_Id,
             ReplyId= Reply.Reply_Id,
-            Content = Reply.ReplyContent,
+            ReplyContent = Reply.ReplyContent,
             ImgPath = Reply.ReplyImg,
             CreateTime = Reply.ReplyTime,
             MemberPath = Reply.User?.ProfilePictureUrl, // 改成拿發文者的資料
@@ -128,12 +128,12 @@ public class ReplyService
     public async Task<IEnumerable<ReplyDTO>> GetReplyByUserIdAsync(int userId, string email)
     {
         var Replies = await _repository.GetReplyByUserIdAsync(userId);
-        var data = _membersRepository.getbyid(userId);
+        var data =_membersRepository.getbyid(userId);
         return Replies.Select(Reply => new ReplyDTO
         {
             ReplyId = Reply.Reply_Id,
             PostId = Reply.Post_Id,
-            Content = Reply.ReplyContent,
+            ReplyContent = Reply.ReplyContent,
             ImgPath = Reply.ReplyImg,
             CreateTime = Reply.ReplyTime,
             MemberPath = data.ProfilePictureUrl,

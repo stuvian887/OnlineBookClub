@@ -25,9 +25,9 @@ namespace OnlineBookClub.Service
         {
             return await _learnRepository.GetLearnByCalendar(UserId , BeginTime , EndTime);
         }
-        public async Task<(LearnDTO, string Message)> CreateLearn(int PlanId , LearnDTO newData)
+        public async Task<(LearnDTO, string Message)> CreateLearn(int UserId , int PlanId , LearnDTO newData)
         {
-            return await _learnRepository.CreateLearnAsync(PlanId, newData);
+            return await _learnRepository.CreateLearnAsync(UserId , PlanId, newData);
         }
         public async Task<(LearnDTO , string Message)> UpdateLearn(int UserId , int PlanId , int Learn_Index , LearnDTO UpdateData)
         {
@@ -37,9 +37,9 @@ namespace OnlineBookClub.Service
         {
             return await _learnRepository.DeleteLearnAsync(UserId , PlanId , Learn_Index);
         }
-        public async Task<IEnumerable<MemberProgressDTO>> GetMemberProgressAsync(int PlanId)
+        public async Task<IEnumerable<MemberProgressDTO>> GetMemberProgressAsync(int UserId , int PlanId)
         {
-            return await _learnRepository.GetMemberPassLearnPersentAsync(PlanId);
+            return await _learnRepository.GetMemberPassLearnPersentAsync(UserId , PlanId);
         }
         public async Task<IEnumerable<Answer_RecordDTO>> GetAnswer_Record(int UserId , int PlanId , int Learn_Index)
         {

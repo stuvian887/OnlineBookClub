@@ -63,7 +63,9 @@ namespace OnlineBookClub.Controllers
         [HttpPost("Create/{PlanId}")]
         public async Task<IActionResult> CreateLearn(int PlanId, [FromBody] LearnDTO newData)
         {
-            var result = await _service.CreateLearn(PlanId, newData);
+            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            int UserId = int.Parse(UserIdClaim.Value);
+            var result = await _service.CreateLearn(UserId, PlanId, newData);
 
             if (result.Item1 != null)
             { // 創建通知
@@ -116,7 +118,7 @@ namespace OnlineBookClub.Controllers
         {
             var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             int UserId = int.Parse(UserIdClaim.Value);
-            var result = await _service.GetMemberProgressAsync(PlanId);
+            var result = await _service.GetMemberProgressAsync(UserId , PlanId);
             if (result != null)
             {
                 return Ok(result);

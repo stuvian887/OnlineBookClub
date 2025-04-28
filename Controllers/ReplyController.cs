@@ -35,7 +35,7 @@ namespace OnlineBookClub.Controllers
                 return Unauthorized();
             }
 
-            var post = await _service.GetReplyByIdAsync(email, replyid);
+            var post = await _service.GetReplyByIdAsync(email, replyid,Request);
             if (post == null)
                 return NotFound();
             return Ok(post);

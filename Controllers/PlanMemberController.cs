@@ -20,7 +20,7 @@ namespace OnlineBookClub.Controllers
             _planMembersService = planMembersService;
             _statisticService = statisticService;
         }
-
+        
         [HttpPost("join")]
         public async Task<IActionResult> JoinPlan([FromForm] int planid)
         {

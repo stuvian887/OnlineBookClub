@@ -35,7 +35,7 @@ namespace OnlineBookClub.Controllers
                 return Unauthorized();
             }
 
-            var post = await _service.GetReplyByIdAsync(email, replyid);
+            var post = await _service.GetReplyByIdAsync(email, replyid,Request);
             if (post == null)
                 return NotFound();
             return Ok(post);
@@ -49,7 +49,7 @@ namespace OnlineBookClub.Controllers
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
             
-            var post = await _postService.GetPostByIdAsync(dto.PostId);
+            var post = await _postService.GetPostByIdAsync(dto.PostId,Request);
             var user = await _membersService.GetUserById(post.UserId);
             var reply = await _service.CreateReplyAsync(userId, dto);
             var notification = new Notice

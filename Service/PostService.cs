@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Azure.Core;
+using Microsoft.Extensions.Hosting;
 using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
 using OnlineBookClub.Repository;
@@ -64,7 +65,7 @@ namespace OnlineBookClub.Service
                 posts = posts.Where(p => p.Content.Contains(keyword)).ToList();  // 根據 keyword 過濾內容
             }
 
-            var hostUrl = $"{request.Scheme}://{request.Host}";  // 獲取主機 URL
+            var hostUrl = $"{request.Scheme}://{request.Host}/";  // 獲取主機 URL
             var postDtos = new List<PostDTO>();
 
             foreach (var post in posts)
@@ -134,18 +135,18 @@ namespace OnlineBookClub.Service
             return await _repository.DeletePostAsync(postId);
         }
 
-        public async Task<PostDTO?> GetPostByIdAsync( int postId)
+        public async Task<PostDTO?> GetPostByIdAsync( int postId, HttpRequest request)
         {
             var post = await _repository.GetPostByIdWithUserAsync(postId);
             if (post == null) return null;
-
+            var hostUrl = $"{request.Scheme}://{request.Host}";  // 獲取主機 URL
             return new PostDTO
             {
                 UserId = post.User_Id,
                 PlanId = post.Plan_Id,
                 PostId = post.Post_Id,
                 Content = post.Content,
-                ImgPath = post.Img_Path,
+                ImgPath = string.IsNullOrEmpty(post.Img_Path) ? null : $"{hostUrl}{post.Img_Path}",
                 CreateTime = post.CreateTime,
                 MemberPath = post.User?.ProfilePictureUrl, // 改成拿發文者的資料
                 Name = post.User?.UserName
@@ -154,17 +155,18 @@ namespace OnlineBookClub.Service
 
 
 
-        public async Task<IEnumerable<PostDTO>> GetPostsByUserIdAsync(int userId,string email)
+        public async Task<IEnumerable<PostDTO>> GetPostsByUserIdAsync(int userId,string email,HttpRequest request)
         {
             var posts = await _repository.GetPostsByUserIdAsync(userId);
             var data = _membersRepository.getbyid(userId);
+            var hostUrl = $"{request.Scheme}://{request.Host}";  // 獲取主機 URL
             return posts.Select(post => new PostDTO
             {
                 UserId=post.User_Id,
                 PlanId = post.Plan_Id,
                 PostId = post.Post_Id,
                 Content = post.Content,
-                ImgPath = post.Img_Path,
+                ImgPath = string.IsNullOrEmpty(post.Img_Path) ? null : $"{hostUrl}{post.Img_Path}",
                 CreateTime = post.CreateTime,
                 MemberPath = data.ProfilePictureUrl,
                 Name = data.UserName

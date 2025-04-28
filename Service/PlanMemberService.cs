@@ -18,6 +18,7 @@ namespace OnlineBookClub.Service
             _statisticService = statisticService;
         }
 
+      
         public async Task<(bool Success, string Message)> JoinPlanAsync(int UserId , int planid)
         {
             // 1. 檢查計畫是否存在且為公開

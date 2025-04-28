@@ -107,7 +107,7 @@ namespace OnlineBookClub.Controllers
             var learn = await _learnService.GetLearn(planId);
             foreach (var item in learn)
             {
-                await _learnService.CreateLearn(userId, planId, item);
+                await _learnService.copy(userId, result.Plan_Id, item);
             }
             
 

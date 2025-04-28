@@ -200,6 +200,33 @@ namespace OnlineBookClub.Repository
         //        return (null, null);
         //    }
         //}
+        public async Task<(LearnDTO,string message)> copylearnAsync(int UserId, int PlanId, LearnDTO InsertData)
+        {
+            BookPlan FindPlan = await _context.BookPlan.Include(bp => bp.Learn).SingleOrDefaultAsync(p => p.Plan_Id == PlanId);
+            if (FindPlan == null)
+            {
+                return (null, "錯誤，找不到該計畫");
+            }
+
+           
+
+           
+
+            Learn learn = new Learn();
+            learn.Plan_Id = PlanId;
+            learn.Learn_Name = InsertData.Learn_Name;
+            learn.Learn_Index = InsertData.Learn_Index;
+            learn.Pass_Standard = InsertData.Pass_Standard;
+            learn.DueTime = InsertData.DueTime.AddDays(1).AddSeconds(-1);
+            await _context.Learn.AddAsync(learn);
+            await _context.SaveChangesAsync();
+            LearnDTO resultDTO = new LearnDTO()
+            {
+                Learn_Name = learn.Learn_Name,
+            };
+            await CreateProgressTrackAsync(PlanId, learn.Learn_Id);
+            return (resultDTO, "學習內容新增成功");
+        }
         public async Task<(LearnDTO, string Message)> CreateLearnAsync(int UserId , int PlanId, LearnDTO InsertData)
         {
             var Role = await _planMemberRepository.GetUserRoleAsync(UserId, PlanId);

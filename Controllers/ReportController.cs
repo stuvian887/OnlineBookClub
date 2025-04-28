@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OnlineBookClub.DTO;
+using OnlineBookClub.Models;
 using OnlineBookClub.Service;
+using System.Numerics;
 using System.Security.Claims;
+using System.Xml.Linq;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -97,6 +100,21 @@ namespace OnlineBookClub.Controllers
                 return BadRequest(result.Message);
             }
         }
+        [HttpPut("DoingPostAction/{P_Report_Id}")]
+        public async Task<IActionResult> DoPost_ReportAction(int P_Report_Id , [FromBody] Post_ReportDTO DoingAction)
+        {
+            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            int UserId = int.Parse(UserIdClaim.Value);
+            var result = await _service.DoPost_ReportAction(UserId ,P_Report_Id, DoingAction);
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            else
+            {
+                return BadRequest(new { message = "發生錯誤" });
+            }
+        }
         [HttpPost("{PlanId}/{PostId}/{ReplyId}")]
         public async Task<IActionResult> CreateReplyReport(int PlanId, int PostId, int ReplyId, [FromBody] Reply_ReportDTO RRData)
         {
@@ -110,6 +128,21 @@ namespace OnlineBookClub.Controllers
             else
             {
                 return BadRequest(result.Message);
+            }
+        }
+        [HttpPut("DoingReplyAction/{R_Report_Id}")]
+        public async Task<IActionResult> DoReply_ReportAction(int R_Report_Id, [FromBody] Reply_ReportDTO DoingAction)
+        {
+            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            int UserId = int.Parse(UserIdClaim.Value);
+            var result = await _service.DoReply_ReportAction(UserId, R_Report_Id, DoingAction);
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            else
+            {
+                return BadRequest(new { message = "發生錯誤" });
             }
         }
     }

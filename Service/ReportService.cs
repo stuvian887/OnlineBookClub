@@ -32,6 +32,14 @@ namespace OnlineBookClub.Service
         {
             return await _repository.CreatePostReport(UserId, PlanId, PostId, PRData);
         }
+        public async Task<Post_ReportDTO> DoPost_ReportAction(int UserId , int P_Report_Id , Post_ReportDTO DoingAction)
+        {
+            return await _repository.DoPost_ReportActionAsync(UserId , P_Report_Id , DoingAction);
+        }
+        public async Task<Reply_ReportDTO> DoReply_ReportAction(int UserId , int R_Report_Id , Reply_ReportDTO DoingAction)
+        {
+            return await _repository.DoReply_ReportActionAsync(UserId, R_Report_Id, DoingAction);
+        }
         public async Task<(Reply_ReportDTO,string Message)> CreateReplyReport(int UserId , int PlanId , int PostId , int ReplyId , Reply_ReportDTO RRData)
         {
             return await _repository.CreateReplyReport(UserId , PlanId , PostId , ReplyId , RRData);

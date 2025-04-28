@@ -65,7 +65,7 @@ namespace OnlineBookClub.Service
                 posts = posts.Where(p => p.Content.Contains(keyword)).ToList();  // 根據 keyword 過濾內容
             }
 
-            var hostUrl = $"{request.Scheme}://{request.Host}";  // 獲取主機 URL
+            var hostUrl = $"{request.Scheme}://{request.Host}/";  // 獲取主機 URL
             var postDtos = new List<PostDTO>();
 
             foreach (var post in posts)

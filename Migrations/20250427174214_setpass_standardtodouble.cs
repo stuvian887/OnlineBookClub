@@ -16,7 +16,7 @@ namespace OnlineBookClub.Migrations
                 type: "float",
                 nullable: false,
                 oldClrType: typeof(int),
-                oldType: "int");
+                oldType: "int"); 
         }
 
         /// <inheritdoc />

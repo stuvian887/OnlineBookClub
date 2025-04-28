@@ -1,6 +1,7 @@
 ﻿using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
 using OnlineBookClub.Repository;
+using System.Runtime.CompilerServices;
 
 namespace OnlineBookClub.Service
 {
@@ -35,6 +36,10 @@ namespace OnlineBookClub.Service
         public async Task<(LearnDTO , string Message)> DeleteLearn(int UserId , int PlanId , int Learn_Index)
         {
             return await _learnRepository.DeleteLearnAsync(UserId , PlanId , Learn_Index);
+        }
+        public async Task<IEnumerable<MemberProgressDTO>> GetMemberProgressAsync(int PlanId)
+        {
+            return await _learnRepository.GetMemberPassLearnPersentAsync(PlanId);
         }
         public async Task<IEnumerable<Answer_RecordDTO>> GetAnswer_Record(int UserId , int PlanId , int Learn_Index)
         {

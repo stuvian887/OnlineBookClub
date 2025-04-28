@@ -110,6 +110,19 @@ namespace OnlineBookClub.Controllers
                 return BadRequest(result.Message);
             }
         }
+
+        [HttpGet("GetMemberPassPersent/{PlanId}")]
+        public async Task<IActionResult> GetMemberPassPersent(int PlanId)
+        {
+            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            int UserId = int.Parse(UserIdClaim.Value);
+            var result = await _service.GetMemberProgressAsync(PlanId);
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            else { return BadRequest(new { message = "發生錯誤" }); }
+        }
         [HttpGet("Answer_Record/{PlanId}/{Learn_Index}")]
         public async Task<IActionResult> GetAnswer_Record(int PlanId, int Learn_Index)
         {

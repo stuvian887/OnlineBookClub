@@ -294,7 +294,7 @@ namespace OnlineBookClub.Repository
                         return (null, "錯誤，此學習編號已經存在");
                     }
                 }
-                System.DateTime NowTime = DateTime.Now;
+                System.DateTime NowTime = DateTime.Now.Date;
                 System.TimeSpan checkdifftime = UpdateData.DueTime.Subtract(NowTime);
                 if (checkdifftime.TotalSeconds > 0)
                 {
@@ -498,17 +498,21 @@ namespace OnlineBookClub.Repository
             }
             else { return null; }
         }
+
+        
         public async Task<IEnumerable<Answer_RecordDTO>> CreateRecordAsync(int UserId, AnswerSubmissionDTO submission)
         {
             List<Answer_RecordDTO> resultDTOs = new List<Answer_RecordDTO>();
             var Plan = await _context.BookPlan.FindAsync(submission.Plan_Id);
-            if (Plan == null) { return null; }
+            var Learn = await _context.Learn.Where(l => l.Plan_Id == submission.Plan_Id).FirstOrDefaultAsync(l => l.Learn_Index == submission.Learn_Index);
+            if (Plan == null || Learn == null) { return null; }
+            int AnswerCount = 0;
+            int PassAnswerCount = 0;
             foreach (var answerInput in submission.Answers)
             {
-                var Learn = await _context.Learn.Where(l => l.Plan_Id == submission.Plan_Id).FirstOrDefaultAsync(l => l.Learn_Index == submission.Learn_Index);
                 var topic = await _context.Topic.FirstOrDefaultAsync(t => t.Learn_Id == Learn.Learn_Id && t.Question_Id == answerInput.Question_Id);
                 int countimes = await _context.Answer_Record.CountAsync(a => a.User_Id == UserId && a.Topic_Id == topic.Topic_Id);
-                if (Plan == null || topic == null || Learn == null)
+                if (topic == null)
                 {
                     return null;
                 }
@@ -519,7 +523,12 @@ namespace OnlineBookClub.Repository
                 answer_Record.AnswerDate = DateTime.Now;
                 answer_Record.Answer = answerInput.User_Answer;
                 answer_Record.times = countimes + 1;
-                if (answer_Record.Answer == topic.Answer) answer_Record.Pass = true;
+                AnswerCount++;
+                if (answer_Record.Answer == topic.Answer)
+                {
+                    answer_Record.Pass = true;
+                    PassAnswerCount++;
+                }
                 else answer_Record.Pass = false;
                 await _context.Answer_Record.AddAsync(answer_Record);
                 Answer_RecordDTO dto = new Answer_RecordDTO
@@ -533,6 +542,17 @@ namespace OnlineBookClub.Repository
                     Pass = answer_Record.Pass
                 };
                 resultDTOs.Add(dto);
+            }
+            double CorrectRate = (double)PassAnswerCount / AnswerCount*100;
+            if(CorrectRate >= Learn.Pass_Standard)
+            {
+                var progress = await _context.ProgressTracking
+                    .FirstOrDefaultAsync(p => p.User_Id == UserId && p.Learn_Id == Learn.Learn_Id);
+                if(progress != null)
+                {
+                    progress.Status = true;
+                    progress.CompletionDate = DateTime.Now;
+                }
             }
             await _context.SaveChangesAsync();
             return resultDTOs;

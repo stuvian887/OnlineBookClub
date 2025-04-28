@@ -129,7 +129,7 @@ namespace OnlineBookClub.Service
         public async Task<bool> DeletePostAsync(int postId, int userId)
         {
             var post = await _repository.GetPostByIdAsync(postId);
-            if (post == null || post.User_Id != userId)
+            if (post == null )
                 return false;
 
             return await _repository.DeletePostAsync(postId);

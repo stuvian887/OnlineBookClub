@@ -17,12 +17,14 @@ namespace OnlineBookClub.Controllers
         [ActivatorUtilitiesConstructor]
         private readonly StatisticService _statisticService;
         private readonly BookService _bookService;
-        public BookPlanController(BookPlanService service, JwtService jwtService, StatisticService statisticService,BookService bookService )
+        private readonly LearnService _learnService;
+        public BookPlanController(BookPlanService service, JwtService jwtService, StatisticService statisticService,BookService bookService , LearnService learnService)
         {
             _service = service;
             _jwtService = jwtService;
             _statisticService = statisticService;
             _bookService = bookService;
+            _learnService = learnService;
         }
 
         [HttpGet("public")]
@@ -102,7 +104,12 @@ namespace OnlineBookClub.Controllers
                 return NotFound("找不到");
             var book = await _bookService.GetBookByPlanIdAsync(planId, Request);
             await _bookService.AddBookAsync(result.Plan_Id, book);
-          
+            var learn = await _learnService.GetLearn(planId);
+            foreach (var item in learn)
+            {
+                await _learnService.CreateLearn(userId, planId, item);
+            }
+            
 
             return Ok("Plan copied successfully.");
         }

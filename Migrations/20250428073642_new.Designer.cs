@@ -12,8 +12,8 @@ using OnlineBookClub.Models;
 namespace OnlineBookClub.Migrations
 {
     [DbContext(typeof(OnlineBookClubContext))]
-    [Migration("20250428062617_addReportTime")]
-    partial class addReportTime
+    [Migration("20250428073642_new")]
+    partial class @new
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

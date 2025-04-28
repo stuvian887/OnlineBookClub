@@ -16,13 +16,13 @@ namespace OnlineBookClub.Service
         {
             return await _repository.GetPostReportAsync(UserId , P_Report_Id); 
         }
-        public async Task<IEnumerable<Post_ReportDTO>> GetAllPostReport(int UserId)
+        public async Task<IEnumerable<Post_ReportDTO>> GetAllPostReport(int UserId , int PlanId)
         {
-            return await _repository.GetAllPostReport(UserId);
+            return await _repository.GetAllPostReport(UserId , PlanId);
         }
-        public async Task<IEnumerable<Reply_ReportDTO>> GetAllReplyReport(int UserId)
+        public async Task<IEnumerable<Reply_ReportDTO>> GetAllReplyReport(int UserId , int PlanId)
         {
-            return await _repository.GetAllReplyReport(UserId);
+            return await _repository.GetAllReplyReport(UserId, PlanId);
         }
         public async Task<Reply_ReportDTO> GetReplyReport(int UserId , int R_Report_Id)
         {

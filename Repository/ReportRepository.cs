@@ -48,10 +48,10 @@ namespace OnlineBookClub.Repository
             };
         }
 
-        public async Task<IEnumerable<Post_ReportDTO>> GetAllPostReport(int UserId)
+        public async Task<IEnumerable<Post_ReportDTO>> GetAllPostReport(int UserId , int PlanId)
         {
             var leaderPlanIds = await _context.PlanMembers
-            .Where(pm => pm.User_Id == UserId && pm.Role == "組長")
+            .Where(pm => pm.User_Id == UserId && pm.Role == "組長" && pm.Plan_Id == PlanId)
             .Select(pm => pm.Plan_Id)
             .ToListAsync();
 
@@ -71,10 +71,10 @@ namespace OnlineBookClub.Repository
 
             return await result.ToListAsync();
         }
-        public async Task<IEnumerable<Reply_ReportDTO>> GetAllReplyReport(int UserId)
+        public async Task<IEnumerable<Reply_ReportDTO>> GetAllReplyReport(int UserId , int PlanId)
         {
             var leaderPlanIds = await _context.PlanMembers
-            .Where(pm => pm.User_Id == UserId && pm.Role == "組長")
+            .Where(pm => pm.User_Id == UserId && pm.Role == "組長" && pm.Plan_Id == PlanId)
             .Select(pm => pm.Plan_Id)
             .ToListAsync();
 

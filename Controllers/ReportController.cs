@@ -23,22 +23,7 @@ namespace OnlineBookClub.Controllers
         {
             var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             int UserId = int.Parse(UserIdClaim.Value);
-            var result = await _service.GetPostReport(UserId , P_Report_Id);
-            if(result != null)
-            {
-                return Ok(result);
-            }
-            else
-            {
-                return BadRequest(new {message ="發生錯誤"});
-            }
-        }
-        [HttpGet("GetAllPostReport")]
-        public async Task<IActionResult> GetAllPostReport()
-        {
-            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            int UserId = int.Parse(UserIdClaim.Value);
-            var result = await _service.GetAllPostReport(UserId);
+            var result = await _service.GetPostReport(UserId, P_Report_Id);
             if (result != null)
             {
                 return Ok(result);
@@ -48,12 +33,27 @@ namespace OnlineBookClub.Controllers
                 return BadRequest(new { message = "發生錯誤" });
             }
         }
-        [HttpGet("GetAllReplyReport")]
-        public async Task<IActionResult> GetAllReplyReport()
+        [HttpGet("GetAllPostReport/{PlanId}")]
+        public async Task<IActionResult> GetAllPostReport(int PlanId)
         {
             var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             int UserId = int.Parse(UserIdClaim.Value);
-            var result = await _service.GetAllReplyReport(UserId);
+            var result = await _service.GetAllPostReport(UserId, PlanId);
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            else
+            {
+                return BadRequest(new { message = "發生錯誤" });
+            }
+        }
+        [HttpGet("GetAllReplyReport/{PlanId}")]
+        public async Task<IActionResult> GetAllReplyReport(int PlanId)
+        {
+            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            int UserId = int.Parse(UserIdClaim.Value);
+            var result = await _service.GetAllReplyReport(UserId, PlanId);
             if (result != null)
             {
                 return Ok(result);

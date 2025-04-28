@@ -29,7 +29,7 @@ public class ReplyService
                 await dto.ReplyCover.CopyToAsync(stream);
             }
 
-            imgPath = Path.Combine("Reply/imgs", fileName).Replace("\\", "/");
+            imgPath = Path.Combine("/Reply/imgs", fileName).Replace("\\", "/");
         }
         var data = _membersRepository.getbyid(userId);
         var reply = new Reply

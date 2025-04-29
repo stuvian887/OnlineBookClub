@@ -19,6 +19,7 @@ public partial class Post
 
     public string Img_Path { get; set; }
 
+    public bool IsDeleted { get; set; } = false;
     public virtual BookPlan Plan { get; set; }
 
     public virtual ICollection<Post_Report> Post_Report { get; set; } = new List<Post_Report>();

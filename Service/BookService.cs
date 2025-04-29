@@ -68,11 +68,18 @@ namespace OnlineBookClub.Service
                     book.bookpath = savedFilePath;
 
                 }
-                else {
+                else if (book.bookpath != null) {
                     book.BookName = bookDto.BookName;
                     book.Description = bookDto.Description;
                     book.Link = bookDto.Link;
                     book.bookpath = bookDto.bookurl.Replace("https://localhost:7009", "");
+                }
+                else 
+                {
+                    book.BookName = bookDto.BookName;
+                    book.Description = bookDto.Description;
+                    book.Link = bookDto.Link;
+                    book.bookpath = bookDto.bookurl;
                 }
                 
 

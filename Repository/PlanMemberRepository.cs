@@ -103,7 +103,15 @@ namespace OnlineBookClub.Repository
             await _context.SaveChangesAsync();
             return newPlan.Plan_Id;
         }
+        public async Task<int> GetPlanLeaderIdAsync(int planId)
+        {
+            return await _context.BookPlan
+                .Where(p => p.Plan_Id == planId)
+                .Select(p => p.User_Id)  // 假設 Plan 中的 User_Id 是組長的 ID
+                .FirstOrDefaultAsync();
+        }
+
     }
-    
+
 
 }

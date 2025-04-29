@@ -39,5 +39,36 @@ namespace OnlineBookClub.Repositories
                 await _context.SaveChangesAsync();
             }
         }
+        public async Task CheckAndNotifyUpcomingLearnings(int userId)
+        {
+            var progresses = await _context.ProgressTracking
+                .Where(p => p.User_Id == userId)
+                .Select(p => p.Learn)
+                .Where(l => l.DueTime > DateTime.Now && l.DueTime <= DateTime.Now.AddDays(3))
+                .ToListAsync();
+
+            foreach (var learn in progresses)
+            {
+                string message = $"提醒：學習項目「{learn.Learn_Name}」將於 {learn.DueTime:yyyy-MM-dd} 到期";
+
+                // 檢查通知是否已存在（用 User_Id + Message 判斷）
+                bool alreadyReminded = await _context.Notice
+                    .AnyAsync(n => n.User_Id == userId && n.Message == message);
+
+                if (!alreadyReminded)
+                {
+                    var notice = new Notice
+                    {
+                        User_Id = userId,
+                        NoticeTime = DateTime.Now,
+                        Message = message
+                    };
+                    _context.Notice.Add(notice);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
     }
 }

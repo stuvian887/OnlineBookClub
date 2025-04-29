@@ -24,7 +24,7 @@ namespace OnlineBookClub.Services
             TempString = TempString.Replace("{{ValidateUrl}}", ValidateUrl);
             return TempString;
         }
-        public void SendRegisterMail(string MailBody, string ToEmail)
+        public async Task SendRegisterMail(string MailBody, string ToEmail)
         {
             SmtpClient SmtpServer = new SmtpClient("smtp.gmail.com");
             SmtpServer.Port = 587;
@@ -34,9 +34,9 @@ namespace OnlineBookClub.Services
             mail.From = new MailAddress(gmail_mail);
             mail.To.Add(ToEmail);
             mail.Subject = "會員驗證確認信";
-            mail.Body = MailBody;
+            mail.Body = MailBody;   
             mail.IsBodyHtml = true;
-            SmtpServer.Send(mail);
+            await SmtpServer.SendMailAsync(mail);
         }
     }
 }

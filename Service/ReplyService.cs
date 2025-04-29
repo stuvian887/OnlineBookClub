@@ -31,7 +31,7 @@ public class ReplyService
 
             imgPath = Path.Combine("/Reply/imgs", fileName).Replace("\\", "/");
         }
-        var data = _membersRepository.getbyid(userId);
+        var data = await _membersRepository.GetByIdAsync(userId);
         var reply = new Reply
         {
             Post_Id = dto.PostId,
@@ -52,7 +52,7 @@ public class ReplyService
         var replys= new List<ReplyDTO>();
         foreach (var reply1 in reply)
         {
-            var member = _membersRepository.getbyid(reply1.User_Id); // 每一篇都去找作者
+            var member = await _membersRepository.GetByIdAsync(reply1.User_Id); // 每一篇都去找作者
 
             replys.Add(new ReplyDTO
             {
@@ -130,7 +130,7 @@ public class ReplyService
     public async Task<IEnumerable<ReplyDTO>> GetReplyByUserIdAsync(int userId, string email, HttpRequest request)
     {
         var Replies = await _repository.GetReplyByUserIdAsync(userId);
-        var data =_membersRepository.getbyid(userId);
+        var data =await _membersRepository.GetByIdAsync(userId);
         var hostUrl = $"{request.Scheme}://{request.Host}"; // ex: https://localhost:7009
         return Replies.Select(Reply => new ReplyDTO
         {

@@ -1,6 +1,7 @@
 ﻿using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;  // 使用 EntityFramework 的非同步擴充方法
 
 namespace OnlineBookClub.Repository
 {
@@ -11,30 +12,33 @@ namespace OnlineBookClub.Repository
         {
             _OnlineBookClubContext = OnlineBookClubContext;
         }
-        public void Add(Members NewMember)
+
+        // 新增會員，改為非同步
+        public async Task AddAsync(Members NewMember)
         {
-            _OnlineBookClubContext.Members.Add(NewMember);
-            _OnlineBookClubContext.SaveChanges();
-            
+            await _OnlineBookClubContext.Members.AddAsync(NewMember); // 使用非同步 AddAsync
+            await _OnlineBookClubContext.SaveChangesAsync(); // 使用非同步 SaveChangesAsync
         }
-        public void Delete(Members Member)
+
+        // 刪除會員，改為非同步
+        public async Task DeleteAsync(Members Member)
         {
             _OnlineBookClubContext.Members.Remove(Member);
-            _OnlineBookClubContext.SaveChanges();
+            await _OnlineBookClubContext.SaveChangesAsync(); // 使用非同步 SaveChangesAsync
         }
-        public void Update(Members Member) 
+
+        // 更新會員，改為非同步
+        public async Task UpdateAsync(Members Member)
         {
             _OnlineBookClubContext.Members.Update(Member);
-            _OnlineBookClubContext.SaveChanges();
+            await _OnlineBookClubContext.SaveChangesAsync(); // 使用非同步 SaveChangesAsync
         }
-        public Members getbyid(int userid)
+
+        // 依照ID取得會員，已經是非同步
+        public async Task<Members> GetByIdAsync(int userid)
         {
-            return _OnlineBookClubContext.Members.FirstOrDefault(m => m.User_Id == userid);
+            return await _OnlineBookClubContext.Members.FirstOrDefaultAsync(m => m.User_Id == userid); // 使用非同步 FirstOrDefaultAsync
         }
-
-
-
-
 
     }
-} 
+}

@@ -250,10 +250,8 @@ namespace OnlineBookClub.Repository
           
             // 先刪除相關的 PlanMembers
             _context.PlanMembers.RemoveRange(bookPlan.PlanMembers);
-            _context.Book.RemoveRange(book.Book);
-            _context.ProgressTracking.RemoveRange(pp.ProgressTracking);
-            _context.Topic.RemoveRange(Learn.Topic);
-            _context.Learn.RemoveRange(bookPlan.Learn);
+            
+            
            
            
             // 然後刪除 BookPlans

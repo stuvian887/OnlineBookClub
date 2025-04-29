@@ -72,7 +72,7 @@ namespace OnlineBookClub.Service
                     book.BookName = bookDto.BookName;
                     book.Description = bookDto.Description;
                     book.Link = bookDto.Link;
-                    book.bookpath = bookDto.bookurl.Replace("https://localhost:7009", "");
+                    book.bookpath = savedFilePath;
                 }
                 else 
                 {

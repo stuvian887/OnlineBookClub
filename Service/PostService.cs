@@ -71,7 +71,7 @@ namespace OnlineBookClub.Service
 
             foreach (var post in posts)
             {
-                var member = _membersRepository.getbyid(post.User_Id);  // 獲取作者的資訊
+                var member = await _membersRepository.GetByIdAsync(post.User_Id);  // 獲取作者的資訊
 
                 postDtos.Add(new PostDTO
                 {
@@ -159,7 +159,7 @@ namespace OnlineBookClub.Service
         public async Task<IEnumerable<PostDTO>> GetPostsByUserIdAsync(int userId,string email,HttpRequest request)
         {
             var posts = await _repository.GetPostsByUserIdAsync(userId);
-            var data = _membersRepository.getbyid(userId);
+            var data = await _membersRepository.GetByIdAsync(userId);
             var hostUrl = $"{request.Scheme}://{request.Host}";  // 獲取主機 URL
             return posts.Select(post => new PostDTO
             {

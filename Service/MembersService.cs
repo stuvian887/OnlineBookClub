@@ -6,6 +6,7 @@ using OnlineBookClub.DTO;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
 namespace OnlineBookClub.Service
 {
     public class MembersService
@@ -22,14 +23,14 @@ namespace OnlineBookClub.Service
         }
         public async Task<Members> GetUserById(int userid)
         {
-            return _MembersRepository.getbyid(userid);
+            return await _MembersRepository.GetByIdAsync(userid);
         }
-        public void Register(Members NewMember)
+
+        public async Task RegisterAsync(Members NewMember)
         {
-           
-           _MembersRepository.Add(NewMember);
-            
+            await _MembersRepository.AddAsync(NewMember);
         }
+
         public string HashPassword(string Password)
         {
             string saltkey = "1q2w3e4r5t6y7u8ui9o0po7tyy";
@@ -40,25 +41,28 @@ namespace OnlineBookClub.Service
             string Hashreseult = Convert.ToBase64String(HashDate);
             return Hashreseult;
         }
-        public Members GetDataEmail(string Email)
+        public async Task<Members> GetDataEmailAsync(string Email)
         {
-            Members Data = (from a in _OnlineBookClubContext.Members where a.Email == Email select a).SingleOrDefault();
-            return Data;
+            return await _OnlineBookClubContext.Members
+                .Where(m => m.Email == Email)
+                .SingleOrDefaultAsync(); // 非同步查詢
         }
-        public bool EmailCheck(string Email)
+        public async Task<bool> EmailCheckAsync(string Email)
         {
-            Members Data = GetDataEmail(Email);
+            Members Data = await GetDataEmailAsync(Email);
             return (Data == null);
         }
-        public string EmailValidate(string Email, string AuthCode)
+        public async Task<string> EmailValidateAsync(string Email, string AuthCode)
         {
-            Members ValidateMember = GetDataEmail(Email);
+            Members ValidateMember = await GetDataEmailAsync(Email);
             string Validatestr = string.Empty;
             if (ValidateMember != null && ValidateMember.AuthCode == AuthCode)
             {
-                var update = (from a in _OnlineBookClubContext.Members where a.Email == ValidateMember.Email select a).SingleOrDefault();
+                var update = await _OnlineBookClubContext.Members
+                    .Where(a => a.Email == ValidateMember.Email)
+                    .SingleOrDefaultAsync();
                 update.AuthCode = string.Empty;  // 清空驗證碼，標記為已驗證
-                _OnlineBookClubContext.SaveChanges(); // 儲存變更
+                await _OnlineBookClubContext.SaveChangesAsync(); // 非同步儲存變更
                 return "帳號信箱驗證成功，現在可以登入了";
             }
             else
@@ -67,24 +71,26 @@ namespace OnlineBookClub.Service
             }
             return Validatestr;
         }
-        public void authcode(string email,string authcode)
+        public async Task authcodeAsync(string email, string authcode)
         {
-            var members = GetDataEmail(email);
+            var members = await GetDataEmailAsync(email);
             members.AuthCode = authcode;
-            _MembersRepository.Update(members);
+            await _MembersRepository.UpdateAsync(members);
         }
-        public string forgetpsEmailValidate(string Email, string AuthCode)
+        public async Task<string> forgetpsEmailValidateAsync(string Email, string AuthCode)
         {
-            Members ValidateMember = GetDataEmail(Email);
+            Members ValidateMember = await GetDataEmailAsync(Email);
             string Validatestr = string.Empty;
             if (ValidateMember != null && ValidateMember.AuthCode == AuthCode)
             {
-                var update = (from a in _OnlineBookClubContext.Members where a.Email == ValidateMember.Email select a).SingleOrDefault();
+                var update = await _OnlineBookClubContext.Members
+                    .Where(a => a.Email == ValidateMember.Email)
+                    .SingleOrDefaultAsync();
                 update.AuthCode = string.Empty;  // 清空驗證碼，標記為已驗證
-                _OnlineBookClubContext.SaveChanges(); // 儲存變更
+                await _OnlineBookClubContext.SaveChangesAsync(); // 非同步儲存變更
                 string redirectUrl = $"http://127.0.0.1:5500/Login/newpassword.html?email={Uri.EscapeDataString(Email)}";
-                
-                return "帳號信箱驗證成功請回到剛剛頁面修改密碼 \n"+ redirectUrl;
+
+                return "帳號信箱驗證成功請回到剛剛頁面修改密碼 \n" + redirectUrl;
             }
             else
             {
@@ -92,10 +98,9 @@ namespace OnlineBookClub.Service
             }
             return Validatestr;
         }
-        public string LoginCheck(LoginDTO Value)
+        public async Task<string> LoginCheckAsync(LoginDTO Value)
         {
-
-            Members LoginMember = GetDataEmail(Value.Email);
+            Members LoginMember = await GetDataEmailAsync(Value.Email);
 
             if (LoginMember != null)
             {
@@ -103,7 +108,6 @@ namespace OnlineBookClub.Service
                 {
                     if (PasswordCheck(LoginMember, Value.Password))
                     {
-
                         return "";
                     }
                     else
@@ -121,54 +125,53 @@ namespace OnlineBookClub.Service
                 return " 無此會員帳號，請去註冊 ";
             }
         }
+
         public bool PasswordCheck(Members CheckMember, string Password)
         {
             string pwd = HashPassword(Password);
             bool result = CheckMember.Password.Equals(pwd);
             return result;
         }
-        public void updatePassword(Members members, string Password)
+        public async Task updatePasswordAsync(Members members, string Password)
         {
-
             if (members != null)
             {
                 members.Password = HashPassword(Password);
-                _MembersRepository.Update(members);
-                
+                await _MembersRepository.UpdateAsync(members);
             }
         }
-        public string ChangePassword(string email, string Password, string NEWPassword)
+        public async Task<string> ChangePasswordAsync(string email, string Password, string NEWPassword)
         {
-            Members members = GetDataEmail(email);
+            Members members = await GetDataEmailAsync(email);
             if (PasswordCheck(members, Password))
             {
-
                 members.Password = HashPassword(NEWPassword);
-                _MembersRepository.Update(members);
+                await _MembersRepository.UpdateAsync(members);
                 return "修改成功";
             }
             return "密碼不正確";
         }
 
-        public ProfileDTO profile(string email)
+        public async Task<ProfileDTO> profileAsync(string email)
         {
-            var member = _OnlineBookClubContext.Members
-            .Where(m => m.Email == email)
-            .Select(m => new ProfileDTO
-            {
-                Name = m.UserName,
-                Birthday = m.Birthday,
-                email=m.Email,
-                Gender = m.Gender,
-                ProfilePictureUrl = m.ProfilePictureUrl
-            })
-            .SingleOrDefault();  // 確保只取得一筆資料
+            var member = await _OnlineBookClubContext.Members
+                .Where(m => m.Email == email)
+                .Select(m => new ProfileDTO
+                {
+                    Name = m.UserName,
+                    Birthday = m.Birthday,
+                    email = m.Email,
+                    Gender = m.Gender,
+                    ProfilePictureUrl = m.ProfilePictureUrl
+                })
+                .SingleOrDefaultAsync();  // 非同步查詢
 
-            return member;  
+            return member;
         }
-        public bool UpdateProfile(ProfileDTO profileDto, string email, string savedFilePath)
+
+        public async Task<bool> UpdateProfileAsync(ProfileDTO profileDto, string email, string savedFilePath)
         {
-            var member = GetDataEmail(email);
+            var member = await GetDataEmailAsync(email);
 
             if (member == null)
             {
@@ -186,7 +189,7 @@ namespace OnlineBookClub.Service
                 member.ProfilePictureUrl = savedFilePath;
             }
 
-            _MembersRepository.Update(member);
+            await _MembersRepository.UpdateAsync(member);
             return true;
         }
     }

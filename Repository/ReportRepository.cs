@@ -198,6 +198,10 @@ namespace OnlineBookClub.Repository
 
             report.Action = postreportAction.Action; 
             _context.Post_Report.Update(report);
+            //if (report.Action == "移除")
+            //{
+            //    _context.Post_Report.Remove(report);
+            //}
             await _context.SaveChangesAsync();
 
             return new Post_ReportDTO
@@ -297,6 +301,10 @@ namespace OnlineBookClub.Repository
 
             report.Action = replyreportAction.Action;
             _context.Reply_Report.Update(report);
+            //if(report.Action == "移除")
+            //{
+            //    _context.Reply_Report.Remove(report);
+            //}
             await _context.SaveChangesAsync();
 
             return new Reply_ReportDTO

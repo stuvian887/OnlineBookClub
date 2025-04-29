@@ -23,7 +23,7 @@ namespace OnlineBookClub.Repository
         public async Task<IEnumerable<Reply>> GetRepliesByPostIdAsync(int postId)
         {
             return await _context.Reply
-                .Where(r => r.Post_Id == postId)
+                .Where(r => r.Post_Id == postId && !r.IsDeleted)
                 .OrderByDescending(r => r.ReplyTime)
                 .ToListAsync();
         }
@@ -43,20 +43,21 @@ namespace OnlineBookClub.Repository
         {
             var reply = await GetReplyByIdAsync(replyId);
             if (reply == null) return false;
-            _context.Reply.Remove(reply);
+            reply.IsDeleted = true;
+            _context.Reply.Update(reply);
             return await _context.SaveChangesAsync() > 0;
         }
 
         public async Task<Reply?> GeReplyByIdWithUserAsync(int ReplyID)
         {
             return await _context.Reply
-                .Include(p => p.User)
+                .Include(p => p.User )
                 .FirstOrDefaultAsync(p => p.Reply_Id == ReplyID);
         }
         public async Task<IEnumerable<Reply>> GetReplyByUserIdAsync(int userId)
         {
             return await _context.Reply
-                .Where(p => p.User_Id == userId)
+                .Where(p => p.User_Id == userId&& !p.IsDeleted)
                 .OrderByDescending(p => p.ReplyTime)
                 .ToListAsync();
         }

@@ -17,6 +17,7 @@ public partial class Reply
     public DateTime ReplyTime { get; set; }
 
     public string ReplyImg { get; set; }
+    public bool IsDeleted { get; set; } = false;
 
     public virtual Post Post { get; set; }
 

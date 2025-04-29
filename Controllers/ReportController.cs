@@ -2,6 +2,7 @@
 using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
 using OnlineBookClub.Service;
+using System.Collections.Generic;
 using System.Numerics;
 using System.Security.Claims;
 using System.Xml.Linq;
@@ -36,6 +37,24 @@ namespace OnlineBookClub.Controllers
                 return BadRequest(new { message = "發生錯誤" });
             }
         }
+        [HttpGet("GetAllReport/{PlanId}")]
+        public async Task<IActionResult> GetAllReport(int PlanId, string keyword = "", int page = 1)
+        {
+            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            int UserId = int.Parse(UserIdClaim.Value);
+
+            var paging = new ForPaging(page);
+
+            var result = await _service.GetAllUnifiedReportsPaged(UserId, PlanId, keyword, paging);
+
+            if (result.Reports.Any())
+                return Ok(result);
+            else
+                return NotFound(new { message = "目前無檢舉資料" });
+        }
+
+
+
         [HttpGet("GetAllPostReport/{PlanId}")]
         public async Task<IActionResult> GetAllPostReport(int PlanId)
         {

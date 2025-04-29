@@ -54,11 +54,13 @@ namespace OnlineBookClub.Repository
         public async Task<IEnumerable<LearnDTO>> GetLearnByPlanIdAsync(int PlanId)
         {
             var list = new List<LearnDTO>();
-            var Learns = await _context.Learn.Where(l => l.Plan_Id == PlanId).Include(l => l.ProgressTracking).ToListAsync();
+            var Learns = await _context.Learn
+                .Where(l => l.Plan_Id == PlanId)
+                .Include(l => l.ProgressTracking)
+                .ToListAsync();
             foreach (var a in Learns)
             {
                 double PassPersent = await GetPersentOfMemberPass(a.Learn_Id);
-                //(string RecentlyLearnDate, string RecentlyLearn) = await GetRecentlyLearn(a.Plan_Id);
                 list.Add(new LearnDTO
                 {
                     Plan_Id = a.Plan_Id,
@@ -66,8 +68,6 @@ namespace OnlineBookClub.Repository
                     Learn_Name = a.Learn_Name,
                     Pass_Standard = a.Pass_Standard,
                     DueTime = a.DueTime,
-                    //RecentlyLearnDate = RecentlyLearnDate,
-                    //RecentlyLearn = RecentlyLearn,
                     PersentOfMemberPass = PassPersent,
                     Manual_Check = a.Manual_Check,
                     ProgressTracking = a.ProgressTracking?.Select(GetProgressTrack).ToList()
@@ -152,20 +152,26 @@ namespace OnlineBookClub.Repository
         {
             try
             {
-                var Learn = await _context.Learn.Where(l => l.Learn_Id == LearnId).FirstOrDefaultAsync();
+                var Learn = await _context.Learn
+                    .Where(l => l.Learn_Id == LearnId)
+                    .FirstOrDefaultAsync();
                 int PassCount = 0;
                 if (Learn == null)
                 {
                     return 0;
                 }
 
-                var MembersProgress = await _context.ProgressTracking.Where(p => p.Learn_Id == Learn.Learn_Id).ToListAsync();
+                var MembersProgress = await _context.ProgressTracking
+                    .Where(p => p.Learn_Id == Learn.Learn_Id)
+                    .ToListAsync();
                 foreach (var MemberPass in MembersProgress)
                 {
                     if (MemberPass.Status == true) PassCount++;
                 }
 
-                int LearnMemberCount = await _context.ProgressTracking.Where(p => p.Learn_Id == Learn.Learn_Id).CountAsync();
+                int LearnMemberCount = await _context.ProgressTracking
+                    .Where(p => p.Learn_Id == Learn.Learn_Id)
+                    .CountAsync();
                 double PassPersent = (double)PassCount / LearnMemberCount;
                 return PassPersent;
             }
@@ -202,7 +208,9 @@ namespace OnlineBookClub.Repository
         //}
         public async Task<(LearnDTO,string message)> copylearnAsync(int UserId, int PlanId, LearnDTO InsertData)
         {
-            BookPlan FindPlan = await _context.BookPlan.Include(bp => bp.Learn).SingleOrDefaultAsync(p => p.Plan_Id == PlanId);
+            BookPlan FindPlan = await _context.BookPlan
+                .Include(bp => bp.Learn)
+                .SingleOrDefaultAsync(p => p.Plan_Id == PlanId);
             if (FindPlan == null)
             {
                 return (null, "錯誤，找不到該計畫");
@@ -428,7 +436,9 @@ namespace OnlineBookClub.Repository
         }
         public async Task<IEnumerable<ProgressTrackingDTO>> CreateAllProgressTrackAsync(int UserId, int PlanId)
         {
-            var Learns = await _context.Learn.Where(l => l.Plan_Id == PlanId).ToListAsync();
+            var Learns = await _context.Learn
+                .Where(l => l.Plan_Id == PlanId)
+                .ToListAsync();
             if (Learns == null) return null;
             List<ProgressTrackingDTO> resultDTOs = new List<ProgressTrackingDTO>();
             foreach (var learn in Learns)
@@ -455,7 +465,9 @@ namespace OnlineBookClub.Repository
         public async Task<IEnumerable<ProgressTrackingDTO>> CreateProgressTrackAsync(int PlanId, int Learn_Id)
         {
             List<ProgressTrackingDTO> resultDTOs = new List<ProgressTrackingDTO>();
-            var Members = await _context.PlanMembers.Where(pm => pm.Plan_Id == PlanId).ToListAsync();
+            var Members = await _context.PlanMembers
+                .Where(pm => pm.Plan_Id == PlanId)
+                .ToListAsync();
             if (Members == null) return null;
             foreach (var member in Members)
             {
@@ -504,14 +516,18 @@ namespace OnlineBookClub.Repository
         {
             List<Answer_RecordDTO> resultDTOs = new List<Answer_RecordDTO>();
             var Plan = await _context.BookPlan.FindAsync(submission.Plan_Id);
-            var Learn = await _context.Learn.Where(l => l.Plan_Id == submission.Plan_Id).FirstOrDefaultAsync(l => l.Learn_Index == submission.Learn_Index);
+            var Learn = await _context.Learn
+                .Where(l => l.Plan_Id == submission.Plan_Id)
+                .FirstOrDefaultAsync(l => l.Learn_Index == submission.Learn_Index);
             if (Plan == null || Learn == null) { return null; }
             int AnswerCount = 0;
             int PassAnswerCount = 0;
             foreach (var answerInput in submission.Answers)
             {
-                var topic = await _context.Topic.FirstOrDefaultAsync(t => t.Learn_Id == Learn.Learn_Id && t.Question_Id == answerInput.Question_Id);
-                int countimes = await _context.Answer_Record.CountAsync(a => a.User_Id == UserId && a.Topic_Id == topic.Topic_Id);
+                var topic = await _context.Topic
+                    .FirstOrDefaultAsync(t => t.Learn_Id == Learn.Learn_Id && t.Question_Id == answerInput.Question_Id);
+                int countimes = await _context.Answer_Record
+                    .CountAsync(a => a.User_Id == UserId && a.Topic_Id == topic.Topic_Id);
                 if (topic == null)
                 {
                     return null;
@@ -561,11 +577,13 @@ namespace OnlineBookClub.Repository
         {
             var User = await _planMemberRepository.GetUserRoleAsync(UserId, PlanId);
             var Plan = await _context.BookPlan.FindAsync(PlanId);
-            var Learn = await _context.Learn.Where(l => l.Plan_Id == PlanId).FirstOrDefaultAsync(l => l.Learn_Index == Learn_Index);
+            var Learn = await _context.Learn
+                .Where(l => l.Plan_Id == PlanId)
+                .FirstOrDefaultAsync(l => l.Learn_Index == Learn_Index);
             if (User != null && Plan != null && Learn != null)
             {
-                var result = (from a in _context.Answer_Record.
-                              Where(a => a.User_Id == UserId)
+                var result = (from a in _context.Answer_Record
+                              .Where(a => a.User_Id == UserId)
                               join b in _context.Topic on a.Topic_Id equals b.Topic_Id
                               select new Answer_RecordDTO
                               {

@@ -411,12 +411,26 @@ namespace OnlineBookClub.Repository
                     .Select(m => m.UserName)
                     .FirstOrDefaultAsync();
 
+                var LearnName = await _context.ProgressTracking
+                    .Join(_context.Learn,
+                        progress => progress.Learn_Id,
+                        learn => learn.Learn_Id,
+                        (progress, learn) => new
+                        {
+                            Progress = progress,
+                            Learn = learn,
+                        }
+                    )
+                    .Where(p => p.Progress.User_Id == member.User_Id && p.Learn.Plan_Id == Plan_Id && p.Progress.Status == false)
+                    .FirstOrDefaultAsync();
+
                 result.Add(new MemberProgressDTO
                 {
                     User_Id = member.User_Id,
                     UserName = MemberName,
                     JoinDate = member.JoinDate,
-                    ProgressPercent = PassPersent.ToString()
+                    ProgressPercent = PassPersent.ToString(),
+                    LearnName = LearnName.Learn.Learn_Name,
                 });
             }
             return result;

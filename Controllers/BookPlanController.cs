@@ -109,7 +109,8 @@ namespace OnlineBookClub.Controllers
             {
                 await _learnService.copy(userId, result.Plan_Id, item);
             }
-            
+            await _statisticService.AddCopyCountAsync(planId);
+
 
             return Ok("Plan copied successfully.");
         }

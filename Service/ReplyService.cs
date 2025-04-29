@@ -39,6 +39,7 @@ public class ReplyService
             ReplyContent = dto.ReplyContent,
             ReplyImg = imgPath,
             ReplyTime = DateTime.UtcNow,
+            IsDeleted = false,
         };
 
         return await _repository.CreateReplyAsync(reply);

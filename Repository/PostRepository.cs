@@ -15,7 +15,7 @@ namespace OnlineBookClub.Repository
         {
             return await _context.Post
                 .Include(p => p.User)
-                .FirstOrDefaultAsync(p => p.Post_Id == postId && !p.IsDeleted);
+                .FirstOrDefaultAsync(p => p.Post_Id == postId );
         }
         public async Task<IEnumerable<Post>> GetPostsByUserIdAsync(int userId)
         {

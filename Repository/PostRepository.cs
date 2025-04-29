@@ -15,12 +15,12 @@ namespace OnlineBookClub.Repository
         {
             return await _context.Post
                 .Include(p => p.User)
-                .FirstOrDefaultAsync(p => p.Post_Id == postId);
+                .FirstOrDefaultAsync(p => p.Post_Id == postId && !p.IsDeleted);
         }
         public async Task<IEnumerable<Post>> GetPostsByUserIdAsync(int userId)
         {
             return await _context.Post
-                .Where(p => p.User_Id == userId)
+                .Where(p => p.User_Id == userId && !p.IsDeleted)
                 .OrderByDescending(p => p.CreateTime)
                 .ToListAsync();
         }
@@ -36,7 +36,7 @@ namespace OnlineBookClub.Repository
         public async Task<IEnumerable<Post>> GetPostsByPlanIdAsync(int planId, string? keyword)
         {
             var query = _context.Post
-                .Where(p => p.Plan_Id == planId);
+                .Where(p => p.Plan_Id == planId && !p.IsDeleted);
 
             // 如果有提供 keyword，根據 keyword 過濾內容
             if (!string.IsNullOrEmpty(keyword))
@@ -49,7 +49,7 @@ namespace OnlineBookClub.Repository
 
         public async Task<Post?> GetPostByIdAsync(int postId)
         {
-            return await _context.Post.FindAsync(postId);
+            return await _context.Post.FirstOrDefaultAsync(p => p.Post_Id == postId && !p.IsDeleted);
         }
 
         public async Task<bool> UpdatePostAsync(Post post)
@@ -61,8 +61,10 @@ namespace OnlineBookClub.Repository
         public async Task<bool> DeletePostAsync(int postId)
         {
             var post = await _context.Post.FindAsync(postId);
+            
             if (post == null) return false;
-            _context.Post.Remove(post);
+            post.IsDeleted = true;
+            _context.Post.Update(post);
             return await _context.SaveChangesAsync() > 0;
         }
     }

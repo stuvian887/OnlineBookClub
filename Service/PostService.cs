@@ -44,7 +44,8 @@ namespace OnlineBookClub.Service
                 Name=userName,
                 Content = dto.Content,
                 Img_Path = imgPath,
-                CreateTime = DateTime.UtcNow
+                CreateTime = DateTime.UtcNow,
+                IsDeleted = false,
             };
 
             return await _repository.CreatePostAsync(post);

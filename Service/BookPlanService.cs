@@ -107,7 +107,11 @@ namespace OnlineBookClub.Service
             
             if (originalPlan == null)
                 return null;
-
+            var Role = await _memberRepository.GetUserRoleAsync(userId, planId);
+            if (Role != "組長")
+            {
+                return null;
+            }
             // 建立新計畫（複製基本資訊）
             var newPlan = new BookPlan
             {

@@ -156,10 +156,10 @@ namespace OnlineBookClub.Repository
                     if (MemberPass.Status == true) PassCount++;
                 }
 
-                int LearnMemberCount = await _context.ProgressTracking
+                double LearnMemberCount = await _context.ProgressTracking
                     .Where(p => p.Learn_Id == Learn.Learn_Id)
                     .CountAsync();
-                double PassPersent = (double)PassCount / LearnMemberCount;
+                double PassPersent = Math.Round((double)PassCount / LearnMemberCount,2) * 100;
                 return PassPersent;
             }
             catch (Exception e)
@@ -223,6 +223,7 @@ namespace OnlineBookClub.Repository
                 return (null, "錯誤，期限不可於今天之前");
             }
 
+
             Learn learn = new Learn();
             learn.Plan_Id = PlanId;
             learn.Learn_Name = InsertData.Learn_Name;
@@ -264,10 +265,10 @@ namespace OnlineBookClub.Repository
                         return (null, "錯誤，此學習編號已經存在");
                     }
                 }
-                System.DateTime NowTime = DateTime.Now.Date;
-                System.TimeSpan checkdifftime = UpdateData.DueTime.Subtract(NowTime);
-                if (checkdifftime.TotalSeconds > 0)
-                {
+                //System.DateTime NowTime = DateTime.Now.Date;
+                //System.TimeSpan checkdifftime = UpdateData.DueTime.Subtract(NowTime);
+                //if (checkdifftime.TotalSeconds > 0)
+                //{
                     UpdateLearn.Plan_Id = UpdateDataPlan.Plan_Id;
                     UpdateLearn.Learn_Name = UpdateData.Learn_Name;
                     UpdateLearn.Pass_Standard = UpdateData.Pass_Standard;
@@ -278,9 +279,9 @@ namespace OnlineBookClub.Repository
                     LearnDTO resultDTO = new LearnDTO();
                     resultDTO.Learn_Name = UpdateLearn.Learn_Name;
                     return (resultDTO, "修改學習內容成功");
-                }
+                //}
 
-                else return (null, "錯誤，期限不可於今天之前");
+                //else return (null, "錯誤，期限不可於今天之前");
             }
             else if (Role == "組員") return (null, "你沒有權限這麼做");
             else return (null, "找不到你是誰");
@@ -343,7 +344,7 @@ namespace OnlineBookClub.Repository
             }
             //取得所有成員
             var PlanMembers = await _context.PlanMembers
-                .Where(pm => pm.Plan_Id == Plan_Id)
+                .Where(pm => pm.Plan_Id == Plan_Id && pm.User_Id != UserId)                
                 .Select(pm => new 
                 {
                     pm.User_Id,
@@ -386,13 +387,15 @@ namespace OnlineBookClub.Repository
                     .Where(p => p.Progress.User_Id == member.User_Id && p.Learn.Plan_Id == Plan_Id && p.Progress.Status == false)
                     .FirstOrDefaultAsync();
 
+                
+
                 result.Add(new MemberProgressDTO
                 {
                     User_Id = member.User_Id,
                     UserName = MemberName,
                     JoinDate = member.JoinDate.Date.ToString("yyyy/MM/dd"),
                     ProgressPercent = PassPersent.ToString(),
-                    LearnName = LearnName.Learn.Learn_Name,
+                    LearnName = LearnName?.Learn.Learn_Name ?? "全部完成!",
                 });
             }
             return result;

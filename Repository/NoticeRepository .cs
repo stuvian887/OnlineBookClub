@@ -9,6 +9,13 @@ namespace OnlineBookClub.Repositories
     public class NoticeRepository 
     {
         private readonly OnlineBookClubContext _context;
+        public async Task<List<Notice>> GetUnreadNoticesAsync(int userId)
+        {
+            return await _context.Notice
+                .Where(n => n.User_Id == userId && !n.IsRead)
+                .OrderByDescending(n => n.NoticeTime)
+                .ToListAsync();
+        }
 
         public NoticeRepository(OnlineBookClubContext context)
         {
@@ -18,7 +25,7 @@ namespace OnlineBookClub.Repositories
         public async Task<List<Notice>> GetNoticesByUserIdAsync(int userId)
         {
             return await _context.Notice
-                .Where(n => n.User_Id == userId)
+                .Where(n => n.User_Id == userId )
                 .OrderByDescending(n => n.NoticeTime)
                 .ToListAsync();
         }
@@ -34,11 +41,11 @@ namespace OnlineBookClub.Repositories
             var notice = await _context.Notice.FindAsync(noticeId);
             if (notice != null)
             {
-                // 這裡需要你的 Notice 有 IsRead 欄位才可以標記
-                // notice.IsRead = true;
+                notice.IsRead = true;
                 await _context.SaveChangesAsync();
             }
         }
+
         public async Task CheckAndNotifyUpcomingLearnings(int userId)
         {
             var progresses = await _context.ProgressTracking

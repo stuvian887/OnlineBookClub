@@ -71,7 +71,9 @@ namespace OnlineBookClub.Service
             // 關鍵字篩選
             if (!string.IsNullOrWhiteSpace(keyword))
             {
-                unified = unified.Where(r => r.ReportText.Contains(keyword));
+                unified = unified.Where(r => r.ReportText.Contains(keyword)
+                                            || r.Action.Contains(keyword)||
+                                            r.Type.Contains(keyword));
             }
 
             // 分頁處理

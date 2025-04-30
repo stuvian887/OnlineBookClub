@@ -305,8 +305,16 @@ namespace OnlineBookClub.Repository
 
                 var mardata = await _context.ProgressTracking.Where(X => X.Learn_Id == DeleteLearn.Learn_Id).FirstOrDefaultAsync();
                 var topic=await _context.Topic.Where(X => X.Learn_Id == DeleteLearn.Learn_Id).FirstOrDefaultAsync();
-                _context.ProgressTracking.Remove(mardata);
-                _context.Topic.Remove(topic);
+                var progressList = await _context.ProgressTracking
+    .Where(x => x.Learn_Id == DeleteLearn.Learn_Id).ToListAsync();
+                _context.ProgressTracking.RemoveRange(progressList);
+
+                var topics = await _context.Topic.Where(x => x.Learn_Id == DeleteLearn.Learn_Id).ToListAsync();
+                if (topics.Any())
+                {
+                    _context.Topic.RemoveRange(topics);
+                }
+
                 _context.Learn.Remove(DeleteLearn);
 
                 await _context.SaveChangesAsync();

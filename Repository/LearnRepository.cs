@@ -534,18 +534,21 @@ namespace OnlineBookClub.Repository
                 .Where(l => l.Plan_Id == submission.Plan_Id)
                 .FirstOrDefaultAsync(l => l.Learn_Index == submission.Learn_Index);
             if (Plan == null || Learn == null) { return null; }
-            int AnswerCount = 0;
+            int AnswerCount = await _context.Topic
+                .Where(t => t.Learn_Id == Learn.Learn_Id)
+                .CountAsync();
             int PassAnswerCount = 0;
             foreach (var answerInput in submission.Answers)
             {
                 var topic = await _context.Topic
                     .FirstOrDefaultAsync(t => t.Learn_Id == Learn.Learn_Id && t.Question_Id == answerInput.Question_Id);
-                int countimes = await _context.Answer_Record
-                    .CountAsync(a => a.User_Id == UserId && a.Topic_Id == topic.Topic_Id);
                 if (topic == null)
                 {
                     return null;
                 }
+                int countimes = await _context.Answer_Record
+                    .CountAsync(a => a.User_Id == UserId && a.Topic_Id == topic.Topic_Id);
+                
                 Answer_Record answer_Record = new Answer_Record();
                 answer_Record.User_Id = UserId;
                 answer_Record.Learn_Id = Learn.Learn_Id;

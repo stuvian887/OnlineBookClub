@@ -265,10 +265,10 @@ namespace OnlineBookClub.Repository
                         return (null, "錯誤，此學習編號已經存在");
                     }
                 }
-                System.DateTime NowTime = DateTime.Now.Date;
-                System.TimeSpan checkdifftime = UpdateData.DueTime.Subtract(NowTime);
-                if (checkdifftime.TotalSeconds > 0)
-                {
+                //System.DateTime NowTime = DateTime.Now.Date;
+                //System.TimeSpan checkdifftime = UpdateData.DueTime.Subtract(NowTime);
+                //if (checkdifftime.TotalSeconds > 0)
+                //{
                     UpdateLearn.Plan_Id = UpdateDataPlan.Plan_Id;
                     UpdateLearn.Learn_Name = UpdateData.Learn_Name;
                     UpdateLearn.Pass_Standard = UpdateData.Pass_Standard;
@@ -279,9 +279,9 @@ namespace OnlineBookClub.Repository
                     LearnDTO resultDTO = new LearnDTO();
                     resultDTO.Learn_Name = UpdateLearn.Learn_Name;
                     return (resultDTO, "修改學習內容成功");
-                }
+                //}
 
-                else return (null, "錯誤，期限不可於今天之前");
+                //else return (null, "錯誤，期限不可於今天之前");
             }
             else if (Role == "組員") return (null, "你沒有權限這麼做");
             else return (null, "找不到你是誰");

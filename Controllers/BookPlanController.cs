@@ -104,7 +104,7 @@ namespace OnlineBookClub.Controllers
                 return NotFound("找不到");
             var book = await _bookService.GetBookByPlanIdAsync(planId, Request);
             await _bookService.AddBookAsync(result.Plan_Id, book);
-            var learn = await _learnService.GetLearn(planId);
+            var learn = await _learnService.GetLearn(userId , planId);
             foreach (var item in learn)
             {
                 await _learnService.copy(userId, result.Plan_Id, item);

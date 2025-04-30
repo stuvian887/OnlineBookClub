@@ -9,9 +9,15 @@ namespace OnlineBookClub.Services
     {
         private readonly NoticeRepository _noticeRepository;
 
+        
+
         public NoticeService(NoticeRepository noticeRepository)
         {
             _noticeRepository = noticeRepository;
+        }
+        public async Task<List<Notice>> GetUnreadNoticesAsync(int userId)
+        {
+            return await _noticeRepository.GetUnreadNoticesAsync(userId);
         }
 
         public async Task<List<Notice>> GetNoticesByUserIdAsync(int userId)

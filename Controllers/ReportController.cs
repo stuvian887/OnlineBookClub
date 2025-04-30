@@ -168,6 +168,7 @@ namespace OnlineBookClub.Controllers
                     User_Id = leader, // 通知給組長
                     NoticeTime = DateTime.Now,
                     Message = $"您的讀書計畫 {bookplan.Plan_Name} 留言板有新的回覆檢舉",
+
                 };
                 await _noticeService.CreateNoticeAsync(leaderNotification);  // 保存通知到資料庫
                 return Ok(result.Message);

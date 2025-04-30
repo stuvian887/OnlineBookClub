@@ -26,6 +26,7 @@ namespace OnlineBookClub.Repository
         {
             return await _context.PlanMembers.CountAsync(p => p.Plan_Id == planid);
         }
+        
         public async Task<List<PlanMembersDTO>> PlanMembersInPlanAsync(int planid)
         {
             var members = await _context.PlanMembers

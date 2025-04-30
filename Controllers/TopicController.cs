@@ -42,11 +42,11 @@ namespace OnlineBookClub.Controllers
             var result = await _service.CreateTopic(UserId , PlanId, Learn_Index, newData);
             if (result.Item1 != null)
             {
-                return Ok(result.Message);
+                return Ok(new { result.Message });
             }
             else
             {
-                return BadRequest(result.Message);
+                return BadRequest(new { result.Message });
             }
         }
 

@@ -223,6 +223,7 @@ namespace OnlineBookClub.Repository
                 return (null, "錯誤，期限不可於今天之前");
             }
 
+
             Learn learn = new Learn();
             learn.Plan_Id = PlanId;
             learn.Learn_Name = InsertData.Learn_Name;

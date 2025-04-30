@@ -386,6 +386,10 @@ namespace OnlineBookClub.Repository
                     )
                     .Where(p => p.Progress.User_Id == member.User_Id && p.Learn.Plan_Id == Plan_Id && p.Progress.Status == false)
                     .FirstOrDefaultAsync();
+                if(LearnName == null)
+                {
+                    LearnName.Learn.Learn_Name = "全部完成!";
+                }
 
                 result.Add(new MemberProgressDTO
                 {

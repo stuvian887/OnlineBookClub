@@ -156,10 +156,10 @@ namespace OnlineBookClub.Repository
                     if (MemberPass.Status == true) PassCount++;
                 }
 
-                int LearnMemberCount = await _context.ProgressTracking
+                double LearnMemberCount = await _context.ProgressTracking
                     .Where(p => p.Learn_Id == Learn.Learn_Id)
                     .CountAsync();
-                double PassPersent = (double)PassCount / LearnMemberCount;
+                double PassPersent = Math.Round((double)PassCount / LearnMemberCount,2) * 100;
                 return PassPersent;
             }
             catch (Exception e)

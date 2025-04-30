@@ -43,5 +43,16 @@ namespace OnlineBookClub.Controllers
             await _noticeService.MarkNoticeAsReadAsync(noticeId);
             return Ok(new { message = "通知已標記為已讀" });
         }
+        [HttpPost("check-upcoming")]
+        public async Task<IActionResult> CheckUpcomingLearnings()
+        {
+            var token = HttpContext.Request.Cookies["JWT"];
+            int userId = Convert.ToInt32(_jwtService.GetUserIdFromToken(token));
+
+            await _noticeService.CheckAndNotifyUpcomingLearnings(userId);
+
+            return Ok(new { message = "即將到期學習通知檢查完成" });
+        }
+
     }
 }

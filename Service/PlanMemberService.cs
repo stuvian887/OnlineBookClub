@@ -75,5 +75,9 @@ namespace OnlineBookClub.Service
         {
             return await _planMembersRepository.PlanMembersInPlanAsync(planid);
         }
+        public async Task<int> getleader(int planid)
+        {
+            return await _planMembersRepository.GetPlanLeaderIdAsync(planid);
+        }
     }
 }

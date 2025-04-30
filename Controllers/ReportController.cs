@@ -2,6 +2,8 @@
 using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
 using OnlineBookClub.Service;
+using OnlineBookClub.Services;
+using System.Collections.Generic;
 using System.Numerics;
 using System.Security.Claims;
 using System.Xml.Linq;
@@ -15,9 +17,15 @@ namespace OnlineBookClub.Controllers
     public class ReportController : ControllerBase
     {
         private readonly ReportService _service;
-        public ReportController(ReportService service)
+        private readonly PlanMemberService _planMemberService;
+        private readonly NoticeService _noticeService;
+        private readonly BookPlanService _bookPlanService;
+        public ReportController(ReportService service, PlanMemberService  planMemberService, NoticeService noticeService , BookPlanService bookPlanService)
         {
             _service = service;
+            _planMemberService = planMemberService;
+            _noticeService = noticeService;
+            _bookPlanService = bookPlanService;
         }
 
         // GET: api/<ReportController>
@@ -36,6 +44,24 @@ namespace OnlineBookClub.Controllers
                 return BadRequest(new { message = "發生錯誤" });
             }
         }
+        [HttpGet("GetAllReport/{PlanId}")]
+        public async Task<IActionResult> GetAllReport(int PlanId, string keyword = "", int page = 1)
+        {
+            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            int UserId = int.Parse(UserIdClaim.Value);
+
+            var paging = new ForPaging(page);
+
+            var result = await _service.GetAllUnifiedReportsPaged(UserId, PlanId, keyword, paging);
+
+            if (result.Reports.Any())
+                return Ok(result);
+            else
+                return NotFound(new { message = "目前無檢舉資料" });
+        }
+
+
+
         [HttpGet("GetAllPostReport/{PlanId}")]
         public async Task<IActionResult> GetAllPostReport(int PlanId)
         {
@@ -76,6 +102,7 @@ namespace OnlineBookClub.Controllers
             var result = await _service.GetReplyReport(UserId, R_Report_Id);
             if (result != null)
             {
+
                 return Ok(result);
             }
             else
@@ -91,8 +118,18 @@ namespace OnlineBookClub.Controllers
             var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             int UserId = int.Parse(UserIdClaim.Value);
             var result = await _service.CreatePostReport(UserId, PlanId, PostId, PRData);
+            
             if (result.Item1 != null)
             {
+                var bookplan = await _bookPlanService.GetById(PlanId);
+                var leader = await _planMemberService.getleader(PlanId);
+                var leaderNotification = new Notice
+                {
+                    User_Id = leader, // 通知給組長
+                    NoticeTime = DateTime.Now,
+                    Message = $"您的讀書計畫 {bookplan.Plan_Name} 留言板有新的貼文檢舉",
+                };
+                await _noticeService.CreateNoticeAsync(leaderNotification);  // 保存通知到資料庫
                 return Ok(result.Message);
             }
             else
@@ -108,6 +145,7 @@ namespace OnlineBookClub.Controllers
             var result = await _service.DoPost_ReportAction(UserId ,P_Report_Id, DoingAction);
             if (result != null)
             {
+
                 return Ok(result);
             }
             else
@@ -123,6 +161,15 @@ namespace OnlineBookClub.Controllers
             var result = await _service.CreateReplyReport(UserId, PlanId, PostId, ReplyId, RRData);
             if (result.Item1 != null)
             {
+                var bookplan = await _bookPlanService.GetById(PlanId);
+                var leader = await _planMemberService.getleader(PlanId);
+                var leaderNotification = new Notice
+                {
+                    User_Id = leader, // 通知給組長
+                    NoticeTime = DateTime.Now,
+                    Message = $"您的讀書計畫 {bookplan.Plan_Name} 留言板有新的回覆檢舉",
+                };
+                await _noticeService.CreateNoticeAsync(leaderNotification);  // 保存通知到資料庫
                 return Ok(result.Message);
             }
             else

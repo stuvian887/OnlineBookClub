@@ -44,5 +44,55 @@ namespace OnlineBookClub.Service
         {
             return await _repository.CreateReplyReport(UserId , PlanId , PostId , ReplyId , RRData);
         }
+        public async Task<ReportPageResultDTO> GetAllUnifiedReportsPaged(int userId, int planId, string keyword, ForPaging paging)
+        {
+            var postReports = await _repository.GetAllPostReport(userId, planId) ?? new List<Post_ReportDTO>();
+            var replyReports = await _repository.GetAllReplyReport(userId, planId) ?? new List<Reply_ReportDTO>();
+
+            var unified = postReports.Select(r => new UnifiedReportDTO
+            {
+                ReportId = r.P_Report_Id,
+                TargetId = r.Post_Id,
+                Type = "Post",
+                Action = r.Action,
+                ReportText = r.Report_text,
+                ReportTime = r.Report_Time
+            })
+            .Concat(replyReports.Select(r => new UnifiedReportDTO
+            {
+                ReportId = r.R_Report_Id,
+                TargetId = r.Reply_Id,
+                Type = "Reply",
+                Action = r.Action,
+                ReportText = r.Report_text,
+                ReportTime = r.Report_Time
+            }));
+
+            // 關鍵字篩選
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                unified = unified.Where(r => r.ReportText.Contains(keyword));
+            }
+
+            // 分頁處理
+            int total = unified.Count();
+            paging.MaxPage = (int)Math.Ceiling((double)total / paging.ItemNum);
+            paging.SetRightPage();
+
+            var pagedResult = unified
+                .OrderByDescending(r => r.ReportTime)
+                .Skip((paging.NowPage - 1) * paging.ItemNum)
+                .Take(paging.ItemNum)
+                .ToList();
+
+            return new ReportPageResultDTO
+            {
+                Keyword = keyword,
+                Reports = pagedResult,
+                Paging = paging
+            };
+        }
+
+
     }
 }

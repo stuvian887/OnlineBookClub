@@ -28,5 +28,10 @@ namespace OnlineBookClub.Services
         {
             await _noticeRepository.MarkNoticeAsReadAsync(noticeId);
         }
+        public async Task CheckAndNotifyUpcomingLearnings(int userId)
+        {
+            await _noticeRepository.CheckAndNotifyUpcomingLearnings(userId);
+        }
+
     }
 }

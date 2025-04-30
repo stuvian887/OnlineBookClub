@@ -41,7 +41,11 @@ namespace OnlineBookClub.Service
             {
                 return (false, "你已經加入 100 個計畫，無法再加入");
             }
-
+            var conut = await _planMembersRepository.GetPlanMemberTotal(UserId);
+            if (conut >= 100)
+            {
+                return (false, "該計畫已達到上線人數，無法加入");
+            }
             // 4. 加入計畫
             await _planMembersRepository.AddUserToPlanAsync(UserId, planid);
                 await _statisticService.AddUserCountAsync(planid);

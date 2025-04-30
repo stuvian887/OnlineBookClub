@@ -2,6 +2,7 @@
 using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
 using OnlineBookClub.Service;
+using System.Numerics;
 
 namespace OnlineBookClub.Repository
 {
@@ -20,6 +21,10 @@ namespace OnlineBookClub.Repository
         public async Task<BookPlan> GetPlanByIdAsync(int planId)
         {
             return await _context.BookPlan.FirstOrDefaultAsync(p => p.Plan_Id == planId);
+        }
+        public async Task<int> GetPlanMemberTotal(int planid)
+        {
+            return await _context.PlanMembers.CountAsync(p => p.Plan_Id == planid);
         }
         public async Task<List<PlanMembersDTO>> PlanMembersInPlanAsync(int planid)
         {

@@ -390,7 +390,7 @@ namespace OnlineBookClub.Repository
                 {
                     User_Id = member.User_Id,
                     UserName = MemberName,
-                    JoinDate = member.JoinDate,
+                    JoinDate = member.JoinDate.Date.ToString("yyyy/MM/dd"),
                     ProgressPercent = PassPersent.ToString(),
                     LearnName = LearnName.Learn.Learn_Name,
                 });

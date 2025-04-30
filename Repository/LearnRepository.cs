@@ -386,10 +386,8 @@ namespace OnlineBookClub.Repository
                     )
                     .Where(p => p.Progress.User_Id == member.User_Id && p.Learn.Plan_Id == Plan_Id && p.Progress.Status == false)
                     .FirstOrDefaultAsync();
-                if(LearnName == null)
-                {
-                    LearnName.Learn.Learn_Name = "全部完成!";
-                }
+
+                
 
                 result.Add(new MemberProgressDTO
                 {
@@ -397,7 +395,7 @@ namespace OnlineBookClub.Repository
                     UserName = MemberName,
                     JoinDate = member.JoinDate.Date.ToString("yyyy/MM/dd"),
                     ProgressPercent = PassPersent.ToString(),
-                    LearnName = LearnName.Learn.Learn_Name,
+                    LearnName = LearnName?.Learn.Learn_Name ?? "全部完成!",
                 });
             }
             return result;

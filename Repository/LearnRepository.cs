@@ -396,6 +396,7 @@ namespace OnlineBookClub.Repository
                     JoinDate = member.JoinDate.Date.ToString("yyyy/MM/dd"),
                     ProgressPercent = PassPersent.ToString(),
                     LearnName = LearnName?.Learn.Learn_Name ?? "全部完成!",
+                    IsComplete = LearnName.Progress.Status
                 });
             }
             return result;
@@ -463,7 +464,7 @@ namespace OnlineBookClub.Repository
             var Learn = await _context.Learn.Where(l => l.Plan_Id == PlanId).FirstOrDefaultAsync(l => l.Learn_Index == LearnIndex);
             if (User != null && Plan != null && Learn != null)
             {
-                var PassTheProgress = await _context.ProgressTracking.Where(pt => pt.Learn_Id == Learn.Learn_Id).FirstOrDefaultAsync(pt => pt.Learn_Id == Learn.Learn_Id);
+                var PassTheProgress = await _context.ProgressTracking.Where(pt => pt.User_Id == UserId).FirstOrDefaultAsync(pt => pt.Learn_Id == Learn.Learn_Id);
                 PassTheProgress.Status = true;
                 PassTheProgress.CompletionDate = DateTime.Now;
                 _context.ProgressTracking.Update(PassTheProgress);

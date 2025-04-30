@@ -556,7 +556,6 @@ namespace OnlineBookClub.Repository
                 answer_Record.AnswerDate = DateTime.Now;
                 answer_Record.Answer = answerInput.User_Answer;
                 answer_Record.times = countimes + 1;
-                AnswerCount++;
                 if (answer_Record.Answer == topic.Answer)
                 {
                     answer_Record.Pass = true;

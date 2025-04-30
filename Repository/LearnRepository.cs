@@ -344,7 +344,7 @@ namespace OnlineBookClub.Repository
             }
             //取得所有成員
             var PlanMembers = await _context.PlanMembers
-                .Where(pm => pm.Plan_Id == Plan_Id)
+                .Where(pm => pm.Plan_Id == Plan_Id && pm.User_Id != UserId)                
                 .Select(pm => new 
                 {
                     pm.User_Id,

@@ -335,17 +335,17 @@ namespace OnlineBookClub.Repository
             }
             else return null;
         }
-        public async Task<IEnumerable<MemberProgressDTO>> GetMemberPassLearnPersentAsync(int UserId , int Plan_Id)
+        public async Task<IEnumerable<MemberProgressDTO>> GetMemberPassLearnPersentAsync(int UserId, int Plan_Id)
         {
             var Role = await _planMemberRepository.GetUserRoleAsync(UserId, Plan_Id);
-            if(Role != "組長")
+            if (Role != "組長")
             {
                 return null;
             }
             //取得所有成員
             var PlanMembers = await _context.PlanMembers
-                .Where(pm => pm.Plan_Id == Plan_Id && pm.User_Id != UserId)                
-                .Select(pm => new 
+                .Where(pm => pm.Plan_Id == Plan_Id && pm.User_Id != UserId)
+                .Select(pm => new
                 {
                     pm.User_Id,
                     pm.Plan_Id,
@@ -361,7 +361,7 @@ namespace OnlineBookClub.Repository
             if (LearnCount <= 0) return null;
 
             List<MemberProgressDTO> result = new List<MemberProgressDTO>();
-            foreach(var member in PlanMembers)
+            foreach (var member in PlanMembers)
             {
                 var PassCount = await _context.ProgressTracking
                     .Where(p => p.User_Id == member.User_Id && p.Learn.Plan_Id == Plan_Id && p.Status)
@@ -374,20 +374,16 @@ namespace OnlineBookClub.Repository
                     .Select(m => m.UserName)
                     .FirstOrDefaultAsync();
 
-                var LearnName = await _context.ProgressTracking
-                    .Join(_context.Learn,
-                        progress => progress.Learn_Id,
-                        learn => learn.Learn_Id,
-                        (progress, learn) => new
-                        {
-                            Progress = progress,
-                            Learn = learn,
-                        }
-                    )
-                    .Where(p => p.Progress.User_Id == member.User_Id && p.Learn.Plan_Id == Plan_Id && p.Progress.Status == false)
-                    .FirstOrDefaultAsync();
-
-                
+                var IncompleteLearn = await (from pt in _context.ProgressTracking
+                                             join l in _context.Learn on pt.Learn_Id equals l.Learn_Id
+                                             where pt.User_Id == member.User_Id &&
+                                                   pt.Status == false &&
+                                                   l.Plan_Id == Plan_Id
+                                             select new
+                                             {
+                                                 pt.Status,
+                                                 l.Learn_Name
+                                             }).FirstOrDefaultAsync();
 
                 result.Add(new MemberProgressDTO
                 {
@@ -395,8 +391,8 @@ namespace OnlineBookClub.Repository
                     UserName = MemberName,
                     JoinDate = member.JoinDate.Date.ToString("yyyy/MM/dd"),
                     ProgressPercent = PassPersent.ToString(),
-                    LearnName = LearnName?.Learn.Learn_Name ?? "全部完成!",
-                    IsComplete = LearnName.Progress.Status
+                    LearnName = IncompleteLearn?.Learn_Name ?? "全部完成!",
+                    IsComplete = IncompleteLearn?.Status ?? true
                 });
             }
             return result;

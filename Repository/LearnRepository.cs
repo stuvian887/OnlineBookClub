@@ -374,16 +374,30 @@ namespace OnlineBookClub.Repository
                     .Select(m => m.UserName)
                     .FirstOrDefaultAsync();
 
-                var IncompleteLearn = await (from pt in _context.ProgressTracking
-                                             join l in _context.Learn on pt.Learn_Id equals l.Learn_Id
-                                             where pt.User_Id == member.User_Id &&
-                                                   pt.Status == false &&
-                                                   l.Plan_Id == Plan_Id
-                                             select new
-                                             {
-                                                 pt.Status,
-                                                 l.Learn_Name
-                                             }).FirstOrDefaultAsync();
+                //先where在join
+                var LearnName = await _context.ProgressTracking
+                    .Where(p => p.User_Id == member.User_Id && p.Learn.Plan_Id == Plan_Id && p.Status == false)
+                    .Join(_context.Learn,
+                        progress => progress.Learn_Id,
+                        learn => learn.Learn_Id,
+                        (progress, learn) => new
+                        {
+                            Progress = progress,
+                            Learn = learn,
+                        }
+                    )
+                    .FirstOrDefaultAsync();
+
+                //var IncompleteLearn = await (from pt in _context.ProgressTracking
+                //                             join l in _context.Learn on pt.Learn_Id equals l.Learn_Id
+                //                             where pt.User_Id == member.User_Id &&
+                //                                   pt.Status == false &&
+                //                                   l.Plan_Id == Plan_Id
+                //                             select new
+                //                             {
+                //                                 pt.Status,
+                //                                 l.Learn_Name
+                //                             }).FirstOrDefaultAsync();
 
                 result.Add(new MemberProgressDTO
                 {
@@ -391,9 +405,9 @@ namespace OnlineBookClub.Repository
                     UserName = MemberName,
                     JoinDate = member.JoinDate.Date.ToString("yyyy/MM/dd"),
                     ProgressPercent = PassPersent.ToString(),
-                    LearnName = IncompleteLearn?.Learn_Name ?? "全部完成!",
-                    IsComplete = IncompleteLearn?.Status ?? true
-                });
+                    LearnName = LearnName?.Learn.Learn_Name ?? "全部完成!",
+                    IsComplete = LearnName?.Progress.Status ?? true
+                }); 
             }
             return result;
         }

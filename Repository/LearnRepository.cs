@@ -215,11 +215,11 @@ namespace OnlineBookClub.Repository
             }
             var defaultDate = new DateTime(1753, 1, 1);
             System.DateTime NowTime = DateTime.Now.Date;
-            //System.TimeSpan checkdifftime = InsertData.DueTime.Subtract(NowTime);
-            //if (checkdifftime.TotalSeconds < 0)
-            //{
-            //    return (null, "錯誤，期限不可於今天之前");
-            //}
+            System.TimeSpan checkdifftime = InsertData.DueTime.Subtract(NowTime);
+            if (checkdifftime.TotalSeconds < 0)
+            {
+                return (null, "錯誤，期限不可於今天之前");
+            }
 
             Learn learn = new Learn();
             learn.Plan_Id = PlanId;

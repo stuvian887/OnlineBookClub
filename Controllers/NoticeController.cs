@@ -40,7 +40,6 @@ namespace OnlineBookClub.Controllers
         [HttpPost("read/{notice_Id}")]
         public async Task<IActionResult> MarkNoticeAsRead(int notice_Id)
         {
-
             await _noticeService.MarkNoticeAsReadAsync(notice_Id);
             return Ok(new { message = "通知已標記為已讀" });
         }

@@ -14,6 +14,7 @@ public partial class ProgressTracking
     public bool Status { get; set; }
 
     public DateTime? CompletionDate { get; set; }
+    public DateTime LearnDueTime { get; set; }
 
     public virtual Learn Learn { get; set; }
 

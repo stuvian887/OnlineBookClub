@@ -309,12 +309,12 @@ namespace OnlineBookClub.Repository
                 if(learn.Days == 0)
                 {
                     TheDueTime = TempDate.AddDays(learn.Days);
-                    TempDate = TheDueTime;
+                    //TempDate = TheDueTime;
                 }
                 else
                 {
                     TheDueTime = TempDate.AddDays(learn.Days + 1).AddSeconds(-1);
-                    TempDate = TheDueTime.AddDays(-1).AddSeconds(1);
+                    //TempDate = TheDueTime.AddDays(-1).AddSeconds(1);
                 }
                 ProgressTracking progress = new ProgressTracking
                 {

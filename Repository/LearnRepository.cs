@@ -170,6 +170,10 @@ namespace OnlineBookClub.Repository
                     .Where(p => p.Learn_Id == Learn.Learn_Id)
                     .Where(p => p.User.PlanMembers.Any(pm => pm.Plan_Id == Learn.Plan_Id && pm.Role != "組長"))
                     .CountAsync();
+                if(LearnMemberCount == 0)
+                {
+                    return 0;
+                }
                 double PassPersent = Math.Round((double)PassCount / LearnMemberCount , 2) * 100;
                 return PassPersent;
             }

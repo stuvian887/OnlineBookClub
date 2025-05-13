@@ -388,7 +388,10 @@ namespace OnlineBookClub.Repository
                     UpdateLearn.DueTime = UpdateData.DueTime.AddDays(1).AddSeconds(-1);
                     UpdateLearn.Days = (UpdateData.DueTime.AddDays(1) - DateTime.Now.Date).Days;
                 }
+                if (UpdateData.Manual_Check)
+                {
                     UpdateLearn.Manual_Check = UpdateData.Manual_Check;
+                }
                 _context.Update(UpdateLearn);
                 await _context.SaveChangesAsync();
                 LearnDTO resultDTO = new LearnDTO();

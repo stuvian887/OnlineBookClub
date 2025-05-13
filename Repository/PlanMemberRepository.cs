@@ -117,22 +117,22 @@ namespace OnlineBookClub.Repository
                 .Select(p => p.User_Id)  // 假設 Plan 中的 User_Id 是組長的 ID
                 .FirstOrDefaultAsync();
         }
-        //public async Task RemoveProgressTrack(int UserId)
-        //{
-        //    var result = await _context.ProgressTracking
-        //        .Include(pt => pt.Learn)
-        //        .ThenInclude(l => l.Plan_Id)
-        //        .Where(pt => pt.User_Id == UserId)
-        //        .ToListAsync();
-        //    if(result != null)
-        //    {
-        //        foreach (var delete in result)
-        //        {
-        //            _context.Remove(delete);
-        //        }
-        //    }
-        //    await _context.SaveChangesAsync();
-        //}
+        public async Task RemoveProgressTrack(int UserId)
+        {
+            var result = await _context.ProgressTracking
+                .Include(pt => pt.Learn)
+                .ThenInclude(l => l.Plan)
+                .Where(pt => pt.User_Id == UserId)
+                .ToListAsync();
+            if (result != null)
+            {
+                foreach (var delete in result)
+                {
+                    _context.Remove(delete);
+                }
+            }
+            await _context.SaveChangesAsync();
+        }
     }
 
 

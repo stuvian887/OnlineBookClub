@@ -15,6 +15,7 @@ namespace OnlineBookClub.DTO
 
         public double Pass_Standard { get; set; }
         public DateTime DueTime { get; set; }
+        public int Days { get; set; }
         //public string RecentlyLearnDate { get; set; }
         //public string RecentlyLearn { get; set; } = null;
         public bool Manual_Check { get; set; }

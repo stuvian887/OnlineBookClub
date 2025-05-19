@@ -1,139 +1,142 @@
-
-using Microsoft.EntityFrameworkCore;
-using Azure.Core;
 using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
 using OnlineBookClub.Repository;
-using static System.Reflection.Metadata.BlobBuilder;
+using System.Text.Json;
 
-namespace OnlineBookClub.Service
+public class BookService
 {
-    public class BookService
+    private readonly BookRepository _bookRepository;
+    private readonly OnlineBookClubContext _context;
+
+    public BookService(BookRepository bookRepository, OnlineBookClubContext context)
     {
-        private readonly BookRepository _bookRepository;
-        private readonly OnlineBookClubContext _context;
-        public BookService(BookRepository bookRepository, OnlineBookClubContext context)
+        _bookRepository = bookRepository;
+        _context = context;
+    }
+
+    public async Task<BookDTO?> GetBookInfoFromGoogleAsync(string isbn)
+    {
+        // 建立 HttpClient
+        using var httpClient = new HttpClient();
+
+        // 把 ISBN 組合成查詢網址
+        var apiUrl = $"https://www.googleapis.com/books/v1/volumes?q=isbn:{isbn}";
+
+        // 發送 GET 請求到 Google
+        var response = await httpClient.GetAsync(apiUrl);
+
+        // 如果請求失敗就返回 null
+        if (!response.IsSuccessStatusCode) return null;
+
+        // 讀取回傳的 JSON 字串
+        var content = await response.Content.ReadAsStringAsync();
+
+        // 用 System.Text.Json 解析 JSON
+        var json = JsonDocument.Parse(content);
+
+        // 拿出第一本書的資料
+        var item = json.RootElement.GetProperty("items")[0];
+        var info = item.GetProperty("volumeInfo");
+
+        // 取得書名
+        var title = info.GetProperty("title").GetString();
+
+        // 若 description 存在就拿，否則設空字串
+        var description = info.TryGetProperty("description", out var descProp) ? descProp.GetString() : "";
+
+        // 拿 infoLink（Google 提供的書籍頁面）
+        var infoLink = info.TryGetProperty("infoLink", out var linkProp) ? linkProp.GetString() : "";
+
+        // 封面圖片（有些書可能沒有）
+        string? imageUrl = null;
+        if (info.TryGetProperty("imageLinks", out var imageLinks) &&
+            imageLinks.TryGetProperty("thumbnail", out var thumb))
         {
-            _bookRepository = bookRepository;
-            _context = context;
+            imageUrl = thumb.GetString();
         }
-        public async Task<BookDTO?> GetBookByPlanIdAsync(int planId, HttpRequest request)
+
+        // 回傳資料給前端
+        return new BookDTO
         {
-            var book = await _bookRepository.GetBookByPlanIdAsync(planId);
-            var hostUrl = $"{request.Scheme}://{request.Host}"; // ex: https://localhost:7009
-            if(book == null)
-            {
-                return null;
-            }
-            var bookDto = new BookDTO
-            {
-                BookName = book.BookName,
-                Description = book.Description,
-                Link = book.Link,
-                bookurl = string.IsNullOrEmpty(book.bookpath) ? null : $"{hostUrl}{book.bookpath}",
-            };
+            BookName = title,
+            Description = description,
+            Link = infoLink,
+            bookurl = imageUrl
+        };
+    }
 
-            return bookDto;
-        }
+    public async Task<BookDTO?> GetBookByPlanIdAsync(int planId, HttpRequest request)
+    {
+        var book = await _bookRepository.GetBookByPlanIdAsync(planId);
+        if (book == null) return null;
 
-        public async Task<(Book, string Message)> AddBookAsync(int planId, BookDTO bookDto)
+        var hostUrl = $"{request.Scheme}://{request.Host}";
+        var bookDto = new BookDTO
         {
-            var book = new Book();
-            var Plan = await _context.BookPlan.FindAsync(planId);
-            if (Plan != null)
-            {
-                string? savedFilePath = null;
-                if (bookDto.BookCover != null)
-                {
-                    var fileName = $"{Guid.NewGuid()}{Path.GetExtension(bookDto.BookCover.FileName)}";
-                    var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Book/images");
+            BookName = book.BookName,
+            Description = book.Description,
+            Link = book.Link,
+            bookurl = string.IsNullOrEmpty(book.bookpath) ? null : $"{hostUrl}{book.bookpath}",
+        };
 
-                    // 檢查資料夾是否存在，不存在就建立
-                    if (!Directory.Exists(folderPath))
-                    {
-                        Directory.CreateDirectory(folderPath);
-                    }
-                    var filePath = Path.Combine(folderPath, fileName);
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await bookDto.BookCover.CopyToAsync(stream);
-                    }
+        return bookDto;
+    }
 
-                    // 儲存圖片的相對網址
-                    savedFilePath = $"/Book/images/{fileName}";
+    public async Task<(Book?, string)> AddBookAsync(int planId, BookDTO bookDto)
+    {
+        var plan = await _context.BookPlan.FindAsync(planId);
+        if (plan == null)
+            return (null, "書籍新增失敗，找不到該書籍計畫");
 
-                    book.BookName = bookDto.BookName;
-                    book.Description = bookDto.Description;
-                    book.Link = bookDto.Link;
-                    book.bookpath = savedFilePath;
+        var savedFilePath = await SaveBookCoverAsync(bookDto.BookCover);
 
-                }
-                else if (book.bookpath != null) {
-                    book.BookName = bookDto.BookName;
-                    book.Description = bookDto.Description;
-                    book.Link = bookDto.Link;
-                    book.bookpath = savedFilePath;
-                }
-                else 
-                {
-                    book.BookName = bookDto.BookName;
-                    book.Description = bookDto.Description;
-                    book.Link = bookDto.Link;
-                    book.bookpath = bookDto.bookurl;
-                }
-                
-
-                await _bookRepository.AddBookAsync(planId, book);
-                return (book, "書籍新增成功");
-            }
-            else
-            {
-                return (null, "書籍新增失敗，找不到該書籍");
-            }
-        }
-        public async Task<(Book, string Message)> updatebookAsync(int planId, BookDTO bookDto)
+        var book = new Book
         {
-            var Plan = await _context.BookPlan.FindAsync(planId);
-            if (Plan != null)
-            {
-                string? savedFilePath = null;
-                if (bookDto.BookCover != null)
-                {
-                    var fileName = $"{Guid.NewGuid()}{Path.GetExtension(bookDto.BookCover.FileName)}";
-                    var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Book/images");
+            Plan_Id = planId,
+            BookName = bookDto.BookName,
+            Description = bookDto.Description,
+            Link = bookDto.Link,
+            bookpath = savedFilePath
+        };
 
-                    // 檢查資料夾是否存在，不存在就建立
-                    if (!Directory.Exists(folderPath))
-                    {
-                        Directory.CreateDirectory(folderPath);
-                    }
-                    var filePath = Path.Combine(folderPath, fileName);
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await bookDto.BookCover.CopyToAsync(stream);
-                    }
+        await _bookRepository.AddBookAsync(planId, book);
+        return (book, "書籍新增成功");
+    }
 
-                    // 儲存圖片的相對網址
-                    savedFilePath = $"/Book/images/{fileName}";
-                }
-                else
-                {
-                    savedFilePath = null;
-                }
-                var book = new Book
-                {
-                    BookName = bookDto.BookName,
-                    Description = bookDto.Description,
-                    Link = bookDto.Link,
-                    bookpath = savedFilePath
-                };
-                await _bookRepository.updateBookAsync(planId, book);
-                return (book, "書籍修改成功");
-            }
-            else
-            {
-                return (null, "書籍修改失敗，找不到該書籍");
-            }
-        }
+    public async Task<(Book?, string)> UpdateBookAsync(int planId, BookDTO bookDto)
+    {
+        var plan = await _context.BookPlan.FindAsync(planId);
+        if (plan == null)
+            return (null, "書籍修改失敗，找不到該書籍計畫");
+
+        var savedFilePath = await SaveBookCoverAsync(bookDto.BookCover);
+
+        var book = new Book
+        {
+            BookName = bookDto.BookName,
+            Description = bookDto.Description,
+            Link = bookDto.Link,
+            bookpath = savedFilePath // null 就不會更新
+        };
+
+        await _bookRepository.UpdateBookAsync(planId, book);
+        return (book, "書籍修改成功");
+    }
+
+    private async Task<string?> SaveBookCoverAsync(IFormFile? file)
+    {
+        if (file == null) return null;
+
+        var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+        var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Book", "images");
+
+        if (!Directory.Exists(folderPath))
+            Directory.CreateDirectory(folderPath);
+
+        var filePath = Path.Combine(folderPath, fileName);
+        using var stream = new FileStream(filePath, FileMode.Create);
+        await file.CopyToAsync(stream);
+
+        return $"/Book/images/{fileName}";
     }
 }

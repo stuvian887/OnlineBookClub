@@ -153,17 +153,28 @@ namespace OnlineBookClub.Repository
                 }
 
                 var MembersProgress = await _context.ProgressTracking
+                    .Include(p => p.User)
+                    .ThenInclude(u => u.PlanMembers)
                     .Where(p => p.Learn_Id == Learn.Learn_Id)
+                    .Where(p => p.User.PlanMembers.Any(pm => pm.Plan_Id == Learn.Plan_Id && pm.Role != "組長"))
                     .ToListAsync();
                 foreach (var MemberPass in MembersProgress)
                 {
+                    
                     if (MemberPass.Status == true) PassCount++;
                 }
 
                 double LearnMemberCount = await _context.ProgressTracking
+                    .Include(p => p.User)
+                    .ThenInclude(u => u.PlanMembers)
                     .Where(p => p.Learn_Id == Learn.Learn_Id)
+                    .Where(p => p.User.PlanMembers.Any(pm => pm.Plan_Id == Learn.Plan_Id && pm.Role != "組長"))
                     .CountAsync();
-                double PassPersent = Math.Round((double)PassCount / LearnMemberCount, 2) * 100;
+                if(LearnMemberCount == 0)
+                {
+                    return 0;
+                }
+                double PassPersent = Math.Round((double)PassCount / LearnMemberCount , 2) * 100;
                 return PassPersent;
             }
             catch (Exception e)
@@ -270,9 +281,9 @@ namespace OnlineBookClub.Repository
                     .Select(p => (DateTime?)p.LearnDueTime)
                     .FirstOrDefaultAsync();
 
-                DateTime startTime = lastDueTime ?? DateTime.Now.Date;
+                //DateTime startTime = lastDueTime ?? DateTime.Now.Date;
 
-                DateTime TheDueTime = startTime.Date.AddDays(Learn.Days + 1).AddMinutes(-1);
+                DateTime TheDueTime = DateTime.Now.Date.AddDays(Learn.Days).AddMinutes(-1);
 
                 ProgressTracking progress = new ProgressTracking
                 {
@@ -309,12 +320,12 @@ namespace OnlineBookClub.Repository
                 if(learn.Days == 0)
                 {
                     TheDueTime = TempDate.AddDays(learn.Days);
-                    TempDate = TheDueTime;
+                    //TempDate = TheDueTime;
                 }
                 else
                 {
                     TheDueTime = TempDate.AddDays(learn.Days + 1).AddSeconds(-1);
-                    TempDate = TheDueTime.AddDays(-1).AddSeconds(1);
+                    //TempDate = TheDueTime.AddDays(-1).AddSeconds(1);
                 }
                 ProgressTracking progress = new ProgressTracking
                 {
@@ -377,7 +388,10 @@ namespace OnlineBookClub.Repository
                     UpdateLearn.DueTime = UpdateData.DueTime.AddDays(1).AddSeconds(-1);
                     UpdateLearn.Days = (UpdateData.DueTime.AddDays(1) - DateTime.Now.Date).Days;
                 }
+                if (UpdateData.Manual_Check)
+                {
                     UpdateLearn.Manual_Check = UpdateData.Manual_Check;
+                }
                 _context.Update(UpdateLearn);
                 await _context.SaveChangesAsync();
                 LearnDTO resultDTO = new LearnDTO();
@@ -588,7 +602,7 @@ namespace OnlineBookClub.Repository
                 };
                 resultDTOs.Add(dto);
             }
-            double CorrectRate = (double)PassAnswerCount / AnswerCount * 100;
+            double CorrectRate = (double)PassAnswerCount / AnswerCount;
             if (CorrectRate >= Learn.Pass_Standard)
             {
                 var progress = await _context.ProgressTracking

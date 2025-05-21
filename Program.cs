@@ -45,6 +45,9 @@ builder.Services.AddScoped<StatisticRepository>();
 builder.Services.AddScoped<StatisticService>();
 builder.Services.AddScoped<NoticeService>();
 builder.Services.AddScoped<NoticeRepository>();
+
+
+
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;

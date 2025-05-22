@@ -4,6 +4,7 @@ using OnlineBookClub.Models;
 using OnlineBookClub.Service;
 using OnlineBookClub.Services;
 using System.Collections.Generic;
+using System.Net.WebSockets;
 using System.Numerics;
 using System.Security.Claims;
 using System.Xml.Linq;
@@ -32,8 +33,7 @@ namespace OnlineBookClub.Controllers
         [HttpGet("Post/{P_Report_Id}")]
         public async Task<IActionResult> GetPostReport(int P_Report_Id)
         {
-            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            int UserId = int.Parse(UserIdClaim.Value);
+            int UserId = GetUser();
             var result = await _service.GetPostReport(UserId, P_Report_Id);
             if (result != null)
             {
@@ -47,8 +47,7 @@ namespace OnlineBookClub.Controllers
         [HttpGet("GetAllReport/{PlanId}")]
         public async Task<IActionResult> GetAllReport(int PlanId, string keyword = "", int page = 1)
         {
-            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            int UserId = int.Parse(UserIdClaim.Value);
+            int UserId = GetUser();
 
             var paging = new ForPaging(page);
 
@@ -65,8 +64,7 @@ namespace OnlineBookClub.Controllers
         [HttpGet("GetAllPostReport/{PlanId}")]
         public async Task<IActionResult> GetAllPostReport(int PlanId)
         {
-            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            int UserId = int.Parse(UserIdClaim.Value);
+            int UserId = GetUser();
             var result = await _service.GetAllPostReport(UserId, PlanId);
             if (result != null)
             {
@@ -80,8 +78,7 @@ namespace OnlineBookClub.Controllers
         [HttpGet("GetAllReplyReport/{PlanId}")]
         public async Task<IActionResult> GetAllReplyReport(int PlanId)
         {
-            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            int UserId = int.Parse(UserIdClaim.Value);
+            int UserId = GetUser();
             var result = await _service.GetAllReplyReport(UserId, PlanId);
             if (result != null)
             {
@@ -97,8 +94,7 @@ namespace OnlineBookClub.Controllers
         [HttpGet("Reply/{R_Report_Id}")]
         public async Task<IActionResult> GetReplyReport(int R_Report_Id)
         {
-            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            int UserId = int.Parse(UserIdClaim.Value);
+            int UserId = GetUser();
             var result = await _service.GetReplyReport(UserId, R_Report_Id);
             if (result != null)
             {
@@ -115,8 +111,7 @@ namespace OnlineBookClub.Controllers
         [HttpPost("{PlanId}/{PostId}")]
         public async Task<IActionResult> CreatePostReport(int PlanId, int PostId, [FromBody] Post_ReportDTO PRData)
         {
-            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            int UserId = int.Parse(UserIdClaim.Value);
+            int UserId = GetUser();
             var result = await _service.CreatePostReport(UserId, PlanId, PostId, PRData);
             
             if (result.Item1 != null)
@@ -140,8 +135,7 @@ namespace OnlineBookClub.Controllers
         [HttpPut("DoingPostAction/{P_Report_Id}")]
         public async Task<IActionResult> DoPost_ReportAction(int P_Report_Id , [FromBody] Post_ReportDTO DoingAction)
         {
-            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            int UserId = int.Parse(UserIdClaim.Value);
+            int UserId = GetUser();
             var result = await _service.DoPost_ReportAction(UserId ,P_Report_Id, DoingAction);
             if (result != null)
             {
@@ -156,8 +150,7 @@ namespace OnlineBookClub.Controllers
         [HttpPost("{PlanId}/{PostId}/{ReplyId}")]
         public async Task<IActionResult> CreateReplyReport(int PlanId, int PostId, int ReplyId, [FromBody] Reply_ReportDTO RRData)
         {
-            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            int UserId = int.Parse(UserIdClaim.Value);
+            int UserId = GetUser();
             var result = await _service.CreateReplyReport(UserId, PlanId, PostId, ReplyId, RRData);
             if (result.Item1 != null)
             {
@@ -181,8 +174,7 @@ namespace OnlineBookClub.Controllers
         [HttpPut("DoingReplyAction/{R_Report_Id}")]
         public async Task<IActionResult> DoReply_ReportAction(int R_Report_Id, [FromBody] Reply_ReportDTO DoingAction)
         {
-            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            int UserId = int.Parse(UserIdClaim.Value);
+            int UserId = GetUser();
             var result = await _service.DoReply_ReportAction(UserId, R_Report_Id, DoingAction);
             if (result != null)
             {
@@ -192,6 +184,11 @@ namespace OnlineBookClub.Controllers
             {
                 return BadRequest(new { message = "發生錯誤" });
             }
+        }
+        private int GetUser()
+        {
+            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? throw new UnauthorizedAccessException("發生異常錯誤，找不到登入的人是誰。");
+            return int.Parse(UserIdClaim.Value);
         }
     }
 }

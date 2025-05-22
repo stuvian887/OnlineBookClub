@@ -39,15 +39,13 @@ namespace OnlineBookClub.Controllers
         [HttpGet("Index/{PlanId}")]
         public async Task<IActionResult> Get(int PlanId)
         {
-            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            int UserId = int.Parse(UserIdClaim.Value);
+            int UserId = GetUser();
             return Ok(await _service.GetLearn(UserId , PlanId));
         }
         [HttpGet("Calendar")]
         public async Task<IActionResult> GetLearnByCalendar([FromQuery] DateTime? BeginTime , [FromQuery] DateTime? EndTime)
         {
-            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            int UserId = int.Parse(UserIdClaim.Value);
+            int UserId = GetUser();
             var result = await _service.GetLearnByCalendar(UserId, BeginTime, EndTime);
             
             if(result.Item1 != null)
@@ -65,8 +63,7 @@ namespace OnlineBookClub.Controllers
         [HttpPost("Create/{PlanId}")]
         public async Task<IActionResult> CreateLearn(int PlanId, [FromBody] LearnDTO newData)
         {
-            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            int UserId = int.Parse(UserIdClaim.Value);
+            int UserId = GetUser();
             var result = await _service.CreateLearn(UserId, PlanId, newData);
 
             if (result.Item1 != null)
@@ -85,8 +82,7 @@ namespace OnlineBookClub.Controllers
         [HttpPut("Update/{PlanId}/{Learn_Index}")]
         public async Task<IActionResult> UpdateLearn(int PlanId, int Learn_Index, [FromBody] LearnDTO updateData)
         {
-            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            int UserId = int.Parse(UserIdClaim.Value);
+            int UserId = GetUser();
             var result = await _service.UpdateLearn(UserId, PlanId, Learn_Index, updateData);
             if (result.Item1 != null)
             {
@@ -102,8 +98,7 @@ namespace OnlineBookClub.Controllers
         [HttpDelete("Delete/{PlanId}/{Learn_Index}")]
         public async Task<IActionResult> Delete(int PlanId, int Learn_Index)
         {
-            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            int UserId = int.Parse(UserIdClaim.Value);
+            int UserId = GetUser();
             var result = await _service.DeleteLearn(UserId, PlanId, Learn_Index);
             if (result.Item1 != null)
             {
@@ -118,8 +113,7 @@ namespace OnlineBookClub.Controllers
         [HttpGet("GetMemberPassPersent/{PlanId}")]
         public async Task<IActionResult> GetMemberPassPersent(int PlanId)
         {
-            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            int UserId = int.Parse(UserIdClaim.Value);
+            int UserId = GetUser();
             var result = await _service.GetMemberProgressAsync(UserId , PlanId);
             if (result != null)
             {
@@ -130,15 +124,13 @@ namespace OnlineBookClub.Controllers
         [HttpGet("Answer_Record/{PlanId}/{Learn_Index}")]
         public async Task<IActionResult> GetAnswer_Record(int PlanId, int Learn_Index)
         {
-            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            int UserId = int.Parse(UserIdClaim.Value);
+            int UserId = GetUser();
             return Ok(await _service.GetAnswer_Record(UserId, PlanId, Learn_Index));
         }
         [HttpPost("Answer_Record")]
         public async Task<IActionResult> CreateAnswer_Record([FromBody] AnswerSubmissionDTO Answer)
         {
-            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            int UserId = int.Parse(UserIdClaim.Value);
+            int UserId = GetUser();
             var result = await _service.CreateAnswer_Record(UserId, Answer);
             if(result != null)
             {
@@ -152,8 +144,7 @@ namespace OnlineBookClub.Controllers
         [HttpPut("PassProgress/{PlanId}/{Learn_Index}")]
         public async Task<IActionResult> PassProgress(int PlanId , int Learn_Index)
         {
-            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            int UserId = int.Parse(UserIdClaim.Value);
+            int UserId = GetUser();
             var result = await _service.PassProgressAsync(UserId, PlanId, Learn_Index);
             if(result != null)
             {
@@ -163,6 +154,11 @@ namespace OnlineBookClub.Controllers
             {
                 return BadRequest(new { message = "發生錯誤" });
             }
+        }
+        private int GetUser()
+        {
+            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? throw new UnauthorizedAccessException("發生異常錯誤，找不到登入的人是誰"); ;
+            return int.Parse(UserIdClaim.Value);
         }
     }
 }

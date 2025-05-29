@@ -378,11 +378,21 @@ namespace OnlineBookClub.Repository
                 UpdateLearn.Learn_Name = UpdateData.Learn_Name;
                 UpdateLearn.Pass_Standard = UpdateData.Pass_Standard;
                 //使用者可以輸入日期 會自動轉換成天數 也可自行填入天數
+
+                //輸入天數(以現在的狀況，照理來說不會執行這一串，這串是保險，怕日期傳進來真的是空的)
                 if (UpdateData.DueTime == DateTime.MinValue)
                 {
                     UpdateLearn.DueTime = DefaultDate;
                     UpdateLearn.Days = UpdateData.Days;
                 }
+                //日期沒修改的話保持不變
+                DateTime OriginalDueTime = UpdateData.DueTime.AddDays(1).AddSeconds(-1);
+                if (OriginalDueTime == UpdateLearn.DueTime)
+                {
+                    UpdateLearn.DueTime = UpdateLearn.DueTime;
+                    UpdateLearn.Days = UpdateLearn.Days;
+                }
+                //輸入日期
                 else
                 {
                     UpdateLearn.DueTime = UpdateData.DueTime.AddDays(1).AddSeconds(-1);

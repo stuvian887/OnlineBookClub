@@ -660,7 +660,7 @@ namespace OnlineBookClub.Repository
             await _context.SaveChangesAsync();
             return resultDTOs;
         }
-        public async Task<IEnumerable<Answer_RecordDTO>> GetRecordAsync(int UserId, int PlanId, int Learn_Index)
+        public async Task<IEnumerable<Answer_RecordDTO>> GetRecordAsync(int UserId, int PlanId, int Learn_Index, int times)
         {
             var User = await _planMemberRepository.GetUserRoleAsync(UserId, PlanId);
             var Plan = await _context.BookPlan.FindAsync(PlanId);
@@ -670,7 +670,7 @@ namespace OnlineBookClub.Repository
             if (User != null && Plan != null && Learn != null)
             {
                 var result = (from a in _context.Answer_Record
-                              .Where(a => a.User_Id == UserId)
+                              .Where(a => a.User_Id == UserId && a.times == times)
                               join b in _context.Topic on a.Topic_Id equals b.Topic_Id
                               select new Answer_RecordDTO
                               {

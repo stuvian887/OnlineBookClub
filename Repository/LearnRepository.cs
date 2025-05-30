@@ -393,6 +393,14 @@ namespace OnlineBookClub.Repository
                         return (null, "錯誤，此學習編號已經存在");
                     }
                 }
+                var lastDueTime = await _context.Learn
+                    .Where(l => l.Plan_Id == PlanId)
+                    .OrderByDescending(l => l.Learn_Index)
+                    .Skip(1)
+                    .FirstOrDefaultAsync();
+                var previousDate = lastDueTime?.DueTime ?? DateTime.Now.Date;
+
+
                 var DefaultDate = new DateTime(1753, 1, 1);
                 UpdateLearn.Plan_Id = UpdateDataPlan.Plan_Id;
                 UpdateLearn.Learn_Name = UpdateData.Learn_Name;
@@ -416,7 +424,7 @@ namespace OnlineBookClub.Repository
                 else
                 {
                     UpdateLearn.DueTime = UpdateData.DueTime.AddDays(1).AddSeconds(-1);
-                    UpdateLearn.Days = (UpdateData.DueTime.AddDays(1) - DateTime.Now.Date).Days;
+                    UpdateLearn.Days = (UpdateData.DueTime.AddDays(1) - previousDate.AddSeconds(1)).Days;
                 }
                 if (UpdateData.Manual_Check)
                 {

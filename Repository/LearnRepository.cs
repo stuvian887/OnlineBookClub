@@ -396,53 +396,46 @@ namespace OnlineBookClub.Repository
                 {
                     return (null, "錯誤，找不到該學習內容");
                 }
-
                 var AllLearn = await _context.Learn.Where(l => l.Plan_Id == PlanId).ToListAsync();
-                //確定使用者真的不會用奇怪的方式讓題號一樣 若不變更題號請不要輸入Learn_Index 不然會做這個if判斷
-                foreach (var learns in AllLearn)
+                //確定編號不會重複
+                bool isIndexExist = await _context.Learn
+                    .AnyAsync(l => l.Plan_Id == PlanId
+                    && l.Learn_Index == UpdateData.Learn_Index
+                    && l.Learn_Index != Learn_Index);
+                if (isIndexExist)
                 {
-                    if (UpdateData.Learn_Index == learns.Learn_Index)
-                    {
-                        return (null, "錯誤，此學習編號已經存在");
-                    }
+                    return (null, "錯誤，此學習編號已經存在");
                 }
-                var lastDueTime = await _context.Learn
-                    .Where(l => l.Plan_Id == PlanId)
+
+                // 動態查詢前一個學習計畫（Learn_Index 小於當前值中的最大者）
+                var previousLearn = await _context.Learn
+                    .Where(l => l.Plan_Id == PlanId
+                             && l.Learn_Index < UpdateLearn.Learn_Index)
                     .OrderByDescending(l => l.Learn_Index)
-                    .Skip(1)
                     .FirstOrDefaultAsync();
-                var previousDate = lastDueTime?.DueTime ?? DateTime.Now.Date;
 
+                // 基準日期：前一個計畫的 DueTime，若無則用計畫建立日期
+                DateTime previousDate = previousLearn?.DueTime ?? DateTime.Now.Date;
 
-                var DefaultDate = new DateTime(1753, 1, 1);
-                UpdateLearn.Plan_Id = UpdateDataPlan.Plan_Id;
-                UpdateLearn.Learn_Name = UpdateData.Learn_Name;
-                UpdateLearn.Pass_Standard = UpdateData.Pass_Standard;
-                //使用者可以輸入日期 會自動轉換成天數 也可自行填入天數
-
-                //輸入天數(以現在的狀況，照理來說不會執行這一串，這串是保險，怕日期傳進來真的是空的)
+                // 更新邏輯
                 if (UpdateData.DueTime == DateTime.MinValue)
                 {
-                    UpdateLearn.DueTime = DefaultDate;
+                    // 輸入天數模式
                     UpdateLearn.Days = UpdateData.Days;
+                    UpdateLearn.DueTime = previousDate.AddDays(UpdateData.Days + 1).AddSeconds(-1);
                 }
-                //日期沒修改的話保持不變
-                DateTime OriginalDueTime = UpdateData.DueTime.AddDays(1).AddSeconds(-1);
-                if (OriginalDueTime == UpdateLearn.DueTime)
-                {
-                    UpdateLearn.DueTime = UpdateLearn.DueTime;
-                    UpdateLearn.Days = UpdateLearn.Days;
-                }
-                //輸入日期
-                else
+                else if (UpdateData.DueTime.AddDays(1).AddSeconds(-1) == UpdateLearn.DueTime)
                 {
                     UpdateLearn.DueTime = UpdateData.DueTime.AddDays(1).AddSeconds(-1);
-                    UpdateLearn.Days = (UpdateData.DueTime.AddDays(1) - previousDate.AddSeconds(1)).Days;
+                    UpdateLearn.Days = (UpdateLearn.DueTime.Date - previousDate.Date).Days;
                 }
-                if (UpdateData.Manual_Check)
+                else
                 {
-                    UpdateLearn.Manual_Check = UpdateData.Manual_Check;
+                    // 輸入日期模式
+                    UpdateLearn.DueTime = UpdateData.DueTime.AddDays(1).AddSeconds(-1);
+                    UpdateLearn.Days = (UpdateLearn.DueTime.Date - previousDate.Date).Days;
                 }
+
                 _context.Update(UpdateLearn);
                 await _context.SaveChangesAsync();
                 LearnDTO resultDTO = new LearnDTO();

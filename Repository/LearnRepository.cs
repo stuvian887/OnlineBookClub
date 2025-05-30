@@ -192,14 +192,27 @@ namespace OnlineBookClub.Repository
             {
                 return (null, "錯誤，找不到該計畫");
             }
+            var lastLearn = await _context.Learn
+                .Where(l => l.Plan_Id == PlanId)
+                .OrderByDescending(l => l.Learn_Index)
+                .FirstOrDefaultAsync();
+            //要找出ProgressTracking的日期
+            DateTime previousDate = lastLearn?.DueTime ?? DateTime.Now.Date;
 
             Learn learn = new Learn();
             learn.Plan_Id = PlanId;
             learn.Learn_Name = InsertData.Learn_Name;
             learn.Learn_Index = InsertData.Learn_Index;
             learn.Pass_Standard = InsertData.Pass_Standard;
-            learn.DueTime = InsertData.DueTime;
             learn.Days = InsertData.Days;
+            if (previousDate == DateTime.Now.Date)
+            {
+                learn.DueTime = previousDate.Date.AddDays(learn.Days).AddSeconds(-1);
+            }
+            else
+            {
+                learn.DueTime = previousDate.Date.AddDays(learn.Days + 1).AddSeconds(-1);
+            }
             await _context.Learn.AddAsync(learn);
             await _context.SaveChangesAsync();
             LearnDTO resultDTO = new LearnDTO()
@@ -301,7 +314,7 @@ namespace OnlineBookClub.Repository
                 else
                 {
                     // 第一次新增，用現在日期當基準
-                    TheDueTime = DateTime.Now.Date.AddDays(Learn.Days - 1).AddMinutes(-1);
+                    TheDueTime = DateTime.Now.Date.AddDays(Learn.Days).AddMinutes(-1);
                 }
 
                 ProgressTracking progress = new ProgressTracking

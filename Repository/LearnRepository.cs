@@ -227,7 +227,14 @@ namespace OnlineBookClub.Repository
             {
                 if (InsertData.Learn_Index == learns.Learn_Index) return (null, "錯誤，此學習編號已經存在");
             }
-            var defaultDate = new DateTime(1753, 1, 1);
+            var defaultDate = DateTime.Now.Date;
+            //找出前一個Learn的日期
+            var lastLearn = await _context.Learn
+                .Where(l => l.Plan_Id == PlanId)
+                .OrderByDescending(l => l.Learn_Index)
+                .FirstOrDefaultAsync();
+            DateTime previousDate = lastLearn?.DueTime ?? DateTime.Now.Date;
+            
 
             Learn learn = new Learn();
             learn.Plan_Id = PlanId;
@@ -237,8 +244,8 @@ namespace OnlineBookClub.Repository
             //使用者可以輸入日期 會自動轉換成天數 也可自行填入天數
             if (InsertData.DueTime == DateTime.MinValue)
             {
-                learn.DueTime = defaultDate;
                 learn.Days = InsertData.Days;
+                learn.DueTime = defaultDate.AddDays(learn.Days+1).AddMinutes(-1);
             }
             else
             {
@@ -249,7 +256,7 @@ namespace OnlineBookClub.Repository
                     return (null, "錯誤，期限不可於今天之前");
                 }
                 learn.DueTime = InsertData.DueTime.AddDays(1).AddSeconds(-1);
-                learn.Days = (InsertData.DueTime.AddDays(1) - NowTime).Days;
+                learn.Days = (InsertData.DueTime.AddDays(1) - previousDate).Days;
             }
 
             await _context.Learn.AddAsync(learn);
@@ -261,6 +268,7 @@ namespace OnlineBookClub.Repository
             await CreateProgressTrackAsync(PlanId, learn.Learn_Id);
             return (resultDTO, "學習內容新增成功");
         }
+        //創建新Learn時幫所有成員新增ProgressTracking
         public async Task<IEnumerable<ProgressTrackingDTO>> CreateProgressTrackAsync(int PlanId, int Learn_Id)
         {
             List<ProgressTrackingDTO> resultDTOs = new List<ProgressTrackingDTO>();
@@ -276,14 +284,25 @@ namespace OnlineBookClub.Repository
             {
                 
                 var lastDueTime = await _context.ProgressTracking
-                    .Where(pt => pt.User_Id == member.User_Id && _context.Learn.Any(l => l.Plan_Id == PlanId))
+                    .Include(pt => pt.Learn)
+                        .ThenInclude(l => l.Plan)
+                    .Where(pt => pt.User_Id == member.User_Id && pt.Learn.Plan.Plan_Id == PlanId)
                     .OrderByDescending(p => p.LearnDueTime)
                     .Select(p => (DateTime?)p.LearnDueTime)
                     .FirstOrDefaultAsync();
 
-                //DateTime startTime = lastDueTime ?? DateTime.Now.Date;
+                DateTime TheDueTime = DateTime.MinValue;
 
-                DateTime TheDueTime = DateTime.Now.Date.AddDays(Learn.Days).AddMinutes(-1);
+                if (lastDueTime.HasValue)
+                {
+                    // 重點：用前次 DueTime 當基準
+                    TheDueTime = lastDueTime.Value.AddDays(Learn.Days).AddMinutes(-1);
+                }
+                else
+                {
+                    // 第一次新增，用現在日期當基準
+                    TheDueTime = DateTime.Now.Date.AddDays(Learn.Days - 1).AddMinutes(-1);
+                }
 
                 ProgressTracking progress = new ProgressTracking
                 {
@@ -305,6 +324,7 @@ namespace OnlineBookClub.Repository
             await _context.SaveChangesAsync();
             return resultDTOs;
         }
+        //加入計畫後創建ProgressTracking
         public async Task<IEnumerable<ProgressTrackingDTO>> CreateAllProgressTrackAsync(int UserId, int PlanId)
         {
             var Learns = await _context.Learn
@@ -320,12 +340,12 @@ namespace OnlineBookClub.Repository
                 if(learn.Days == 0)
                 {
                     TheDueTime = TempDate.AddDays(learn.Days);
-                    //TempDate = TheDueTime;
+                    TempDate = TheDueTime;
                 }
                 else
                 {
-                    TheDueTime = TempDate.AddDays(learn.Days + 1).AddSeconds(-1);
-                    //TempDate = TheDueTime.AddDays(-1).AddSeconds(1);
+                    TheDueTime = TempDate.AddDays(learn.Days).AddSeconds(-1);
+                    TempDate = TheDueTime.AddSeconds(1);
                 }
                 ProgressTracking progress = new ProgressTracking
                 {

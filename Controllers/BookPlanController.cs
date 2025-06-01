@@ -58,11 +58,22 @@ namespace OnlineBookClub.Controllers
 
             var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             int UserId = int.Parse(UserIdClaim.Value);
+
             var plan = await _service.GetuserById(UserId, keyword, page);
 
             if (plan == null) return NotFound();
             return Ok(plan);
         }
+        [HttpGet("getmembersbookpaln/{user_Id}")]
+        public async Task<IActionResult> GetMembersBookPlan(int user_Id)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            int leaderId = int.Parse(userIdClaim.Value);
+
+            var memberPlans = await _service.GetMembersBookPlans(leaderId, user_Id);
+            return Ok(new { Memberbookplan = memberPlans });
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] BookPlanDTO bookPlanDto)
@@ -114,5 +125,6 @@ namespace OnlineBookClub.Controllers
 
             return Ok("Plan copied successfully.");
         }
+
     }
 }

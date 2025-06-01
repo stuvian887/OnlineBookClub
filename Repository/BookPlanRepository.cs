@@ -281,6 +281,44 @@ namespace OnlineBookClub.Repository
 
             return true;
         }
+        public async Task<List<BookPlanDTO>> GetMemberPlansByLeaderAsync(int leaderId, int memberId)
+        {
+            var joinedPlanIds = await _context.PlanMembers
+                .Where(pm => pm.User_Id == memberId)
+                .Select(pm => pm.Plan_Id)
+                .ToListAsync();
+
+            var plans = await _context.BookPlan
+                .Where(p => joinedPlanIds.Contains(p.Plan_Id) && p.User_Id == leaderId)
+                .ToListAsync();
+
+            var userIds = plans.Select(p => p.User_Id).Distinct().ToList();
+            var users = await _context.Members
+                .Where(u => userIds.Contains(u.User_Id))
+                .ToDictionaryAsync(u => u.User_Id, u => u.UserName);
+
+            var dtoList = new List<BookPlanDTO>();
+            foreach (var p in plans)
+            {
+                (string recentlyLearnDate, string recentlylearn) = await GetRecentlyLearn(p.Plan_Id); // 你應該會把這個方法移去共用 Service
+
+                dtoList.Add(new BookPlanDTO
+                {
+                    Plan_ID = p.Plan_Id,
+                    Plan_Name = p.Plan_Name,
+                    Plan_Goal = p.Plan_Goal,
+                    Plan_Type = p.Plan_Type,
+                    Plan_Suject = p.Plan_suject,
+                    IsPublic = p.IsPublic,
+                    RecentlyLearnDate = recentlyLearnDate,
+                    RecentlyLearn = recentlylearn,
+                    IsComplete = p.IsComplete,
+                    CreatorName = users.ContainsKey(p.User_Id) ? users[p.User_Id] : "未知使用者"
+                });
+            }
+
+            return dtoList;
+        }
 
     }
 }

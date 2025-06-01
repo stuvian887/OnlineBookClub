@@ -300,7 +300,7 @@ namespace OnlineBookClub.Repository
             var dtoList = new List<BookPlanDTO>();
             foreach (var p in plans)
             {
-                (string recentlyLearnDate, string recentlylearn) = await GetRecentlyLearn(p.Plan_Id); // 你應該會把這個方法移去共用 Service
+                (string recentlyLearnDate, string recentlylearn) = await GetRecentlyLearn(p.Plan_Id); 
 
                 dtoList.Add(new BookPlanDTO
                 {

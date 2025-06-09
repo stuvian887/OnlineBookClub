@@ -268,6 +268,10 @@ namespace OnlineBookClub.Repository
                 {
                     return (null, "錯誤，期限不可於今天之前");
                 }
+                if(InsertData.DueTime <= previousDate)
+                {
+                    return (null, "錯誤，期限小於前一個計畫");
+                }
                 learn.DueTime = InsertData.DueTime.AddDays(1).AddSeconds(-1);
                 learn.Days = (InsertData.DueTime.AddDays(1) - previousDate).Days;
             }
@@ -465,8 +469,14 @@ namespace OnlineBookClub.Repository
 
                 var mardata = await _context.ProgressTracking.Where(X => X.Learn_Id == DeleteLearn.Learn_Id).FirstOrDefaultAsync();
                 var topic = await _context.Topic.Where(X => X.Learn_Id == DeleteLearn.Learn_Id).FirstOrDefaultAsync();
-                _context.ProgressTracking.Remove(mardata);
-                _context.Topic.Remove(topic);
+                if (mardata != null)
+                {
+                    _context.ProgressTracking.Remove(mardata);
+                }
+                if (topic != null)
+                {
+                    _context.Topic.Remove(topic);
+                }
                 _context.Learn.Remove(DeleteLearn);
 
                 await _context.SaveChangesAsync();

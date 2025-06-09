@@ -1,3 +1,4 @@
+using HtmlAgilityPack;
 using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
 using OnlineBookClub.Repository;
@@ -138,5 +139,38 @@ public class BookService
         await file.CopyToAsync(stream);
 
         return $"/Book/images/{fileName}";
+    }
+    public async Task<BookDTO> GetBookInfoAsync(string url)
+    {
+        var web = new HtmlWeb();
+        var doc = await web.LoadFromWebAsync(url);
+
+        var title = doc.DocumentNode.SelectSingleNode("//title")?.InnerText?.Trim();
+
+        // 嘗試抓取 meta description
+        var description = doc.DocumentNode
+            .SelectSingleNode("//meta[@name='description']")?
+            .GetAttributeValue("content", "")
+            .Trim();
+
+        // 嘗試抓取 og:image 或首張 img 圖片
+        var imageUrl = doc.DocumentNode
+            .SelectSingleNode("//meta[@property='og:image']")?
+            .GetAttributeValue("content", "");
+
+        if (string.IsNullOrEmpty(imageUrl))
+        {
+            imageUrl = doc.DocumentNode
+                .SelectSingleNode("//img")?
+                .GetAttributeValue("src", "");
+        }
+
+        return new BookDTO
+        {
+            BookName = title,
+            Description = description,
+            Link = url,
+            bookurl = imageUrl
+        };
     }
 }

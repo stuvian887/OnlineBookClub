@@ -579,21 +579,35 @@ namespace OnlineBookClub.Repository
             var User = await _planMemberRepository.GetUserRoleAsync(UserId, PlanId);
             var Plan = await _context.BookPlan.FindAsync(PlanId);
             var Learn = await _context.Learn.Where(l => l.Plan_Id == PlanId).FirstOrDefaultAsync(l => l.Learn_Index == LearnIndex);
-            if (User != null && Plan != null && Learn != null)
+            if (User == null && Plan == null && Learn == null)
             {
-                var PassTheProgress = await _context.ProgressTracking.Where(pt => pt.User_Id == UserId).FirstOrDefaultAsync(pt => pt.Learn_Id == Learn.Learn_Id);
-                PassTheProgress.Status = true;
-                PassTheProgress.CompletionDate = DateTime.Now;
-                _context.ProgressTracking.Update(PassTheProgress);
-                await _context.SaveChangesAsync();
-                ProgressTrackingDTO resultDTO = new ProgressTrackingDTO
-                {
-                    Status = PassTheProgress.Status,
-                    CompletionDate = PassTheProgress.CompletionDate
-                };
-                return resultDTO;
+                return null;
             }
-            else { return null; }
+            //找出前一個是否通過(未改完)
+            if(LearnIndex != 1)
+            {
+                var PreviousLearn = await _context.Learn
+                .Where(l => l.Plan_Id == PlanId && l.Learn_Index == LearnIndex - 1)
+                .FirstOrDefaultAsync();
+                var CheckIsCanPass = await _context.ProgressTracking
+                .Where(pt => pt.User_Id == UserId && pt.Learn_Id == PreviousLearn.Learn_Id)
+                .FirstOrDefaultAsync();
+                if (CheckIsCanPass.Status == false)
+                {
+                    return null;
+                }
+            }
+            var PassTheProgress = await _context.ProgressTracking.Where(pt => pt.User_Id == UserId).FirstOrDefaultAsync(pt => pt.Learn_Id == Learn.Learn_Id);
+            PassTheProgress.Status = true;
+            PassTheProgress.CompletionDate = DateTime.Now;
+            _context.ProgressTracking.Update(PassTheProgress);
+            await _context.SaveChangesAsync();
+            ProgressTrackingDTO resultDTO = new ProgressTrackingDTO
+            {
+                Status = PassTheProgress.Status,
+                CompletionDate = PassTheProgress.CompletionDate
+            };
+            return resultDTO;
         }
 
 

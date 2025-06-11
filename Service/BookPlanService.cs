@@ -18,6 +18,7 @@ namespace OnlineBookClub.Service
         private readonly PlanMemberRepository _memberRepository;
         private readonly StatisticService _statisticService;
         
+        
         public BookPlanService(BookPlanRepository repository, JwtService jwtService, PlanMemberRepository memberRepository, StatisticService statisticService,BookService bookService)
         {
             _jwtService = jwtService;
@@ -27,13 +28,13 @@ namespace OnlineBookClub.Service
    
         }
 
-        public async Task<BookPlanPageResultDTO> GetPublicPlansAsync(int userid,string keyword, int page)
+        public async Task<BookPlanPageResultDTO> GetPublicPlansAsync(int userid,string keyword, int page,string order)
         {
            
             ForPaging paging = new ForPaging(page);
 
             
-            var plans = await _repository.GetPublicPlansBySearchAsync(userid,keyword, paging);
+            var plans = await _repository.GetPublicPlansBySearchAsync(userid,keyword, paging,order);
 
             
             var result = new BookPlanPageResultDTO
@@ -132,5 +133,11 @@ namespace OnlineBookClub.Service
 
 
         }
+        public async Task<List<BookPlanDTO>> GetMembersBookPlans(int leaderId, int memberId)
+        {
+            // 檢查是否為本人或具有查詢權限可加在這
+            return await _repository.GetMemberPlansByLeaderAsync(leaderId, memberId);
+        }
+
     }
 }

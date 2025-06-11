@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
 using OnlineBookClub.Service;
@@ -65,5 +66,6 @@ namespace OnlineBookClub.Controllers
             var Memberdata = await _planMembersService.Getmembers(planId);
             return Ok(new { Memberdata });
         }
+        
     }
 }

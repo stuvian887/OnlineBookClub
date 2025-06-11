@@ -7,5 +7,6 @@
         public string JoinDate { get; set; }
         public string ProgressPercent { get; set; }
         public string LearnName { get; set; }
+        public bool IsComplete { get; set; }
     }
 }

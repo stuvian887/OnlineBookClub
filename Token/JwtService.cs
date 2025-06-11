@@ -43,7 +43,7 @@ namespace OnlineBookClub.Token
             HttpOnly = true,  // 避免 JavaScript 讀取，防止 XSS 攻擊
             Secure = true,   // 僅在 HTTPS 傳輸（開發環境可設 false）
             SameSite = SameSiteMode.None, // 限制跨站請求
-            Expires = DateTime.Now.AddMinutes(60)
+            Expires = DateTime.Now.AddMinutes(9999)
             ,Path = "/"
 
         };

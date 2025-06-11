@@ -60,6 +60,7 @@ namespace OnlineBookClub.Service
             if (role == "組長") return (false, "組長無法退出計畫，請刪除計畫");
 
             await _planMembersRepository.RemoveUserFromPlanAsync(UserId, planid);
+            await _planMembersRepository.RemoveProgressTrack(UserId , planid);
             return (true, "已成功退出計畫");
         }
         public async Task<bool> IsUserInPlanAsync(int userId, int planId)
@@ -83,5 +84,6 @@ namespace OnlineBookClub.Service
         {
             return await _planMembersRepository.GetPlanLeaderIdAsync(planid);
         }
+        
     }
 }

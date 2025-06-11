@@ -13,6 +13,7 @@ namespace OnlineBookClub.DTO
         public bool Status { get; set; }
 
         public DateTime? CompletionDate { get; set; }
+        public DateTime LearnDueTime { get; set; }
 
     }
 }

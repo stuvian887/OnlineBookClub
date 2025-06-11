@@ -37,8 +37,7 @@ namespace OnlineBookClub.Controllers
         [HttpPost("{PlanId}/{Learn_Index}")]
         public async Task<IActionResult> Create(int PlanId, int Learn_Index, [FromBody] TopicDTO newData)
         {
-            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            int UserId = int.Parse(UserIdClaim.Value);
+            int UserId = GetUser();
             var result = await _service.CreateTopic(UserId , PlanId, Learn_Index, newData);
             if (result.Item1 != null)
             {
@@ -54,8 +53,7 @@ namespace OnlineBookClub.Controllers
         [HttpPut("{PlanId}/{Learn_Index}/{QuestionId}")]
         public async Task<IActionResult> Update(int PlanId, int Learn_Index, int QuestionId, [FromBody] TopicDTO updateData)
         {
-            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            int UserId = int.Parse(UserIdClaim.Value);
+            int UserId = GetUser();
             var result = await _service.UpdateTopic(UserId , PlanId, Learn_Index, QuestionId, updateData);
             if (result.Item1 != null)
             {
@@ -71,8 +69,7 @@ namespace OnlineBookClub.Controllers
         [HttpDelete("{PlanId}/{Learn_Index}/{QuestionId}")]
         public async Task<IActionResult> Delete(int PlanId , int Learn_Index, int QuestionId)
         {
-            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            int UserId = int.Parse(UserIdClaim.Value);
+            int UserId = GetUser();
             var result = await _service.DeleteTopic(UserId , PlanId, Learn_Index, QuestionId);
             if (result.Item1 != null)
             {
@@ -82,6 +79,11 @@ namespace OnlineBookClub.Controllers
             {
                 return BadRequest(result.Message);
             }
+        }
+        private int GetUser()
+        {
+            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? throw new UnauthorizedAccessException("發生異常錯誤，找不到登入的人是誰。");
+            return int.Parse(UserIdClaim.Value);
         }
     }
 }

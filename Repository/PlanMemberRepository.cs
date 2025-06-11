@@ -3,6 +3,7 @@ using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
 using OnlineBookClub.Service;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace OnlineBookClub.Repository
 {
@@ -116,7 +117,23 @@ namespace OnlineBookClub.Repository
                 .Select(p => p.User_Id)  // 假設 Plan 中的 User_Id 是組長的 ID
                 .FirstOrDefaultAsync();
         }
-
+        public async Task RemoveProgressTrack(int UserId , int PlanId)
+        {
+            var result = await _context.ProgressTracking
+                .Include(pt => pt.Learn)
+                .ThenInclude(l => l.Plan)
+                //這裡要再判斷是屬於哪個Plan
+                .Where(pt => pt.User_Id == UserId && pt.Learn.Plan_Id == PlanId)
+                .ToListAsync();
+            if (result != null)
+            {
+                foreach (var delete in result)
+                {
+                    _context.Remove(delete);
+                }
+            }
+            await _context.SaveChangesAsync();
+        }
     }
 
 

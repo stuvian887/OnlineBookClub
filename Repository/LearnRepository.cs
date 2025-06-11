@@ -20,7 +20,7 @@ namespace OnlineBookClub.Repository
             _planMemberRepository = planMemberRepository;
         }
 
-        public async Task<IEnumerable<LearnDTO>> GetLearnByPlanIdAsync(int UserId , int PlanId)
+        public async Task<IEnumerable<LearnDTO>> GetLearnByPlanIdAsync(int UserId, int PlanId)
         {
             var list = new List<LearnDTO>();
             var Learns = await _context.Learn
@@ -38,14 +38,16 @@ namespace OnlineBookClub.Repository
                     Learn_Name = a.Learn_Name,
                     Pass_Standard = a.Pass_Standard,
                     DueTime = a.DueTime,
+                    Days = a.Days,
                     PersentOfMemberPass = PassPersent,
                     Manual_Check = a.Manual_Check,
+                    //
                     ProgressTracking = pt != null ? new List<ProgressTrackingDTO> { pt } : new List<ProgressTrackingDTO>()
                 });
             }
             return list;
         }
-        public async Task<ProgressTrackingDTO> GetProgressTrack(int UserId , int LearnId)
+        public async Task<ProgressTrackingDTO> GetProgressTrack(int UserId, int LearnId)
         {
             var pt = await _context.ProgressTracking
             .FirstOrDefaultAsync(p => p.User_Id == UserId && p.Learn_Id == LearnId);
@@ -59,6 +61,7 @@ namespace OnlineBookClub.Repository
                 Learn_Id = pt.Learn_Id,
                 Status = pt.Status,
                 CompletionDate = pt.CompletionDate,
+                LearnDueTime = pt.LearnDueTime,
             };
 
         }
@@ -83,17 +86,18 @@ namespace OnlineBookClub.Repository
             DateTime trueStart = BeginTime.Value.Date;
             DateTime trueEnd = EndTime.Value.Date.AddDays(1).AddSeconds(-1);
 
-            var Learns = await _context.Learn
-                .Where(learn => Progresses.Contains(learn.Learn_Id) &&
-                                learn.DueTime >= trueStart &&
-                                learn.DueTime <= trueEnd)
-                .Select(learn => new CalendarLearnDTO
-                {
-                    Plan_Id = learn.Plan_Id,
-                    Learn_Name = learn.Learn_Name,
-                    DueTime = learn.DueTime,
-                })
-                .ToListAsync();
+            var Learns = await (from learn in _context.Learn
+                                join pt in _context.ProgressTracking
+                                on learn.Learn_Id equals pt.Learn_Id
+                                where pt.User_Id == UserId &&
+                                pt.LearnDueTime >= trueStart &&
+                                pt.LearnDueTime <= trueEnd
+                                select new CalendarLearnDTO
+                                {
+                                    Plan_Id = learn.Plan_Id,
+                                    Learn_Name = learn.Learn_Name,
+                                    DueTime = pt.LearnDueTime
+                                }).ToListAsync();
 
             return (Learns, "查詢成功");
         }
@@ -149,17 +153,28 @@ namespace OnlineBookClub.Repository
                 }
 
                 var MembersProgress = await _context.ProgressTracking
+                    .Include(p => p.User)
+                    .ThenInclude(u => u.PlanMembers)
                     .Where(p => p.Learn_Id == Learn.Learn_Id)
+                    .Where(p => p.User.PlanMembers.Any(pm => pm.Plan_Id == Learn.Plan_Id && pm.Role != "組長"))
                     .ToListAsync();
                 foreach (var MemberPass in MembersProgress)
                 {
+
                     if (MemberPass.Status == true) PassCount++;
                 }
 
                 double LearnMemberCount = await _context.ProgressTracking
+                    .Include(p => p.User)
+                    .ThenInclude(u => u.PlanMembers)
                     .Where(p => p.Learn_Id == Learn.Learn_Id)
+                    .Where(p => p.User.PlanMembers.Any(pm => pm.Plan_Id == Learn.Plan_Id && pm.Role != "組長"))
                     .CountAsync();
-                double PassPersent = Math.Round((double)PassCount / LearnMemberCount,2) * 100;
+                if (LearnMemberCount == 0)
+                {
+                    return 0;
+                }
+                double PassPersent = Math.Round((double)PassCount / LearnMemberCount, 2) * 100;
                 return PassPersent;
             }
             catch (Exception e)
@@ -168,7 +183,7 @@ namespace OnlineBookClub.Repository
             }
         }
 
-        public async Task<(LearnDTO,string message)> copylearnAsync(int UserId, int PlanId, LearnDTO InsertData)
+        public async Task<(LearnDTO, string message)> copylearnAsync(int UserId, int PlanId, LearnDTO InsertData)
         {
             BookPlan FindPlan = await _context.BookPlan
                 .Include(bp => bp.Learn)
@@ -177,17 +192,27 @@ namespace OnlineBookClub.Repository
             {
                 return (null, "錯誤，找不到該計畫");
             }
-
-           
-
-           
+            var lastLearn = await _context.Learn
+                .Where(l => l.Plan_Id == PlanId)
+                .OrderByDescending(l => l.Learn_Index)
+                .FirstOrDefaultAsync();
+            //要找出ProgressTracking的日期
+            DateTime previousDate = lastLearn?.DueTime ?? DateTime.Now.Date;
 
             Learn learn = new Learn();
             learn.Plan_Id = PlanId;
             learn.Learn_Name = InsertData.Learn_Name;
             learn.Learn_Index = InsertData.Learn_Index;
             learn.Pass_Standard = InsertData.Pass_Standard;
-            learn.DueTime = InsertData.DueTime.AddDays(1).AddSeconds(-1);
+            learn.Days = InsertData.Days;
+            if (previousDate == DateTime.Now.Date)
+            {
+                learn.DueTime = previousDate.Date.AddDays(learn.Days).AddSeconds(-1);
+            }
+            else
+            {
+                learn.DueTime = previousDate.Date.AddDays(learn.Days + 1).AddSeconds(-1);
+            }
             await _context.Learn.AddAsync(learn);
             await _context.SaveChangesAsync();
             LearnDTO resultDTO = new LearnDTO()
@@ -197,14 +222,14 @@ namespace OnlineBookClub.Repository
             await CreateProgressTrackAsync(PlanId, learn.Learn_Id);
             return (resultDTO, "學習內容新增成功");
         }
-        public async Task<(LearnDTO, string Message)> CreateLearnAsync(int UserId , int PlanId, LearnDTO InsertData)
+        public async Task<(LearnDTO, string Message)> CreateLearnAsync(int UserId, int PlanId, LearnDTO InsertData)
         {
             var Role = await _planMemberRepository.GetUserRoleAsync(UserId, PlanId);
             if (Role != "組長")
             {
-                return (null,"錯誤，你不是組長");
+                return (null, "錯誤，你不是組長");
             }
-                BookPlan FindPlan = await _context.BookPlan.Include(bp => bp.Learn).SingleOrDefaultAsync(p => p.Plan_Id == PlanId);
+            BookPlan FindPlan = await _context.BookPlan.Include(bp => bp.Learn).SingleOrDefaultAsync(p => p.Plan_Id == PlanId);
             if (FindPlan == null)
             {
                 return (null, "錯誤，找不到該計畫");
@@ -215,13 +240,13 @@ namespace OnlineBookClub.Repository
             {
                 if (InsertData.Learn_Index == learns.Learn_Index) return (null, "錯誤，此學習編號已經存在");
             }
-
-            System.DateTime NowTime = DateTime.Now.Date;
-            System.TimeSpan checkdifftime = InsertData.DueTime.Subtract(NowTime);
-            if (checkdifftime.TotalSeconds < 0)
-            {
-                return (null, "錯誤，期限不可於今天之前");
-            }
+            var defaultDate = DateTime.Now.Date;
+            //找出前一個Learn的日期
+            var lastLearn = await _context.Learn
+                .Where(l => l.Plan_Id == PlanId)
+                .OrderByDescending(l => l.Learn_Index)
+                .FirstOrDefaultAsync();
+            DateTime previousDate = lastLearn?.DueTime ?? DateTime.Now.Date;
 
 
             Learn learn = new Learn();
@@ -229,7 +254,28 @@ namespace OnlineBookClub.Repository
             learn.Learn_Name = InsertData.Learn_Name;
             learn.Learn_Index = InsertData.Learn_Index;
             learn.Pass_Standard = InsertData.Pass_Standard;
-            learn.DueTime = InsertData.DueTime.AddDays(1).AddSeconds(-1);
+            //使用者可以輸入日期 會自動轉換成天數 也可自行填入天數
+            if (InsertData.DueTime == DateTime.MinValue)
+            {
+                learn.Days = InsertData.Days;
+                learn.DueTime = defaultDate.AddDays(learn.Days + 1).AddMinutes(-1);
+            }
+            else
+            {
+                System.DateTime NowTime = DateTime.Now.Date;
+                System.TimeSpan checkdifftime = InsertData.DueTime.Subtract(NowTime);
+                if (checkdifftime.TotalSeconds < 0)
+                {
+                    return (null, "錯誤，期限不可於今天之前");
+                }
+                if (InsertData.DueTime <= previousDate)
+                {
+                    return (null, "錯誤，期限小於前一個計畫");
+                }
+                learn.DueTime = InsertData.DueTime.AddDays(1).AddSeconds(-1);
+                learn.Days = (InsertData.DueTime.AddDays(1) - previousDate).Days;
+            }
+
             await _context.Learn.AddAsync(learn);
             await _context.SaveChangesAsync();
             LearnDTO resultDTO = new LearnDTO()
@@ -239,10 +285,110 @@ namespace OnlineBookClub.Repository
             await CreateProgressTrackAsync(PlanId, learn.Learn_Id);
             return (resultDTO, "學習內容新增成功");
         }
+        //創建新Learn時幫所有成員新增ProgressTracking
+        public async Task<IEnumerable<ProgressTrackingDTO>> CreateProgressTrackAsync(int PlanId, int Learn_Id)
+        {
+            List<ProgressTrackingDTO> resultDTOs = new List<ProgressTrackingDTO>();
+            var Members = await _context.PlanMembers
+                .Where(pm => pm.Plan_Id == PlanId)
+                .ToListAsync();
+            var Learn = await _context.Learn
+                .Where(l => l.Learn_Id == Learn_Id)
+                .FirstOrDefaultAsync();
+
+            if (Members == null) return null;
+            foreach (var member in Members)
+            {
+
+                var lastDueTime = await _context.ProgressTracking
+                    .Include(pt => pt.Learn)
+                        .ThenInclude(l => l.Plan)
+                    .Where(pt => pt.User_Id == member.User_Id && pt.Learn.Plan.Plan_Id == PlanId)
+                    .OrderByDescending(p => p.LearnDueTime)
+                    .Select(p => (DateTime?)p.LearnDueTime)
+                    .FirstOrDefaultAsync();
+
+                DateTime TheDueTime = DateTime.MinValue;
+
+                if (lastDueTime.HasValue)
+                {
+                    // 重點：用前次 DueTime 當基準
+                    TheDueTime = lastDueTime.Value.AddDays(Learn.Days).AddMinutes(-1);
+                }
+                else
+                {
+                    // 第一次新增，用現在日期當基準
+                    TheDueTime = DateTime.Now.Date.AddDays(Learn.Days).AddMinutes(-1);
+                }
+
+                ProgressTracking progress = new ProgressTracking
+                {
+                    User_Id = member.User_Id,
+                    Learn_Id = Learn_Id,
+                    Status = false,
+                    LearnDueTime = TheDueTime,
+                };
+                await _context.ProgressTracking.AddAsync(progress);
+                ProgressTrackingDTO resultDTO = new ProgressTrackingDTO
+                {
+                    User_Id = progress.User_Id,
+                    Learn_Id = Learn_Id,
+                    Status = false,
+                    LearnDueTime = progress.LearnDueTime,
+                };
+                resultDTOs.Add(resultDTO);
+            }
+            await _context.SaveChangesAsync();
+            return resultDTOs;
+        }
+        //加入計畫後創建ProgressTracking
+        public async Task<IEnumerable<ProgressTrackingDTO>> CreateAllProgressTrackAsync(int UserId, int PlanId)
+        {
+            var Learns = await _context.Learn
+                .Where(l => l.Plan_Id == PlanId)
+                .ToListAsync();
+            if (Learns == null) return null;
+            List<ProgressTrackingDTO> resultDTOs = new List<ProgressTrackingDTO>();
+            DateTime TempDate = DateTime.Now.Date;
+            foreach (var learn in Learns)
+            {
+                DateTime TheDueTime = DateTime.MinValue.Date;
+                //防止Days是0卻會增加的狀況發生
+                if (learn.Days == 0)
+                {
+                    TheDueTime = TempDate.AddDays(learn.Days);
+                    TempDate = TheDueTime;
+                }
+                else
+                {
+                    TheDueTime = TempDate.AddDays(learn.Days).AddSeconds(-1);
+                    TempDate = TheDueTime.AddSeconds(1);
+                }
+                ProgressTracking progress = new ProgressTracking
+                {
+                    User_Id = UserId,
+                    Learn_Id = learn.Learn_Id,
+                    Status = false,
+                    LearnDueTime = TheDueTime,
+                };
+                await _context.ProgressTracking.AddAsync(progress);
+                ProgressTrackingDTO dto = new ProgressTrackingDTO
+                {
+                    User_Id = progress.User_Id,
+                    Learn_Id = progress.Learn_Id,
+                    Status = progress.Status,
+                    LearnDueTime = progress.LearnDueTime,
+                };
+                resultDTOs.Add(dto);
+            }
+            await _context.SaveChangesAsync();
+            return resultDTOs;
+        }
+
         public async Task<(LearnDTO, string Message)> UpdateLearnAsync(int UserId, int PlanId, int Learn_Index, LearnDTO UpdateData)
         {
             var Role = await _planMemberRepository.GetUserRoleAsync(UserId, PlanId);
-            if (Role == "組長") 
+            if (Role == "組長")
             {
                 var UpdateDataPlan = await _context.BookPlan.FindAsync(PlanId);
                 if (UpdateDataPlan == null)
@@ -255,33 +401,67 @@ namespace OnlineBookClub.Repository
                 {
                     return (null, "錯誤，找不到該學習內容");
                 }
-
                 var AllLearn = await _context.Learn.Where(l => l.Plan_Id == PlanId).ToListAsync();
-                //確定使用者真的不會用奇怪的方式讓題號一樣 若不變更題號請不要輸入Learn_Index 不然會做這個if判斷
-                foreach (var learns in AllLearn)
+                //確定編號不會重複
+                bool isIndexExist = await _context.Learn
+                    .AnyAsync(l => l.Plan_Id == PlanId
+                    && l.Learn_Index == UpdateData.Learn_Index
+                    && l.Learn_Index != Learn_Index);
+                if (isIndexExist)
                 {
-                    if (UpdateData.Learn_Index == learns.Learn_Index)
-                    {
-                        return (null, "錯誤，此學習編號已經存在");
-                    }
+                    return (null, "錯誤，此學習編號已經存在");
                 }
-                //System.DateTime NowTime = DateTime.Now.Date;
-                //System.TimeSpan checkdifftime = UpdateData.DueTime.Subtract(NowTime);
-                //if (checkdifftime.TotalSeconds > 0)
-                //{
-                    UpdateLearn.Plan_Id = UpdateDataPlan.Plan_Id;
-                    UpdateLearn.Learn_Name = UpdateData.Learn_Name;
-                    UpdateLearn.Pass_Standard = UpdateData.Pass_Standard;
-                    UpdateLearn.DueTime = UpdateData.DueTime.AddDays(1).AddSeconds(-1);
-                    UpdateLearn.Manual_Check = UpdateData.Manual_Check;
-                    _context.Update(UpdateLearn);
-                    await _context.SaveChangesAsync();
-                    LearnDTO resultDTO = new LearnDTO();
-                    resultDTO.Learn_Name = UpdateLearn.Learn_Name;
-                    return (resultDTO, "修改學習內容成功");
-                //}
 
-                //else return (null, "錯誤，期限不可於今天之前");
+                // 動態查詢前一個學習計畫（Learn_Index 小於當前值中的最大者）
+                var previousLearn = await _context.Learn
+                    .Where(l => l.Plan_Id == PlanId
+                             && l.Learn_Index < UpdateLearn.Learn_Index)
+                    .OrderByDescending(l => l.Learn_Index)
+                    .FirstOrDefaultAsync();
+                //要找出上一個跟下一個Learn
+                var nextLearn = await _context.Learn
+                    .Where(l => l.Plan_Id == PlanId
+                             && l.Learn_Index > UpdateLearn.Learn_Index)
+                    .OrderBy(l => l.Learn_Index)
+                    .FirstOrDefaultAsync();
+                // 基準日期：前一個計畫的 DueTime，若無則用計畫建立日期
+                DateTime previousDate = previousLearn?.DueTime ?? DateTime.Now.Date;
+                // 後一個計劃的DueTime
+                DateTime nextDate = nextLearn?.DueTime ?? DateTime.MaxValue.Date;
+
+                // 更新邏輯
+                if (UpdateData.DueTime == DateTime.MinValue)
+                {
+                    // 輸入天數模式
+                    UpdateLearn.Days = UpdateData.Days;
+                    UpdateLearn.DueTime = previousDate.AddDays(UpdateData.Days + 1).AddSeconds(-1);
+                }
+                else if (UpdateData.DueTime.AddDays(1).AddSeconds(-1) == UpdateLearn.DueTime)
+                {
+                    UpdateLearn.DueTime = UpdateData.DueTime.AddDays(1).AddSeconds(-1);
+                    UpdateLearn.Days = (UpdateLearn.DueTime.Date - previousDate.Date).Days;
+                }
+                else
+                {
+                    if(UpdateData.DueTime <= previousDate)
+                    {
+                        return (null, "錯誤，日期不可小於前一個計劃");
+                    }
+                    if(UpdateData.DueTime >= nextDate.AddDays(-1))
+                    {
+                        return (null, "錯誤，日期不可大於下一個計劃");
+                    }
+                    // 輸入日期模式
+                    UpdateLearn.DueTime = UpdateData.DueTime.AddDays(1).AddSeconds(-1);
+                    UpdateLearn.Days = (UpdateLearn.DueTime.Date - previousDate.Date).Days;
+                }
+
+                _context.Update(UpdateLearn);
+                await _context.SaveChangesAsync();
+                LearnDTO resultDTO = new LearnDTO();
+                resultDTO.Learn_Name = UpdateLearn.Learn_Name;
+                return (resultDTO, "修改學習內容成功");
+
             }
             else if (Role == "組員") return (null, "你沒有權限這麼做");
             else return (null, "找不到你是誰");
@@ -304,17 +484,15 @@ namespace OnlineBookClub.Repository
                 }
 
                 var mardata = await _context.ProgressTracking.Where(X => X.Learn_Id == DeleteLearn.Learn_Id).FirstOrDefaultAsync();
-                var topic=await _context.Topic.Where(X => X.Learn_Id == DeleteLearn.Learn_Id).FirstOrDefaultAsync();
-                var progressList = await _context.ProgressTracking
-    .Where(x => x.Learn_Id == DeleteLearn.Learn_Id).ToListAsync();
-                _context.ProgressTracking.RemoveRange(progressList);
-
-                var topics = await _context.Topic.Where(x => x.Learn_Id == DeleteLearn.Learn_Id).ToListAsync();
-                if (topics.Any())
+                var topic = await _context.Topic.Where(X => X.Learn_Id == DeleteLearn.Learn_Id).FirstOrDefaultAsync();
+                if (mardata != null)
                 {
-                    _context.Topic.RemoveRange(topics);
+                    _context.ProgressTracking.Remove(mardata);
                 }
-
+                if (topic != null)
+                {
+                    _context.Topic.Remove(topic);
+                }
                 _context.Learn.Remove(DeleteLearn);
 
                 await _context.SaveChangesAsync();
@@ -343,17 +521,17 @@ namespace OnlineBookClub.Repository
             }
             else return null;
         }
-        public async Task<IEnumerable<MemberProgressDTO>> GetMemberPassLearnPersentAsync(int UserId , int Plan_Id)
+        public async Task<IEnumerable<MemberProgressDTO>> GetMemberPassLearnPersentAsync(int UserId, int Plan_Id)
         {
             var Role = await _planMemberRepository.GetUserRoleAsync(UserId, Plan_Id);
-            if(Role != "組長")
+            if (Role != "組長")
             {
                 return null;
             }
             //取得所有成員
             var PlanMembers = await _context.PlanMembers
-                .Where(pm => pm.Plan_Id == Plan_Id && pm.User_Id != UserId)                
-                .Select(pm => new 
+                .Where(pm => pm.Plan_Id == Plan_Id && pm.User_Id != UserId)
+                .Select(pm => new
                 {
                     pm.User_Id,
                     pm.Plan_Id,
@@ -369,7 +547,7 @@ namespace OnlineBookClub.Repository
             if (LearnCount <= 0) return null;
 
             List<MemberProgressDTO> result = new List<MemberProgressDTO>();
-            foreach(var member in PlanMembers)
+            foreach (var member in PlanMembers)
             {
                 var PassCount = await _context.ProgressTracking
                     .Where(p => p.User_Id == member.User_Id && p.Learn.Plan_Id == Plan_Id && p.Status)
@@ -382,7 +560,9 @@ namespace OnlineBookClub.Repository
                     .Select(m => m.UserName)
                     .FirstOrDefaultAsync();
 
+                //先where在join
                 var LearnName = await _context.ProgressTracking
+                    .Where(p => p.User_Id == member.User_Id && p.Learn.Plan_Id == Plan_Id && p.Status == false)
                     .Join(_context.Learn,
                         progress => progress.Learn_Id,
                         learn => learn.Learn_Id,
@@ -392,10 +572,18 @@ namespace OnlineBookClub.Repository
                             Learn = learn,
                         }
                     )
-                    .Where(p => p.Progress.User_Id == member.User_Id && p.Learn.Plan_Id == Plan_Id && p.Progress.Status == false)
                     .FirstOrDefaultAsync();
 
-                
+                //var IncompleteLearn = await (from pt in _context.ProgressTracking
+                //                             join l in _context.Learn on pt.Learn_Id equals l.Learn_Id
+                //                             where pt.User_Id == member.User_Id &&
+                //                                   pt.Status == false &&
+                //                                   l.Plan_Id == Plan_Id
+                //                             select new
+                //                             {
+                //                                 pt.Status,
+                //                                 l.Learn_Name
+                //                             }).FirstOrDefaultAsync();
 
                 result.Add(new MemberProgressDTO
                 {
@@ -404,89 +592,51 @@ namespace OnlineBookClub.Repository
                     JoinDate = member.JoinDate.Date.ToString("yyyy/MM/dd"),
                     ProgressPercent = PassPersent.ToString(),
                     LearnName = LearnName?.Learn.Learn_Name ?? "全部完成!",
+                    IsComplete = LearnName?.Progress.Status ?? true
                 });
             }
             return result;
         }
-        
-        public async Task<IEnumerable<ProgressTrackingDTO>> CreateAllProgressTrackAsync(int UserId, int PlanId)
-        {
-            var Learns = await _context.Learn
-                .Where(l => l.Plan_Id == PlanId)
-                .ToListAsync();
-            if (Learns == null) return null;
-            List<ProgressTrackingDTO> resultDTOs = new List<ProgressTrackingDTO>();
-            foreach (var learn in Learns)
-            {
-                ProgressTracking progress = new ProgressTracking
-                {
-                    User_Id = UserId,
-                    Learn_Id = learn.Learn_Id,
-                    Status = false,
-                };
-                await _context.ProgressTracking.AddAsync(progress);
 
-                ProgressTrackingDTO dto = new ProgressTrackingDTO
-                {
-                    User_Id = progress.User_Id,
-                    Learn_Id = progress.Learn_Id,
-                    Status = progress.Status,
-                };
-                resultDTOs.Add(dto);
-            }
-            await _context.SaveChangesAsync();
-            return resultDTOs;
-        }
-        public async Task<IEnumerable<ProgressTrackingDTO>> CreateProgressTrackAsync(int PlanId, int Learn_Id)
-        {
-            List<ProgressTrackingDTO> resultDTOs = new List<ProgressTrackingDTO>();
-            var Members = await _context.PlanMembers
-                .Where(pm => pm.Plan_Id == PlanId)
-                .ToListAsync();
-            if (Members == null) return null;
-            foreach (var member in Members)
-            {
-                ProgressTracking progress = new ProgressTracking
-                {
-                    User_Id = member.User_Id,
-                    Learn_Id = Learn_Id,
-                    Status = false,
-                };
-                await _context.ProgressTracking.AddAsync(progress);
-                ProgressTrackingDTO resultDTO = new ProgressTrackingDTO
-                {
-                    User_Id = progress.User_Id,
-                    Learn_Id = Learn_Id,
-                    Status = false,
-                };
-                resultDTOs.Add(resultDTO);
-            }
-            await _context.SaveChangesAsync();
-            return resultDTOs;
-        }
+
+
         public async Task<ProgressTrackingDTO> PassProgressAsync(int UserId, int PlanId, int LearnIndex)
         {
             var User = await _planMemberRepository.GetUserRoleAsync(UserId, PlanId);
             var Plan = await _context.BookPlan.FindAsync(PlanId);
             var Learn = await _context.Learn.Where(l => l.Plan_Id == PlanId).FirstOrDefaultAsync(l => l.Learn_Index == LearnIndex);
-            if (User != null && Plan != null && Learn != null)
+            if (User == null && Plan == null && Learn == null)
             {
-                var PassTheProgress = await _context.ProgressTracking.Where(pt => pt.Learn_Id == Learn.Learn_Id).FirstOrDefaultAsync(pt => pt.Learn_Id == Learn.Learn_Id);
-                PassTheProgress.Status = true;
-                PassTheProgress.CompletionDate = DateTime.Now;
-                _context.ProgressTracking.Update(PassTheProgress);
-                await _context.SaveChangesAsync();
-                ProgressTrackingDTO resultDTO = new ProgressTrackingDTO
-                {
-                    Status = PassTheProgress.Status,
-                    CompletionDate = PassTheProgress.CompletionDate
-                };
-                return resultDTO;
+                return null;
             }
-            else { return null; }
+            //找出前一個是否通過(未改完)
+            if (LearnIndex != 1)
+            {
+                var PreviousLearn = await _context.Learn
+                .Where(l => l.Plan_Id == PlanId && l.Learn_Index == LearnIndex - 1)
+                .FirstOrDefaultAsync();
+                var CheckIsCanPass = await _context.ProgressTracking
+                .Where(pt => pt.User_Id == UserId && pt.Learn_Id == PreviousLearn.Learn_Id)
+                .FirstOrDefaultAsync();
+                if (CheckIsCanPass.Status == false)
+                {
+                    return null;
+                }
+            }
+            var PassTheProgress = await _context.ProgressTracking.Where(pt => pt.User_Id == UserId).FirstOrDefaultAsync(pt => pt.Learn_Id == Learn.Learn_Id);
+            PassTheProgress.Status = true;
+            PassTheProgress.CompletionDate = DateTime.Now;
+            _context.ProgressTracking.Update(PassTheProgress);
+            await _context.SaveChangesAsync();
+            ProgressTrackingDTO resultDTO = new ProgressTrackingDTO
+            {
+                Status = PassTheProgress.Status,
+                CompletionDate = PassTheProgress.CompletionDate
+            };
+            return resultDTO;
         }
 
-        
+
         public async Task<IEnumerable<Answer_RecordDTO>> CreateRecordAsync(int UserId, AnswerSubmissionDTO submission)
         {
             List<Answer_RecordDTO> resultDTOs = new List<Answer_RecordDTO>();
@@ -509,7 +659,7 @@ namespace OnlineBookClub.Repository
                 }
                 int countimes = await _context.Answer_Record
                     .CountAsync(a => a.User_Id == UserId && a.Topic_Id == topic.Topic_Id);
-                
+
                 Answer_Record answer_Record = new Answer_Record();
                 answer_Record.User_Id = UserId;
                 answer_Record.Learn_Id = Learn.Learn_Id;
@@ -536,12 +686,12 @@ namespace OnlineBookClub.Repository
                 };
                 resultDTOs.Add(dto);
             }
-            double CorrectRate = (double)PassAnswerCount / AnswerCount*100;
-            if(CorrectRate >= Learn.Pass_Standard)
+            double CorrectRate = (double)PassAnswerCount / AnswerCount;
+            if (CorrectRate >= Learn.Pass_Standard)
             {
                 var progress = await _context.ProgressTracking
                     .FirstOrDefaultAsync(p => p.User_Id == UserId && p.Learn_Id == Learn.Learn_Id);
-                if(progress != null)
+                if (progress != null)
                 {
                     progress.Status = true;
                     progress.CompletionDate = DateTime.Now;
@@ -550,7 +700,7 @@ namespace OnlineBookClub.Repository
             await _context.SaveChangesAsync();
             return resultDTOs;
         }
-        public async Task<IEnumerable<Answer_RecordDTO>> GetRecordAsync(int UserId, int PlanId, int Learn_Index)
+        public async Task<IEnumerable<Answer_RecordDTO>> GetRecordAsync(int UserId, int PlanId, int Learn_Index, int times)
         {
             var User = await _planMemberRepository.GetUserRoleAsync(UserId, PlanId);
             var Plan = await _context.BookPlan.FindAsync(PlanId);
@@ -560,7 +710,7 @@ namespace OnlineBookClub.Repository
             if (User != null && Plan != null && Learn != null)
             {
                 var result = (from a in _context.Answer_Record
-                              .Where(a => a.User_Id == UserId)
+                              .Where(a => a.User_Id == UserId && a.times == times)
                               join b in _context.Topic on a.Topic_Id equals b.Topic_Id
                               select new Answer_RecordDTO
                               {

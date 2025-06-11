@@ -18,17 +18,19 @@ namespace OnlineBookClub.Repository
             _planMemberRepsitory = planMemberRepsitory;
         }
 
-        public async Task<List<BookPlanDTO>> GetPublicPlansBySearchAsync(int userid,string keyword, ForPaging paging)
+        public async Task<List<BookPlanDTO>> GetPublicPlansBySearchAsync(int userid, string keyword, ForPaging paging, string order)
         {
             var query = from plan in _context.BookPlan
                         join member in _context.Members on plan.User_Id equals member.User_Id
+                        join statistic in _context.Statistic on plan.Plan_Id equals statistic.Plan_Id into statGroup
+                        from stat in statGroup.DefaultIfEmpty()
                         where plan.IsPublic && plan.User_Id != userid
                         select new
                         {
                             Plan = plan,
-                            CreatorName = member.UserName
+                            CreatorName = member.UserName,
+                            Statistic = stat
                         };
-
 
             if (!string.IsNullOrEmpty(keyword))
             {
@@ -44,8 +46,24 @@ namespace OnlineBookClub.Repository
             paging.MaxPage = (int)Math.Ceiling((double)totalCount / paging.ItemNum);
             paging.SetRightPage();
 
+            // 排序條件處理
+            switch (order?.ToLower())
+            {
+                case "view":
+                    query = query.OrderByDescending(p => p.Statistic != null ? p.Statistic.ViewTimes : 0);
+                    break;
+                case "copy":
+                    query = query.OrderByDescending(p => p.Statistic != null ? p.Statistic.CopyCount : 0);
+                    break;
+                case "user":
+                    query = query.OrderByDescending(p => p.Statistic != null ? p.Statistic.UserCount : 0);
+                    break;
+                default:
+                    query = query.OrderByDescending(p => p.Plan.Plan_Id); // 預設用 Plan_Id 倒序
+                    break;
+            }
+
             var pagedPlans = await query
-                .OrderByDescending(p => p.Plan.Plan_Id)
                 .Skip((paging.NowPage - 1) * paging.ItemNum)
                 .Take(paging.ItemNum)
                 .ToListAsync();
@@ -53,7 +71,7 @@ namespace OnlineBookClub.Repository
             var dtoList = new List<BookPlanDTO>();
             foreach (var p in pagedPlans)
             {
-                (string recentlyLearnDate , string recentlyLearn) = await GetRecentlyLearn(p.Plan.Plan_Id);
+                (string recentlyLearnDate, string recentlyLearn) = await GetRecentlyLearn(p.Plan.Plan_Id);
                 dtoList.Add(new BookPlanDTO
                 {
                     Plan_ID = p.Plan.Plan_Id,
@@ -71,6 +89,7 @@ namespace OnlineBookClub.Repository
 
             return dtoList;
         }
+
 
         public async Task<(string,string)> GetRecentlyLearn(int PlanId)
         {
@@ -261,6 +280,44 @@ namespace OnlineBookClub.Repository
             await _context.SaveChangesAsync();
 
             return true;
+        }
+        public async Task<List<BookPlanDTO>> GetMemberPlansByLeaderAsync(int leaderId, int memberId)
+        {
+            var joinedPlanIds = await _context.PlanMembers
+                .Where(pm => pm.User_Id == memberId)
+                .Select(pm => pm.Plan_Id)
+                .ToListAsync();
+
+            var plans = await _context.BookPlan
+                .Where(p => joinedPlanIds.Contains(p.Plan_Id) && p.User_Id == leaderId)
+                .ToListAsync();
+
+            var userIds = plans.Select(p => p.User_Id).Distinct().ToList();
+            var users = await _context.Members
+                .Where(u => userIds.Contains(u.User_Id))
+                .ToDictionaryAsync(u => u.User_Id, u => u.UserName);
+
+            var dtoList = new List<BookPlanDTO>();
+            foreach (var p in plans)
+            {
+                (string recentlyLearnDate, string recentlylearn) = await GetRecentlyLearn(p.Plan_Id); 
+
+                dtoList.Add(new BookPlanDTO
+                {
+                    Plan_ID = p.Plan_Id,
+                    Plan_Name = p.Plan_Name,
+                    Plan_Goal = p.Plan_Goal,
+                    Plan_Type = p.Plan_Type,
+                    Plan_Suject = p.Plan_suject,
+                    IsPublic = p.IsPublic,
+                    RecentlyLearnDate = recentlyLearnDate,
+                    RecentlyLearn = recentlylearn,
+                    IsComplete = p.IsComplete,
+                    CreatorName = users.ContainsKey(p.User_Id) ? users[p.User_Id] : "未知使用者"
+                });
+            }
+
+            return dtoList;
         }
 
     }

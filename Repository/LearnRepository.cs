@@ -455,6 +455,8 @@ namespace OnlineBookClub.Repository
                     UpdateLearn.DueTime = UpdateData.DueTime.AddDays(1).AddSeconds(-1);
                     UpdateLearn.Days = (UpdateLearn.DueTime.Date - previousDate.Date).Days;
                 }
+                UpdateLearn.Learn_Name = UpdateData.Learn_Name;
+                //UpdateLearn.Learn_Index = UpdateData.Learn_Index;
 
                 _context.Update(UpdateLearn);
                 await _context.SaveChangesAsync();

@@ -496,6 +496,14 @@ namespace OnlineBookClub.Repository
                     _context.Topic.Remove(topic);
                 }
                 _context.Learn.Remove(DeleteLearn);
+                //變更編號邏輯
+                var subsequentLearns = await _context.Learn
+                    .Where(l => l.Plan_Id == PlanId && l.Learn_Index > Learn_Index)
+                    .ToListAsync();
+                foreach(var learn in subsequentLearns)
+                {
+                    learn.Learn_Index -= 1;
+                }
 
                 await _context.SaveChangesAsync();
                 LearnDTO resultDTO = new LearnDTO();

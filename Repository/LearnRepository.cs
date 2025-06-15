@@ -456,9 +456,17 @@ namespace OnlineBookClub.Repository
                     UpdateLearn.Days = (UpdateLearn.DueTime.Date - previousDate.Date).Days;
                 }
                 UpdateLearn.Learn_Name = UpdateData.Learn_Name;
-                //UpdateLearn.Learn_Index = UpdateData.Learn_Index;
-
                 _context.Update(UpdateLearn);
+
+                //讓ProgressTrackingTracking的日期也更動
+                var UserProgress = await _context.ProgressTracking
+                    .Where(pt => pt.Learn_Id == UpdateLearn.Learn_Id)
+                    .FirstOrDefaultAsync();
+                if (UserProgress != null)
+                {
+                    UserProgress.LearnDueTime = UpdateData.DueTime;
+                }
+
                 await _context.SaveChangesAsync();
                 LearnDTO resultDTO = new LearnDTO();
                 resultDTO.Learn_Name = UpdateLearn.Learn_Name;

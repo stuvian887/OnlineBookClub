@@ -723,12 +723,12 @@ namespace OnlineBookClub.Repository
             var User = await _planMemberRepository.GetUserRoleAsync(UserId, PlanId);
             var Plan = await _context.BookPlan.FindAsync(PlanId);
             var Learn = await _context.Learn
-                .Where(l => l.Plan_Id == PlanId)
-                .FirstOrDefaultAsync(l => l.Learn_Index == Learn_Index);
+                .Where(l => l.Plan_Id == PlanId && l.Learn_Index == Learn_Index)
+                .FirstOrDefaultAsync();
             if (User != null && Plan != null && Learn != null)
             {
                 var result = (from a in _context.Answer_Record
-                              .Where(a => a.User_Id == UserId && a.times == times)
+                              .Where(a => a.User_Id == UserId && a.Learn_Id == Learn.Learn_Id && a.times == times)
                               join b in _context.Topic on a.Topic_Id equals b.Topic_Id
                               select new Answer_RecordDTO
                               {

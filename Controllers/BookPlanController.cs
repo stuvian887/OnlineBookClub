@@ -64,7 +64,7 @@ namespace OnlineBookClub.Controllers
             if (plan == null) return NotFound();
             return Ok(plan);
         }
-        [HttpGet("getmembersbookpaln/{user_Id}")]
+        [HttpGet("getmembersbookplan/{user_Id}")]
         public async Task<IActionResult> GetMembersBookPlan(int user_Id)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);

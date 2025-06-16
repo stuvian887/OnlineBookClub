@@ -2,6 +2,7 @@
 using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
 using System;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -300,7 +301,32 @@ namespace OnlineBookClub.Repository
             var dtoList = new List<BookPlanDTO>();
             foreach (var p in plans)
             {
-                (string recentlyLearnDate, string recentlylearn) = await GetRecentlyLearn(p.Plan_Id); 
+                var JoinDateTime = await _context.PlanMembers
+                    .Where(pl => pl.User_Id == memberId && pl.Plan_Id == p.Plan_Id && pl.Role == "組員")
+                    .Select(pl => (DateTime)pl.JoinDate)
+                    .FirstOrDefaultAsync();
+
+                var LearnName = await _context.ProgressTracking
+                    .Where(pt => pt.User_Id == memberId && pt.Learn.Plan_Id == p.Plan_Id && pt.Status == false)
+                    .Join(_context.Learn,
+                        progress => progress.Learn_Id,
+                        learn => learn.Learn_Id,
+                        (progress, learn) => new
+                        {
+                            Progress = progress,
+                            Learn = learn,
+                        }
+                    )
+                    .FirstOrDefaultAsync();
+
+                var PassCount = await _context.ProgressTracking
+                    .Where(pa => pa.User_Id == memberId && pa.Learn.Plan_Id == p.Plan_Id && pa.Status)
+                    .CountAsync();
+
+                var LearnCount = await _context.Learn
+                    .Where(l => l.Plan_Id == p.Plan_Id)
+                    .CountAsync();
+                double PassPersent = Math.Ceiling(((double)PassCount / LearnCount) * 100);
 
                 dtoList.Add(new BookPlanDTO
                 {
@@ -310,8 +336,10 @@ namespace OnlineBookClub.Repository
                     Plan_Type = p.Plan_Type,
                     Plan_Suject = p.Plan_suject,
                     IsPublic = p.IsPublic,
-                    RecentlyLearnDate = recentlyLearnDate,
-                    RecentlyLearn = recentlylearn,
+                    RecentlyLearnDate = LearnName.Progress.LearnDueTime.Date.ToString("yyyy/MM/dd"),
+                    RecentlyLearn = LearnName.Learn.Learn_Name,
+                    ProgressPercent = PassPersent.ToString() + "%",
+                    JoinDate = JoinDateTime.Date.ToString("yyyy/MM/dd"),
                     IsComplete = p.IsComplete,
                     CreatorName = users.ContainsKey(p.User_Id) ? users[p.User_Id] : "未知使用者"
                 });

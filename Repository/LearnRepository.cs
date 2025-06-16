@@ -592,17 +592,6 @@ namespace OnlineBookClub.Repository
                     )
                     .FirstOrDefaultAsync();
 
-                //var IncompleteLearn = await (from pt in _context.ProgressTracking
-                //                             join l in _context.Learn on pt.Learn_Id equals l.Learn_Id
-                //                             where pt.User_Id == member.User_Id &&
-                //                                   pt.Status == false &&
-                //                                   l.Plan_Id == Plan_Id
-                //                             select new
-                //                             {
-                //                                 pt.Status,
-                //                                 l.Learn_Name
-                //                             }).FirstOrDefaultAsync();
-
                 result.Add(new MemberProgressDTO
                 {
                     User_Id = member.User_Id,

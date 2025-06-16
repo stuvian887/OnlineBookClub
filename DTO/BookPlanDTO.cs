@@ -15,5 +15,8 @@ namespace OnlineBookClub.DTO
         public bool IsComplete { get; set; }
         public string CreatorName { get; set; }
 
+        public string JoinDate { get; set; }
+        public string ProgressPercent { get; set; }
+
     }
 }

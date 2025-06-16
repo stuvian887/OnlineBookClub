@@ -460,7 +460,7 @@ namespace OnlineBookClub.Repository
 
                 //讓ProgressTrackingTracking的日期也更動
                 var UserProgress = await _context.ProgressTracking
-                    .Where(pt => pt.Learn_Id == UpdateLearn.Learn_Id)
+                    .Where(pt => pt.Learn_Id == UpdateLearn.Learn_Id && pt.User_Id == UserId)
                     .FirstOrDefaultAsync();
                 if (UserProgress != null)
                 {

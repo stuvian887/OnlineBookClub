@@ -52,4 +52,20 @@ public class BookController : ControllerBase
             ? Ok(result.Item2)
             : BadRequest(result.Item2);
     }
+    [HttpGet("bookautoinputurl")]
+    public async Task<ActionResult<BookDTO>> GetBookInfo([FromQuery] string url)
+    {
+        if (string.IsNullOrEmpty(url))
+            return BadRequest("URL is required.");
+
+        try
+        {
+            var info = await _bookService.GetBookInfoAsync(url);
+            return Ok(info);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error parsing website: {ex.Message}");
+        }
+    }
 }

@@ -76,14 +76,21 @@ namespace OnlineBookClub.Service
             var newPlanId = await _planMembersRepository.CopyPlanWithoutTopics(planid, UserId);
             return newPlanId > 0 ? (true, "計畫複製成功") : (false, "複製失敗");
         }
-        public async Task<List<PlanMembersDTO>>Getmembers(int planid) 
+        public async Task<List<PlanMembersDTO>>Getmembers(int planid,int userid)
         {
-            return await _planMembersRepository.PlanMembersInPlanAsync(planid);
+            var role = await _planMembersRepository.GetUserRoleAsync(userid, planid);
+            if (role == "組員") return null;
+            return await _planMembersRepository.PlanMembersInPlanAsync(planid,userid);
         }
         public async Task<int> getleader(int planid)
         {
             return await _planMembersRepository.GetPlanLeaderIdAsync(planid);
         }
-        
+      
+        public async Task<bool> isleader(int planid,int userid)
+        {
+            return await _planMembersRepository.isleader(planid,userid);
+        }
+
     }
 }

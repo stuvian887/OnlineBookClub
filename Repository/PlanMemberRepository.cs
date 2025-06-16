@@ -28,7 +28,7 @@ namespace OnlineBookClub.Repository
             return await _context.PlanMembers.CountAsync(p => p.Plan_Id == planid);
         }
         
-        public async Task<List<PlanMembersDTO>> PlanMembersInPlanAsync(int planid)
+        public async Task<List<PlanMembersDTO>> PlanMembersInPlanAsync(int planid,int userid)
         {
             var members = await _context.PlanMembers
                 .Where(pm => pm.Plan_Id == planid)
@@ -134,7 +134,12 @@ namespace OnlineBookClub.Repository
             }
             await _context.SaveChangesAsync();
         }
+        public async Task<bool> isleader(int planid,int userid)
+        {
+            return await _context.PlanMembers.AnyAsync(pm => pm.User_Id == userid && pm.Plan_Id == planid && pm.Role =="組長");
+        }
     }
+    
 
 
 }

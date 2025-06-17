@@ -635,7 +635,7 @@ namespace OnlineBookClub.Repository
             PassTheProgress.CompletionDate = DateTime.Now;
             _context.ProgressTracking.Update(PassTheProgress);
             await _context.SaveChangesAsync();
-            ProgressTrackingDTO resultDTO = new ProgressTrackingDTO
+            ProgressTrackingDTO resultDTO = new()
             {
                 Status = PassTheProgress.Status,
                 CompletionDate = PassTheProgress.CompletionDate
@@ -707,7 +707,7 @@ namespace OnlineBookClub.Repository
             await _context.SaveChangesAsync();
             return resultDTOs;
         }
-        public async Task<IEnumerable<Answer_RecordDTO>> GetRecordAsync(int UserId, int PlanId, int Learn_Index, int times)
+        public async Task<IEnumerable<Answer_RecordDTO>> GetRecordAsync(int UserId, int PlanId, int Learn_Index)
         {
             var User = await _planMemberRepository.GetUserRoleAsync(UserId, PlanId);
             var Plan = await _context.BookPlan.FindAsync(PlanId);
@@ -717,7 +717,7 @@ namespace OnlineBookClub.Repository
             if (User != null && Plan != null && Learn != null)
             {
                 var result = (from a in _context.Answer_Record
-                              .Where(a => a.User_Id == UserId && a.Learn_Id == Learn.Learn_Id && a.times == times)
+                              .Where(a => a.User_Id == UserId && a.Learn_Id == Learn.Learn_Id)
                               join b in _context.Topic on a.Topic_Id equals b.Topic_Id
                               select new Answer_RecordDTO
                               {
@@ -735,5 +735,54 @@ namespace OnlineBookClub.Repository
             }
             else { return null; }
         }
+
+        public async Task<List<PassLearnDTO>> GetMemberByPlansAsync(int leaderId, int planId, int Learn_Index)
+        {
+            var IsLeader = await _context.PlanMembers
+                .Where(pl => pl.User_Id == leaderId && pl.Plan_Id == planId && pl.Role == "組長")
+                .AnyAsync();
+            if (!IsLeader)
+            {
+                return null;
+            }
+
+            var learn = await _context.Learn
+                .Where(l => l.Plan_Id == planId && l.Learn_Index == Learn_Index)
+                .FirstOrDefaultAsync();
+            if (learn == null)
+            {
+                return null;
+            }
+
+            var planMembers = await _context.PlanMembers
+                .Where(pm => pm.Plan_Id == planId && pm.Role == "組員")
+                .ToListAsync();
+
+            var dtoList = new List<PassLearnDTO>();
+            foreach (var planMember in planMembers)
+            {
+                var member = await _context.Members
+                    .Where(m => m.User_Id == planMember.User_Id)
+                    .FirstOrDefaultAsync();
+
+                var Times = await _context.Answer_Record
+                    .Where(a => a.User_Id == planMember.User_Id && a.Learn_Id == learn.Learn_Id)
+                    .OrderByDescending(a => a.times)
+                    .FirstOrDefaultAsync();
+
+                var complete = await _context.ProgressTracking
+                    .Where(p => p.User_Id == planMember.User_Id && p.Learn_Id == learn.Learn_Id)
+                    .FirstOrDefaultAsync();
+
+                dtoList.Add(new PassLearnDTO
+                {
+                    UserName = member?.UserName ?? "未知使用者",
+                    times = Times?.times ?? 0,
+                    IsComplete = complete?.Status ?? false
+                });
+            }
+            return dtoList;
+        }
+
     }
 }

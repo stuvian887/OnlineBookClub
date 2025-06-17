@@ -155,6 +155,22 @@ namespace OnlineBookClub.Controllers
                 return BadRequest(new { message = "發生錯誤" });
             }
         }
+
+        [HttpGet("GetMemberByLearn/{PlanId}/{Learn_Index}")]
+        public async Task<IActionResult> GetMemberByLearn(int PlanId, int Learn_Index)
+        {
+            int UserId = GetUser();
+            var result = await _service.GetMemberByLearn(UserId, PlanId, Learn_Index);
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            else
+            {
+                return BadRequest(new { message = "發生錯誤" });
+            }
+        }
+
         private int GetUser()
         {
             var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? throw new UnauthorizedAccessException("發生異常錯誤，找不到登入的人是誰"); ;

@@ -735,5 +735,54 @@ namespace OnlineBookClub.Repository
             }
             else { return null; }
         }
+
+        public async Task<List<PassLearnDTO>> GetMemberByPlansAsync(int leaderId, int planId, int Learn_Index)
+        {
+            var IsLeader = await _context.PlanMembers
+                .Where(pl => pl.User_Id == leaderId && pl.Plan_Id == planId && pl.Role == "組長")
+                .AnyAsync();
+            if (!IsLeader)
+            {
+                return null;
+            }
+
+            var learn = await _context.Learn
+                .Where(l => l.Plan_Id == planId && l.Learn_Index == Learn_Index)
+                .FirstOrDefaultAsync();
+            if (learn == null)
+            {
+                return null;
+            }
+
+            var planMembers = await _context.PlanMembers
+                .Where(pm => pm.Plan_Id == planId && pm.Role == "組員")
+                .ToListAsync();
+
+            var dtoList = new List<PassLearnDTO>();
+            foreach (var planMember in planMembers)
+            {
+                var member = await _context.Members
+                    .Where(m => m.User_Id == planMember.User_Id)
+                    .FirstOrDefaultAsync();
+
+                var Times = await _context.Answer_Record
+                    .Where(a => a.User_Id == planMember.User_Id && a.Learn_Id == learn.Learn_Id)
+                    .OrderByDescending(a => a.times)
+                    .FirstOrDefaultAsync();
+
+                var complete = await _context.ProgressTracking
+                    .Where(p => p.User_Id == planMember.User_Id && p.Learn_Id == learn.Learn_Id)
+                    .FirstOrDefaultAsync();
+
+                dtoList.Add(new PassLearnDTO
+                {
+                    UserName = member?.UserName ?? "未知使用者",
+                    times = Times?.times ?? 0,
+                    IsComplete = complete?.Status ?? false
+                });
+            }
+            return dtoList;
+        }
+
     }
 }

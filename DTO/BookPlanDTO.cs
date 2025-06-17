@@ -18,5 +18,7 @@ namespace OnlineBookClub.DTO
         public string JoinDate { get; set; }
         public string ProgressPercent { get; set; }
 
+        public int times { get; set; }
+
     }
 }

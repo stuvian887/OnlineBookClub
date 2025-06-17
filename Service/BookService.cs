@@ -145,32 +145,60 @@ public class BookService
         var web = new HtmlWeb();
         var doc = await web.LoadFromWebAsync(url);
 
-        var title = doc.DocumentNode.SelectSingleNode("//title")?.InnerText?.Trim();
+        string title = "", description = "", imageUrl = "";
 
-        // 嘗試抓取 meta description
-        var description = doc.DocumentNode
-            .SelectSingleNode("//meta[@name='description']")?
-            .GetAttributeValue("content", "")
-            .Trim();
-
-        // 嘗試抓取 og:image 或首張 img 圖片
-        var imageUrl = doc.DocumentNode
-            .SelectSingleNode("//meta[@property='og:image']")?
-            .GetAttributeValue("content", "");
-
-        if (string.IsNullOrEmpty(imageUrl))
+        // 判斷網站來源
+        if (url.Contains("books.com.tw"))
         {
+            // 博客來
+            title = doc.DocumentNode.SelectSingleNode("//h1[@itemprop='name']")?.InnerText.Trim();
+            description = doc.DocumentNode
+                .SelectSingleNode("//meta[@name='description']")
+                ?.GetAttributeValue("content", "")
+                .Trim();
             imageUrl = doc.DocumentNode
-                .SelectSingleNode("//img")?
-                .GetAttributeValue("src", "");
+                .SelectSingleNode("//meta[@property='og:image']")
+                ?.GetAttributeValue("content", "");
+        }
+        else if (url.Contains("eslite.com"))
+        {
+            // 誠品
+            title = doc.DocumentNode.SelectSingleNode("//h1[contains(@class, 'product-title')]")?.InnerText.Trim();
+            description = doc.DocumentNode
+                .SelectSingleNode("//meta[@name='description']")
+                ?.GetAttributeValue("content", "")
+                .Trim();
+            imageUrl = doc.DocumentNode
+                .SelectSingleNode("//meta[@property='og:image']")
+                ?.GetAttributeValue("content", "");
+        }
+        else
+        {
+            // 其他網站使用通用 fallback
+            title = doc.DocumentNode.SelectSingleNode("//title")?.InnerText?.Trim();
+            description = doc.DocumentNode
+                .SelectSingleNode("//meta[@name='description']")
+                ?.GetAttributeValue("content", "")
+                .Trim();
+            imageUrl = doc.DocumentNode
+                .SelectSingleNode("//meta[@property='og:image']")
+                ?.GetAttributeValue("content", "");
+
+            if (string.IsNullOrWhiteSpace(imageUrl))
+            {
+                imageUrl = doc.DocumentNode
+                    .SelectSingleNode("//img")
+                    ?.GetAttributeValue("src", "");
+            }
         }
 
         return new BookDTO
         {
-            BookName = title,
-            Description = description,
+            BookName = title ?? "（無書名）",
+            Description = description ?? "（無簡介）",
             Link = url,
-            bookurl = imageUrl
+            bookurl = imageUrl ?? ""
         };
     }
+
 }

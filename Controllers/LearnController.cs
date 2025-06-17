@@ -121,11 +121,11 @@ namespace OnlineBookClub.Controllers
             }
             else { return BadRequest(new { message = "發生錯誤" }); }
         }
-        [HttpGet("Answer_Record/{PlanId}/{Learn_Index}/{Times}")]
-        public async Task<IActionResult> GetAnswer_Record(int PlanId, int Learn_Index, int times)
+        [HttpGet("Answer_Record/{PlanId}/{Learn_Index}")]
+        public async Task<IActionResult> GetAnswer_Record(int PlanId, int Learn_Index)
         {
             int UserId = GetUser();
-            return Ok(await _service.GetAnswer_Record(UserId, PlanId, Learn_Index, times));
+            return Ok(await _service.GetAnswer_Record(UserId, PlanId, Learn_Index));
         }
         [HttpPost("Answer_Record")]
         public async Task<IActionResult> CreateAnswer_Record([FromBody] AnswerSubmissionDTO Answer)

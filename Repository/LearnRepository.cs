@@ -635,7 +635,7 @@ namespace OnlineBookClub.Repository
             PassTheProgress.CompletionDate = DateTime.Now;
             _context.ProgressTracking.Update(PassTheProgress);
             await _context.SaveChangesAsync();
-            ProgressTrackingDTO resultDTO = new ProgressTrackingDTO
+            ProgressTrackingDTO resultDTO = new()
             {
                 Status = PassTheProgress.Status,
                 CompletionDate = PassTheProgress.CompletionDate
@@ -707,7 +707,7 @@ namespace OnlineBookClub.Repository
             await _context.SaveChangesAsync();
             return resultDTOs;
         }
-        public async Task<IEnumerable<Answer_RecordDTO>> GetRecordAsync(int UserId, int PlanId, int Learn_Index, int times)
+        public async Task<IEnumerable<Answer_RecordDTO>> GetRecordAsync(int UserId, int PlanId, int Learn_Index)
         {
             var User = await _planMemberRepository.GetUserRoleAsync(UserId, PlanId);
             var Plan = await _context.BookPlan.FindAsync(PlanId);
@@ -717,7 +717,7 @@ namespace OnlineBookClub.Repository
             if (User != null && Plan != null && Learn != null)
             {
                 var result = (from a in _context.Answer_Record
-                              .Where(a => a.User_Id == UserId && a.Learn_Id == Learn.Learn_Id && a.times == times)
+                              .Where(a => a.User_Id == UserId && a.Learn_Id == Learn.Learn_Id)
                               join b in _context.Topic on a.Topic_Id equals b.Topic_Id
                               select new Answer_RecordDTO
                               {

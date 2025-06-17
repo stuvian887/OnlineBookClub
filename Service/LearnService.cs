@@ -41,9 +41,9 @@ namespace OnlineBookClub.Service
         {
             return await _learnRepository.GetMemberPassLearnPersentAsync(UserId , PlanId);
         }
-        public async Task<IEnumerable<Answer_RecordDTO>> GetAnswer_Record(int UserId , int PlanId , int Learn_Index , int times)
+        public async Task<IEnumerable<Answer_RecordDTO>> GetAnswer_Record(int UserId , int PlanId , int Learn_Index)
         {
-            return await _learnRepository.GetRecordAsync(UserId, PlanId, Learn_Index , times);
+            return await _learnRepository.GetRecordAsync(UserId, PlanId, Learn_Index);
         }
         public async Task<IEnumerable<Answer_RecordDTO>> CreateAnswer_Record(int UserId , AnswerSubmissionDTO Answer)
         {

@@ -19,7 +19,7 @@ namespace OnlineBookClub.Repository
             _planMemberRepsitory = planMemberRepsitory;
         }
 
-        public async Task<List<BookPlanDTO>> GetPublicPlansBySearchAsync(int userid, string keyword, ForPaging paging, string order)
+        public async Task<List<BookPlanDTO>> GetPublicPlansBySearchAsync(int userid, string keyword, ForPaging paging, string order,string category)
         {
             var query = from plan in _context.BookPlan
                         join member in _context.Members on plan.User_Id equals member.User_Id
@@ -42,6 +42,12 @@ namespace OnlineBookClub.Repository
                     (p.CreatorName ?? "").Contains(keyword)
                 );
             }
+
+            if (!string.IsNullOrEmpty(category))
+            {
+                query = query.Where(p => p.Plan.Plan_Type == category);
+            }
+
 
             int totalCount = await query.CountAsync();
             paging.MaxPage = (int)Math.Ceiling((double)totalCount / paging.ItemNum);

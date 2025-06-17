@@ -28,12 +28,12 @@ namespace OnlineBookClub.Controllers
         }
 
         [HttpGet("public")]
-        public async Task<IActionResult> GetAllPublicPlans([FromQuery]string? keyword, [FromQuery] int page, [FromQuery] string order)
+        public async Task<IActionResult> GetAllPublicPlans([FromQuery]string? keyword, [FromQuery] int page, [FromQuery] string order, [FromQuery] string category)
         {
             var token = HttpContext.Request.Cookies["JWT"];
             int userid = Convert.ToInt32(_jwtService.GetUserIdFromToken(token));
             
-            var result = await _service.GetPublicPlansAsync(userid,keyword, page,order);
+            var result = await _service.GetPublicPlansAsync(userid,keyword, page,order, category);
 
             return Ok(result); 
         }

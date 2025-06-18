@@ -96,7 +96,37 @@ namespace OnlineBookClub.Repository
 
             return dtoList;
         }
-
+        //根據ProgressTrack去找 不是Learn
+        public async Task<(string, string)> GetRecentlyLearn(int UserId, int PlanId)
+        {
+            string TempLearn = "";
+            double TempTime = 99999999f;
+            string LearnDate = "";
+            var ProgressOfLearn = await _context.ProgressTracking.Where(p => p.Learn.Plan_Id == PlanId && p.User_Id == UserId).ToListAsync();
+            if (ProgressOfLearn != null)
+            {
+                foreach (var progress in ProgressOfLearn)
+                {
+                    var Learn = await _context.Learn.Where(l => l.Plan_Id == PlanId && l.Learn_Id == progress.Learn_Id).FirstOrDefaultAsync();
+                    DateTime NowTime = DateTime.UtcNow.Date.ToLocalTime();
+                    System.TimeSpan FindRecentlyLearnTime = progress.LearnDueTime.Subtract(NowTime);
+                    if (FindRecentlyLearnTime.TotalSeconds >= 0 && FindRecentlyLearnTime.TotalSeconds <= TempTime)
+                    {
+                        if(progress.Status != true)
+                        {
+                            TempTime = FindRecentlyLearnTime.TotalSeconds;
+                            LearnDate = progress.LearnDueTime.ToString("yyyy/MM/dd");
+                            TempLearn = Learn.Learn_Name;
+                        }
+                    }
+                }
+                return (LearnDate, TempLearn);
+            }
+            else
+            {
+                return (LearnDate, null);
+            }
+        }
 
         public async Task<(string,string)> GetRecentlyLearn(int PlanId)
         {
@@ -220,7 +250,7 @@ namespace OnlineBookClub.Repository
             var dtoList = new List<BookPlanDTO>();
             foreach(var p in pagePlans)
             {
-                (string recentlyLearnDate, string recentlylearn) = await GetRecentlyLearn(p.Plan_Id);
+                (string recentlyLearnDate, string recentlylearn) = await GetRecentlyLearn(userId , p.Plan_Id);
                 dtoList.Add(new BookPlanDTO
                 {
                     Plan_ID = p.Plan_Id,

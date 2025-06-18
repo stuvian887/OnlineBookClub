@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -7,9 +7,13 @@
 
   <ItemGroup>
     <Compile Remove="Middleware\**" />
+    <Compile Remove="Repository\NewFolder\**" />
     <Content Remove="Middleware\**" />
+    <Content Remove="Repository\NewFolder\**" />
     <EmbeddedResource Remove="Middleware\**" />
+    <EmbeddedResource Remove="Repository\NewFolder\**" />
     <None Remove="Middleware\**" />
+    <None Remove="Repository\NewFolder\**" />
   </ItemGroup>
 
   <ItemGroup>

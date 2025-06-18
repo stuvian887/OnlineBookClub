@@ -27,7 +27,7 @@ public class BookController : ControllerBase
     {
         var result = await _bookService.GetBookInfoFromGoogleAsync(isbn);
         return result != null
-            ? Ok(result)
+            ? Ok(result)˙ˊ
             : NotFound(new { message = "找不到該 ISBN 的書籍資料。" });
     }
 

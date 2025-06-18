@@ -23,7 +23,7 @@ namespace OnlineBookClub.Service
 
             if (dto.PostCover != null && dto.PostCover.Length > 0)
             {
-                var uploadsFolder = Path.Combine("wwwroot", "Post/imgs");
+                var uploadsFolder = Path.Combine("wwwroot", "/Post/imgs");
                 Directory.CreateDirectory(uploadsFolder);
                 var fileName = Guid.NewGuid().ToString() + Path.GetExtension(dto.PostCover.FileName);
                 var filePath = Path.Combine(uploadsFolder, fileName);

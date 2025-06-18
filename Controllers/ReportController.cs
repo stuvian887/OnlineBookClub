@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
 using OnlineBookClub.Service;
@@ -137,6 +138,8 @@ namespace OnlineBookClub.Controllers
         {
             int UserId = GetUser();
             var result = await _service.DoPost_ReportAction(UserId ,P_Report_Id, DoingAction);
+            
+            
             if (result != null)
             {
 

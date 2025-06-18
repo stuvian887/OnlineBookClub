@@ -41,7 +41,7 @@ public class BookService
 
         // 拿出第一本書的資料
         var item = json.RootElement.GetProperty("items")[0];
-
+        Console.WriteLine(item);
         var info = item.GetProperty("volumeInfo");
 
         // 取得書名
@@ -49,6 +49,13 @@ public class BookService
 
         // 若 description 存在就拿，否則設空字串
         var description = info.TryGetProperty("description", out var descProp) ? descProp.GetString() : "";
+        if (description == "")
+        {
+            var descriptioninfo = item.GetProperty("searchInfo");
+
+            description = descriptioninfo.TryGetProperty("textSnippet",  out descProp) ? descProp.GetString() : "";
+        }
+       
 
         // 拿 infoLink（Google 提供的書籍頁面）
         var infoLink = info.TryGetProperty("infoLink", out var linkProp) ? linkProp.GetString() : "";
@@ -190,21 +197,18 @@ public class BookService
         else
         {
             // 其他網站使用通用 fallback
-            title = doc.DocumentNode.SelectSingleNode("//title")?.InnerText?.Trim();
+            title = doc.DocumentNode.SelectSingleNode("//meta[@property='og:title']")?.GetAttributeValue("content", "").Trim();
             description = doc.DocumentNode
                 .SelectSingleNode("//meta[@name='description']")
                 ?.GetAttributeValue("content", "")
                 .Trim();
-            imageUrl = doc.DocumentNode
-                .SelectSingleNode("//meta[@property='og:image']")
-                ?.GetAttributeValue("content", "");
+           
 
-            if (string.IsNullOrWhiteSpace(imageUrl))
-            {
+            
                 imageUrl = doc.DocumentNode
-                    .SelectSingleNode("//img")
-                    ?.GetAttributeValue("src", "");
-            }
+               .SelectSingleNode("//meta[@property='og:image']")
+               ?.GetAttributeValue("content", "");
+            
         }
 
         return new BookDTO

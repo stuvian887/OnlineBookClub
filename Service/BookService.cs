@@ -147,16 +147,22 @@ public class BookService
     }
     public async Task<BookDTO> GetBookInfoAsync(string url)
     {
-        var web = new HtmlWeb();
-        var doc = await web.LoadFromWebAsync(url);
+        var httpClient = new HttpClient();
+        httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0");
 
+        var html = await httpClient.GetStringAsync(url);
+
+        var doc = new HtmlDocument();
+        doc.LoadHtml(html);
         string title = "", description = "", imageUrl = "";
+      
+        Console.WriteLine(doc.DocumentNode.OuterHtml); // 印出實際抓到的 HTML 原始碼
 
         // 判斷網站來源
         if (url.Contains("books.com.tw"))
         {
             // 博客來
-            title = doc.DocumentNode.SelectSingleNode("//h1[@itemprop='name']")?.InnerText.Trim();
+            title = doc.DocumentNode.SelectSingleNode("//meta[@property='og:title']")?.GetAttributeValue("content", "").Trim();
             description = doc.DocumentNode
                 .SelectSingleNode("//meta[@name='description']")
                 ?.GetAttributeValue("content", "")
@@ -167,8 +173,7 @@ public class BookService
         }
         else if (url.Contains("eslite.com"))
         {
-            // 誠品
-            title = doc.DocumentNode.SelectSingleNode("//h1[contains(@class, 'product-title')]")?.InnerText.Trim();
+            title = doc.DocumentNode.SelectSingleNode("//meta[@property='og:title']")?.GetAttributeValue("content", "").Trim();
             description = doc.DocumentNode
                 .SelectSingleNode("//meta[@name='description']")
                 ?.GetAttributeValue("content", "")

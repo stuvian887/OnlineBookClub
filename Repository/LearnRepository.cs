@@ -436,6 +436,7 @@ namespace OnlineBookClub.Repository
                     UpdateLearn.Days = UpdateData.Days;
                     UpdateLearn.DueTime = previousDate.AddDays(UpdateData.Days + 1).AddSeconds(-1);
                 }
+                //日期沒動
                 else if (UpdateData.DueTime.AddDays(1).AddSeconds(-1) == UpdateLearn.DueTime)
                 {
                     UpdateLearn.DueTime = UpdateData.DueTime.AddDays(1).AddSeconds(-1);
@@ -443,17 +444,28 @@ namespace OnlineBookClub.Repository
                 }
                 else
                 {
-                    if(UpdateData.DueTime <= previousDate)
+                    //如果為第一筆
+                    if(previousDate == DateTime.MinValue.Date)
                     {
-                        return (null, "錯誤，日期不可小於前一個計劃");
+                        UpdateLearn.DueTime = UpdateData.DueTime.AddDays(1).AddSeconds(-1);
+                        UpdateLearn.Days = (UpdateLearn.DueTime.Date - DateTime.Now.Date).Days;
+                        nextLearn.Days = (nextLearn.DueTime.Date - UpdateLearn.DueTime.Date).Days + 1;
                     }
-                    if(UpdateData.DueTime >= nextDate.AddDays(-1))
+                    else
                     {
-                        return (null, "錯誤，日期不可大於下一個計劃");
+                        if (UpdateData.DueTime <= previousDate)
+                        {
+                            return (null, "錯誤，日期不可小於前一個計劃");
+                        }
+                        if (UpdateData.DueTime >= nextDate.AddDays(-1))
+                        {
+                            return (null, "錯誤，日期不可大於下一個計劃");
+                        }
+                        // 輸入日期模式
+                        UpdateLearn.DueTime = UpdateData.DueTime.AddDays(1).AddSeconds(-1);
+                        UpdateLearn.Days = (UpdateLearn.DueTime.Date - previousDate).Days + 1;
+                        nextLearn.Days = (nextLearn.DueTime.Date - UpdateLearn.DueTime.Date).Days + 1;
                     }
-                    // 輸入日期模式
-                    UpdateLearn.DueTime = UpdateData.DueTime.AddDays(1).AddSeconds(-1);
-                    UpdateLearn.Days = (UpdateLearn.DueTime.Date - previousDate.Date).Days;
                 }
                 UpdateLearn.Learn_Name = UpdateData.Learn_Name;
                 _context.Update(UpdateLearn);

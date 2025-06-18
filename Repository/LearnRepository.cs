@@ -471,6 +471,7 @@ namespace OnlineBookClub.Repository
                     }
                 }
                 UpdateLearn.Learn_Name = UpdateData.Learn_Name;
+                UpdateLearn.Pass_Standard = UpdateData.Pass_Standard;
                 _context.Update(UpdateLearn);
 
                 //讓ProgressTrackingTracking的日期也更動

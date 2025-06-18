@@ -28,13 +28,13 @@ namespace OnlineBookClub.Service
    
         }
 
-        public async Task<BookPlanPageResultDTO> GetPublicPlansAsync(int userid,string keyword, int page,string order)
+        public async Task<BookPlanPageResultDTO> GetPublicPlansAsync(int userid,string keyword, int page,string order, string category)
         {
            
             ForPaging paging = new ForPaging(page);
 
             
-            var plans = await _repository.GetPublicPlansBySearchAsync(userid,keyword, paging,order);
+            var plans = await _repository.GetPublicPlansBySearchAsync(userid,keyword, paging,order,category);
 
             
             var result = new BookPlanPageResultDTO

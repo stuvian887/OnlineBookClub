@@ -449,7 +449,10 @@ namespace OnlineBookClub.Repository
                     {
                         UpdateLearn.DueTime = UpdateData.DueTime.AddDays(1).AddSeconds(-1);
                         UpdateLearn.Days = (UpdateLearn.DueTime.Date - DateTime.Now.Date).Days;
-                        nextLearn.Days = (nextLearn.DueTime.Date - UpdateLearn.DueTime.Date).Days + 1;
+                        if (nextLearn != null)
+                        {
+                            nextLearn.Days = (nextLearn.DueTime.Date - UpdateLearn.DueTime.Date).Days + 1;
+                        }
                     }
                     else
                     {

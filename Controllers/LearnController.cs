@@ -121,11 +121,11 @@ namespace OnlineBookClub.Controllers
             }
             else { return BadRequest(new { message = "發生錯誤" }); }
         }
-        [HttpGet("Answer_Record/{PlanId}/{Learn_Index}/{Times}")]
-        public async Task<IActionResult> GetAnswer_Record(int PlanId, int Learn_Index, int times)
+        [HttpGet("Answer_Record/{PlanId}/{Learn_Index}")]
+        public async Task<IActionResult> GetAnswer_Record(int PlanId, int Learn_Index)
         {
             int UserId = GetUser();
-            return Ok(await _service.GetAnswer_Record(UserId, PlanId, Learn_Index, times));
+            return Ok(await _service.GetAnswer_Record(UserId, PlanId, Learn_Index));
         }
         [HttpPost("Answer_Record")]
         public async Task<IActionResult> CreateAnswer_Record([FromBody] AnswerSubmissionDTO Answer)
@@ -155,10 +155,31 @@ namespace OnlineBookClub.Controllers
                 return BadRequest(new { message = "發生錯誤" });
             }
         }
+
+        [HttpGet("GetMemberByLearn/{PlanId}/{Learn_Index}")]
+        public async Task<IActionResult> GetMemberByLearn(int PlanId, int Learn_Index)
+        {
+            int UserId = GetUser();
+            var result = await _service.GetMemberByLearn(UserId, PlanId, Learn_Index);
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            else
+            {
+                return BadRequest(new { message = "發生錯誤" });
+            }
+        }
+
         private int GetUser()
         {
             var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? throw new UnauthorizedAccessException("發生異常錯誤，找不到登入的人是誰"); ;
             return int.Parse(UserIdClaim.Value);
+        }
+        [HttpPost("MoveLearnToChapter")]
+        public void MoveLearnToChapter()
+        {
+            _service.MoveLearnToChapter();
         }
     }
 }

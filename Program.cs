@@ -45,6 +45,8 @@ builder.Services.AddScoped<StatisticRepository>();
 builder.Services.AddScoped<StatisticService>();
 builder.Services.AddScoped<NoticeService>();
 builder.Services.AddScoped<NoticeRepository>();
+builder.Services.AddScoped<ChapterService>();
+builder.Services.AddScoped<ChapterRepository>();
 
 
 

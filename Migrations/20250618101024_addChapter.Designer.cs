@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OnlineBookClub.Models;
 
@@ -11,9 +12,11 @@ using OnlineBookClub.Models;
 namespace OnlineBookClub.Migrations
 {
     [DbContext(typeof(OnlineBookClubContext))]
-    partial class OnlineBookClubContextModelSnapshot : ModelSnapshot
+    [Migration("20250618101024_addChapter")]
+    partial class addChapter
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -60,7 +63,7 @@ namespace OnlineBookClub.Migrations
 
                     b.HasIndex(new[] { "User_Id" }, "IX_Answer_Record_User_Id");
 
-                    b.ToTable("Answer_Record", (string)null);
+                    b.ToTable("Answer_Record");
                 });
 
             modelBuilder.Entity("OnlineBookClub.Models.Book", b =>
@@ -93,7 +96,7 @@ namespace OnlineBookClub.Migrations
 
                     b.HasIndex(new[] { "Plan_Id" }, "IX_Book_Plan_Id");
 
-                    b.ToTable("Book", (string)null);
+                    b.ToTable("Book");
                 });
 
             modelBuilder.Entity("OnlineBookClub.Models.BookPlan", b =>
@@ -138,7 +141,7 @@ namespace OnlineBookClub.Migrations
 
                     b.HasIndex(new[] { "User_Id" }, "IX_BookPlan_User_Id");
 
-                    b.ToTable("BookPlan", (string)null);
+                    b.ToTable("BookPlan");
                 });
 
             modelBuilder.Entity("OnlineBookClub.Models.Chapter", b =>
@@ -162,7 +165,7 @@ namespace OnlineBookClub.Migrations
 
                     b.HasIndex("Plan_Id");
 
-                    b.ToTable("Chapter", (string)null);
+                    b.ToTable("Chapter");
                 });
 
             modelBuilder.Entity("OnlineBookClub.Models.Learn", b =>
@@ -206,7 +209,7 @@ namespace OnlineBookClub.Migrations
 
                     b.HasIndex(new[] { "Plan_Id" }, "IX_Learn_Plan_Id");
 
-                    b.ToTable("Learn", (string)null);
+                    b.ToTable("Learn");
                 });
 
             modelBuilder.Entity("OnlineBookClub.Models.Members", b =>
@@ -252,7 +255,7 @@ namespace OnlineBookClub.Migrations
                     b.HasIndex(new[] { "Email" }, "UQ__Members__A9D10534555AED53")
                         .IsUnique();
 
-                    b.ToTable("Members", (string)null);
+                    b.ToTable("Members");
                 });
 
             modelBuilder.Entity("OnlineBookClub.Models.Notice", b =>
@@ -282,7 +285,7 @@ namespace OnlineBookClub.Migrations
 
                     b.HasIndex(new[] { "User_Id" }, "IX_Notice_User_Id");
 
-                    b.ToTable("Notice", (string)null);
+                    b.ToTable("Notice");
                 });
 
             modelBuilder.Entity("OnlineBookClub.Models.PlanMembers", b =>
@@ -306,7 +309,7 @@ namespace OnlineBookClub.Migrations
 
                     b.HasIndex(new[] { "Plan_Id" }, "IX_PlanMembers_Plan_Id");
 
-                    b.ToTable("PlanMembers", (string)null);
+                    b.ToTable("PlanMembers");
                 });
 
             modelBuilder.Entity("OnlineBookClub.Models.Post", b =>
@@ -349,7 +352,7 @@ namespace OnlineBookClub.Migrations
 
                     b.HasIndex(new[] { "User_Id" }, "IX_Post_User_Id");
 
-                    b.ToTable("Post", (string)null);
+                    b.ToTable("Post");
                 });
 
             modelBuilder.Entity("OnlineBookClub.Models.Post_Report", b =>
@@ -383,7 +386,7 @@ namespace OnlineBookClub.Migrations
 
                     b.HasIndex(new[] { "Post_Id" }, "IX_Post_Report_Post_Id");
 
-                    b.ToTable("Post_Report", (string)null);
+                    b.ToTable("Post_Report");
                 });
 
             modelBuilder.Entity("OnlineBookClub.Models.ProgressTracking", b =>
@@ -416,7 +419,7 @@ namespace OnlineBookClub.Migrations
 
                     b.HasIndex(new[] { "User_Id" }, "IX_ProgressTracking_User_Id");
 
-                    b.ToTable("ProgressTracking", (string)null);
+                    b.ToTable("ProgressTracking");
                 });
 
             modelBuilder.Entity("OnlineBookClub.Models.Reply", b =>
@@ -454,7 +457,7 @@ namespace OnlineBookClub.Migrations
 
                     b.HasIndex(new[] { "User_Id" }, "IX_Reply_User_Id");
 
-                    b.ToTable("Reply", (string)null);
+                    b.ToTable("Reply");
                 });
 
             modelBuilder.Entity("OnlineBookClub.Models.Reply_Report", b =>
@@ -488,7 +491,7 @@ namespace OnlineBookClub.Migrations
 
                     b.HasIndex(new[] { "Reply_Id" }, "IX_Reply_Report_Reply_Id");
 
-                    b.ToTable("Reply_Report", (string)null);
+                    b.ToTable("Reply_Report");
                 });
 
             modelBuilder.Entity("OnlineBookClub.Models.Statistic", b =>
@@ -516,7 +519,7 @@ namespace OnlineBookClub.Migrations
 
                     b.HasIndex(new[] { "Plan_Id" }, "IX_Statistic_Plan_Id");
 
-                    b.ToTable("Statistic", (string)null);
+                    b.ToTable("Statistic");
                 });
 
             modelBuilder.Entity("OnlineBookClub.Models.Topic", b =>
@@ -568,7 +571,7 @@ namespace OnlineBookClub.Migrations
 
                     b.HasIndex(new[] { "Learn_Id" }, "IX_Topic_Learn_Id");
 
-                    b.ToTable("Topic", (string)null);
+                    b.ToTable("Topic");
                 });
 
             modelBuilder.Entity("OnlineBookClub.Models.Answer_Record", b =>
@@ -629,7 +632,7 @@ namespace OnlineBookClub.Migrations
 
             modelBuilder.Entity("OnlineBookClub.Models.Learn", b =>
                 {
-                    b.HasOne("OnlineBookClub.Models.Chapter", "Chapter")
+                    b.HasOne("OnlineBookClub.Models.Chapter", null)
                         .WithMany("Learn")
                         .HasForeignKey("Chapter_Id");
 
@@ -639,8 +642,6 @@ namespace OnlineBookClub.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK__Learn__Plan_Id__59063A47");
-
-                    b.Navigation("Chapter");
 
                     b.Navigation("Plan");
                 });

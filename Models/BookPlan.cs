@@ -34,5 +34,6 @@ public partial class BookPlan
 
     public virtual ICollection<Statistic> Statistic { get; set; } = new List<Statistic>();
 
+    public virtual ICollection<Chapter> Chapters { get; set; } = new List<Chapter>();
     public virtual Members User { get; set; }
 }

@@ -38,6 +38,7 @@ public partial class OnlineBookClubContext : DbContext
     public virtual DbSet<Statistic> Statistic { get; set; }
 
     public virtual DbSet<Topic> Topic { get; set; }
+    public virtual DbSet<Chapter> Chapter { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

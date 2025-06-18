@@ -34,9 +34,14 @@ public class BookService
 
         // 用 System.Text.Json 解析 JSON
         var json = JsonDocument.Parse(content);
+        if (!json.RootElement.TryGetProperty("items", out var items) || items.GetArrayLength() == 0)
+        {
+            return null; // 查不到資料，避免 KeyNotFoundException
+        }
 
         // 拿出第一本書的資料
         var item = json.RootElement.GetProperty("items")[0];
+        Console.WriteLine(item);
         var info = item.GetProperty("volumeInfo");
 
         // 取得書名
@@ -44,10 +49,17 @@ public class BookService
 
         // 若 description 存在就拿，否則設空字串
         var description = info.TryGetProperty("description", out var descProp) ? descProp.GetString() : "";
+        if (description == "")
+        {
+            var descriptioninfo = item.GetProperty("searchInfo");
+
+            description = descriptioninfo.TryGetProperty("textSnippet",  out descProp) ? descProp.GetString() : "";
+        }
+       
 
         // 拿 infoLink（Google 提供的書籍頁面）
         var infoLink = info.TryGetProperty("infoLink", out var linkProp) ? linkProp.GetString() : "";
-
+        
         // 封面圖片（有些書可能沒有）
         string? imageUrl = null;
         if (info.TryGetProperty("imageLinks", out var imageLinks) &&
@@ -70,14 +82,19 @@ public class BookService
     {
         var book = await _bookRepository.GetBookByPlanIdAsync(planId);
         if (book == null) return null;
-
+        var url = "";
         var hostUrl = $"{request.Scheme}://{request.Host}";
+        if (string.IsNullOrEmpty(book.bookpath)) book.bookpath = null;
+        else if (book.bookpath.Contains("/Book/"))
+        {
+            url = $"{hostUrl}{book.bookpath}";
+        } else { url = book.bookpath; }
         var bookDto = new BookDTO
         {
             BookName = book.BookName,
             Description = book.Description,
             Link = book.Link,
-            bookurl = string.IsNullOrEmpty(book.bookpath) ? null : $"{hostUrl}{book.bookpath}",
+            bookurl =url,
         };
 
         return bookDto;
@@ -90,7 +107,7 @@ public class BookService
             return (null, "書籍新增失敗，找不到該書籍計畫");
 
         var savedFilePath = await SaveBookCoverAsync(bookDto.BookCover);
-
+        if (savedFilePath == null) { savedFilePath= bookDto.bookurl; }
         var book = new Book
         {
             Plan_Id = planId,
@@ -142,35 +159,65 @@ public class BookService
     }
     public async Task<BookDTO> GetBookInfoAsync(string url)
     {
-        var web = new HtmlWeb();
-        var doc = await web.LoadFromWebAsync(url);
+        var httpClient = new HttpClient();
+        httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0");
 
-        var title = doc.DocumentNode.SelectSingleNode("//title")?.InnerText?.Trim();
+        var html = await httpClient.GetStringAsync(url);
 
-        // 嘗試抓取 meta description
-        var description = doc.DocumentNode
-            .SelectSingleNode("//meta[@name='description']")?
-            .GetAttributeValue("content", "")
-            .Trim();
+        var doc = new HtmlDocument();
+        doc.LoadHtml(html);
+        string title = "", description = "", imageUrl = "";
+      
+        Console.WriteLine(doc.DocumentNode.OuterHtml); // 印出實際抓到的 HTML 原始碼
 
-        // 嘗試抓取 og:image 或首張 img 圖片
-        var imageUrl = doc.DocumentNode
-            .SelectSingleNode("//meta[@property='og:image']")?
-            .GetAttributeValue("content", "");
-
-        if (string.IsNullOrEmpty(imageUrl))
+        // 判斷網站來源
+        if (url.Contains("books.com.tw"))
         {
+            // 博客來
+            title = doc.DocumentNode.SelectSingleNode("//meta[@property='og:title']")?.GetAttributeValue("content", "").Trim();
+            description = doc.DocumentNode
+                .SelectSingleNode("//meta[@name='description']")
+                ?.GetAttributeValue("content", "")
+                .Trim();
             imageUrl = doc.DocumentNode
-                .SelectSingleNode("//img")?
-                .GetAttributeValue("src", "");
+                .SelectSingleNode("//meta[@property='og:image']")
+                ?.GetAttributeValue("content", "");
+        }
+        else if (url.Contains("eslite.com"))
+        {
+            title = doc.DocumentNode.SelectSingleNode("//meta[@property='og:title']")?.GetAttributeValue("content", "").Trim();
+            description = doc.DocumentNode
+                .SelectSingleNode("//meta[@name='description']")
+                ?.GetAttributeValue("content", "")
+                .Trim();
+            imageUrl = doc.DocumentNode
+                .SelectSingleNode("//meta[@property='og:image']")
+                ?.GetAttributeValue("content", "");
+        }
+        else
+        {
+            // 其他網站使用通用 fallback
+            title = doc.DocumentNode.SelectSingleNode("//meta[@property='og:title']")?.GetAttributeValue("content", "").Trim();
+            description = doc.DocumentNode
+                .SelectSingleNode("//meta[@name='description']")
+                ?.GetAttributeValue("content", "")
+                .Trim();
+           
+
+            
+                imageUrl = doc.DocumentNode
+               .SelectSingleNode("//meta[@property='og:image']")
+               ?.GetAttributeValue("content", "");
+            
         }
 
         return new BookDTO
         {
-            BookName = title,
-            Description = description,
+            BookName = title ?? "（無書名）",
+            Description = description ?? "（無簡介）",
             Link = url,
-            bookurl = imageUrl
+            bookurl = imageUrl ?? ""
         };
     }
+
 }

@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
+using OnlineBookClub.Services;
 using System.Runtime.CompilerServices;
 
 namespace OnlineBookClub.Repository
@@ -10,10 +12,12 @@ namespace OnlineBookClub.Repository
     {
         private readonly OnlineBookClubContext _context;
         private readonly PlanMemberRepository _memberRepository;
-        public ReportRepository(OnlineBookClubContext context, PlanMemberRepository memberRepository)
+        private readonly NoticeService _noticeService;
+        public ReportRepository(OnlineBookClubContext context, PlanMemberRepository memberRepository, NoticeService noticeService)
         {
             _context = context;
             _memberRepository = memberRepository;
+            _noticeService = noticeService;
         }
         public async Task<IEnumerable<Post_ReportDTO>> GetAllPostReport(int UserId, int PlanId)
         {
@@ -195,13 +199,25 @@ namespace OnlineBookClub.Repository
             {
                 return null;
             }
-
+            var post = report.Post;
+            var booklan = await _context.BookPlan.Where(b => b.Plan_Id == post.Plan_Id).FirstOrDefaultAsync();
             report.Action = postreportAction.Action; 
             _context.Post_Report.Update(report);
-            //if (report.Action == "移除")
-            //{
-            //    _context.Post_Report.Remove(report);
-            //}
+            if (report.Action == "移除")
+            {
+                
+                    var notification = new Notice
+                    {
+
+                        User_Id = post.User_Id,  // 通知給原貼文作者
+                        NoticeTime = DateTime.Now,
+                        Message = $"您在{booklan.Plan_Name}計畫的貼文{post.Content} 因 {postreportAction.Report_text} 原因已遭組長認證刪除",
+                        User = post.User,
+                    };
+                    await _noticeService.CreateNoticeAsync(notification);  // 保存通知到資料庫
+                    await _noticeService.GetNoticesByUserIdAsync(post.User_Id);
+                
+            }
             await _context.SaveChangesAsync();
 
             return new Post_ReportDTO
@@ -301,10 +317,22 @@ namespace OnlineBookClub.Repository
 
             report.Action = replyreportAction.Action;
             _context.Reply_Report.Update(report);
-            //if(report.Action == "移除")
-            //{
-            //    _context.Reply_Report.Remove(report);
-            //}
+            var Reply = report.Reply;
+            var post = await _context.Post.Where(b => b.Post_Id == Reply.Post_Id).FirstOrDefaultAsync();
+            var bookplan = await _context.BookPlan.Where(p => p.Plan_Id == post.Plan_Id).FirstOrDefaultAsync();
+            if (report.Action == "移除")
+            {
+                var notification = new Notice
+                {
+
+                    User_Id = Reply.User_Id,  // 通知給原貼文作者
+                    NoticeTime = DateTime.Now,
+                    Message = $"您在{bookplan.Plan_Name}計畫的回覆留言{Reply.ReplyContent} 因 {replyreportAction.Report_text} 原因已遭組長認證刪除",
+                    User = Reply.User,
+                };
+                await _noticeService.CreateNoticeAsync(notification);  // 保存通知到資料庫
+                await _noticeService.GetNoticesByUserIdAsync(Reply.User_Id);
+            }
             await _context.SaveChangesAsync();
 
             return new Reply_ReportDTO

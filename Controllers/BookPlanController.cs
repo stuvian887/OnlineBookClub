@@ -28,12 +28,12 @@ namespace OnlineBookClub.Controllers
         }
 
         [HttpGet("public")]
-        public async Task<IActionResult> GetAllPublicPlans([FromQuery]string? keyword, [FromQuery] int page, [FromQuery] string order)
+        public async Task<IActionResult> GetAllPublicPlans([FromQuery]string? keyword, [FromQuery] int page, [FromQuery] string order, [FromQuery] string category)
         {
             var token = HttpContext.Request.Cookies["JWT"];
             int userid = Convert.ToInt32(_jwtService.GetUserIdFromToken(token));
             
-            var result = await _service.GetPublicPlansAsync(userid,keyword, page,order);
+            var result = await _service.GetPublicPlansAsync(userid,keyword, page,order, category);
 
             return Ok(result); 
         }
@@ -64,7 +64,7 @@ namespace OnlineBookClub.Controllers
             if (plan == null) return NotFound();
             return Ok(plan);
         }
-        [HttpGet("getmembersbookpaln/{user_Id}")]
+        [HttpGet("getmembersbookplan/{user_Id}")]
         public async Task<IActionResult> GetMembersBookPlan(int user_Id)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);

@@ -63,9 +63,17 @@ namespace OnlineBookClub.Controllers
         {
             var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             int UserId = int.Parse(UserIdClaim.Value);
-            var Memberdata = await _planMembersService.Getmembers(planId);
+            var Memberdata = await _planMembersService.Getmembers(planId,UserId);
             return Ok(new { Memberdata });
         }
-        
+        [HttpGet("isleader")]
+        public async Task<IActionResult> isleader(int planId)
+        {
+            var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            int UserId = int.Parse(UserIdClaim.Value);
+            var isLeader = await _planMembersService.isleader(planId, UserId);
+            return Ok(new { isLeader });
+        }
+         
     }
 }

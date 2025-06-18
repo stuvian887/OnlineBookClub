@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OnlineBookClub.Models;
 
@@ -11,9 +12,11 @@ using OnlineBookClub.Models;
 namespace OnlineBookClub.Migrations
 {
     [DbContext(typeof(OnlineBookClubContext))]
-    partial class OnlineBookClubContextModelSnapshot : ModelSnapshot
+    [Migration("20250618101024_addChapter")]
+    partial class addChapter
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -629,7 +632,7 @@ namespace OnlineBookClub.Migrations
 
             modelBuilder.Entity("OnlineBookClub.Models.Learn", b =>
                 {
-                    b.HasOne("OnlineBookClub.Models.Chapter", "Chapter")
+                    b.HasOne("OnlineBookClub.Models.Chapter", null)
                         .WithMany("Learn")
                         .HasForeignKey("Chapter_Id");
 
@@ -639,8 +642,6 @@ namespace OnlineBookClub.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK__Learn__Plan_Id__59063A47");
-
-                    b.Navigation("Chapter");
 
                     b.Navigation("Plan");
                 });

@@ -273,7 +273,7 @@ namespace OnlineBookClub.Repository
                     return (null, "錯誤，期限小於前一個計畫");
                 }
                 learn.DueTime = InsertData.DueTime.AddDays(1).AddSeconds(-1);
-                learn.Days = (InsertData.DueTime.AddDays(1) - previousDate).Days;
+                learn.Days = (InsertData.DueTime.AddDays(1) - previousDate).Days + 1;
             }
 
             await _context.Learn.AddAsync(learn);

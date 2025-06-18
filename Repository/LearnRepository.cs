@@ -425,7 +425,7 @@ namespace OnlineBookClub.Repository
                     .OrderBy(l => l.Learn_Index)
                     .FirstOrDefaultAsync();
                 // 基準日期：前一個計畫的 DueTime，若無則用計畫建立日期
-                DateTime previousDate = previousLearn?.DueTime ?? DateTime.Now.Date;
+                DateTime previousDate = previousLearn?.DueTime ?? DateTime.MinValue.Date;
                 // 後一個計劃的DueTime
                 DateTime nextDate = nextLearn?.DueTime ?? DateTime.MaxValue.Date;
 

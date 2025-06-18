@@ -34,6 +34,7 @@ namespace OnlineBookClub.Repository
                 list.Add(new LearnDTO
                 {
                     Plan_Id = a.Plan_Id,
+                    Chapter_Id = a.Chapter_Id,
                     Learn_Index = a.Learn_Index,
                     Learn_Name = a.Learn_Name,
                     Pass_Standard = a.Pass_Standard,
@@ -222,7 +223,7 @@ namespace OnlineBookClub.Repository
             await CreateProgressTrackAsync(PlanId, learn.Learn_Id);
             return (resultDTO, "學習內容新增成功");
         }
-        public async Task<(LearnDTO, string Message)> CreateLearnAsync(int UserId, int PlanId, LearnDTO InsertData)
+        public async Task<(LearnDTO, string Message)> CreateLearnAsync(int UserId, int PlanId,int Chapter_Id , LearnDTO InsertData)
         {
             var Role = await _planMemberRepository.GetUserRoleAsync(UserId, PlanId);
             if (Role != "組長")
@@ -233,6 +234,11 @@ namespace OnlineBookClub.Repository
             if (FindPlan == null)
             {
                 return (null, "錯誤，找不到該計畫");
+            }
+            Chapter FindChapter = await _context.Chapter.Where(c => c.Chapter_Id == Chapter_Id).FirstOrDefaultAsync();
+            if (FindChapter == null)
+            {
+                return (null, "找不到該章節");
             }
 
             var AllLearn = await _context.Learn.Where(l => l.Plan_Id == PlanId).ToListAsync();
@@ -249,9 +255,13 @@ namespace OnlineBookClub.Repository
             //讓他如果沒資料 是以該天00:00:00計算
             DateTime previousDate = lastLearn?.DueTime ?? DateTime.Now.Date.AddHours(-12);
 
+            //不可超過5項
+            var Learns = await _context.Learn.Where(l => l.Chapter_Id == Chapter_Id).CountAsync();
+            if(Learns >= 5) { return (null, "錯誤，單一章節不可超過五個學習內容"); }
 
             Learn learn = new Learn();
             learn.Plan_Id = PlanId;
+            learn.Chapter_Id = InsertData.Chapter_Id;
             learn.Learn_Name = InsertData.Learn_Name;
             learn.Learn_Index = InsertData.Learn_Index;
             learn.Pass_Standard = InsertData.Pass_Standard;
@@ -395,7 +405,7 @@ namespace OnlineBookClub.Repository
             return resultDTOs;
         }
 
-        public async Task<(LearnDTO, string Message)> UpdateLearnAsync(int UserId, int PlanId, int Learn_Index, LearnDTO UpdateData)
+        public async Task<(LearnDTO, string Message)> UpdateLearnAsync(int UserId, int PlanId, int Learn_Index, int Chapter_Id, LearnDTO UpdateData)
         {
             var Role = await _planMemberRepository.GetUserRoleAsync(UserId, PlanId);
             if (Role == "組長")
@@ -421,7 +431,9 @@ namespace OnlineBookClub.Repository
                 {
                     return (null, "錯誤，此學習編號已經存在");
                 }
-
+                //不可超過5項
+                var Learns = await _context.Learn.Where(l => l.Chapter_Id == Chapter_Id).CountAsync();
+                if (Learns >= 5) { return (null, "錯誤，單一章節不可超過五個學習內容"); }
                 // 動態查詢前一個學習計畫（Learn_Index 小於當前值中的最大者）
                 var previousLearn = await _context.Learn
                     .Where(l => l.Plan_Id == PlanId
@@ -483,6 +495,7 @@ namespace OnlineBookClub.Repository
                         }
                     }
                 }
+                UpdateLearn.Chapter_Id = UpdateData.Chapter_Id;
                 UpdateLearn.Learn_Name = UpdateData.Learn_Name;
                 UpdateLearn.Pass_Standard = UpdateData.Pass_Standard;
                 _context.Update(UpdateLearn);
@@ -829,7 +842,7 @@ namespace OnlineBookClub.Repository
                 };
 
                 _context.Chapter.Add(chapter);
-                _context.SaveChanges(); // ⚠️ 儲存後才有 Chapter_Id
+                _context.SaveChanges(); 
 
                 // 2. 將這個計畫下的所有 Learn 都指定到剛剛新增的章節
                 foreach (var learn in plan.Learn)
@@ -837,7 +850,7 @@ namespace OnlineBookClub.Repository
                     learn.Chapter_Id = chapter.Chapter_Id;
                 }
 
-                _context.SaveChanges(); // ⚠️ 儲存更新
+                _context.SaveChanges(); 
             }
         }
 

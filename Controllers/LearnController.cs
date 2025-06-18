@@ -60,11 +60,11 @@ namespace OnlineBookClub.Controllers
         }
 
         // POST api/<LearnController>
-        [HttpPost("Create/{PlanId}")]
-        public async Task<IActionResult> CreateLearn(int PlanId, [FromBody] LearnDTO newData)
+        [HttpPost("Create/{PlanId}/{ChapterId}")]
+        public async Task<IActionResult> CreateLearn(int PlanId,int Chapter_Id, [FromBody] LearnDTO newData)
         {
             int UserId = GetUser();
-            var result = await _service.CreateLearn(UserId, PlanId, newData);
+            var result = await _service.CreateLearn(Chapter_Id, UserId, PlanId, newData);
 
             if (result.Item1 != null)
             { // 創建通知
@@ -79,11 +79,11 @@ namespace OnlineBookClub.Controllers
         }
 
         // PUT api/<LearnController>/5
-        [HttpPut("Update/{PlanId}/{Learn_Index}")]
-        public async Task<IActionResult> UpdateLearn(int PlanId, int Learn_Index, [FromBody] LearnDTO updateData)
+        [HttpPut("Update/{PlanId}/{Learn_Index}/{Chapter_Id}")]
+        public async Task<IActionResult> UpdateLearn(int PlanId, int Learn_Index,int Chapter_Id, [FromBody] LearnDTO updateData)
         {
             int UserId = GetUser();
-            var result = await _service.UpdateLearn(UserId, PlanId, Learn_Index, updateData);
+            var result = await _service.UpdateLearn(Chapter_Id, UserId, PlanId, Learn_Index, updateData);
             if (result.Item1 != null)
             {
                 return Ok(result.Message);

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
+using System.Numerics;
 
 namespace OnlineBookClub.Repository
 {
@@ -36,7 +37,7 @@ namespace OnlineBookClub.Repository
             }
             //不可超過5項
             int ChapterCount = await _context.Chapter.Where(l => l.Plan_Id == PlanId).CountAsync();
-            if (ChapterCount > 5) { return "錯誤，單一章節學習內容不可超過五個"; };
+            if (ChapterCount >= 5) { return "錯誤，單一計畫的章節不可超過五個"; };
             var Chapter = new Chapter
             {
                 Chapter_Index = InsertData.Chapter_Index,

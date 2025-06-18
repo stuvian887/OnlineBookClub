@@ -75,14 +75,16 @@ public class BookService
     {
         var book = await _bookRepository.GetBookByPlanIdAsync(planId);
         if (book == null) return null;
-
+        var url = "";
         var hostUrl = $"{request.Scheme}://{request.Host}";
+        if (book.bookpath.Contains("/book/") ) { url = $"{hostUrl}{book.bookpath}"; }
+        else { url = book.bookpath; }
         var bookDto = new BookDTO
         {
             BookName = book.BookName,
             Description = book.Description,
             Link = book.Link,
-            bookurl = string.IsNullOrEmpty(book.bookpath) ? null : $"{hostUrl}{book.bookpath}",
+            bookurl = string.IsNullOrEmpty(book.bookpath) ? null :url,
         };
 
         return bookDto;

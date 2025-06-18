@@ -77,14 +77,17 @@ public class BookService
         if (book == null) return null;
         var url = "";
         var hostUrl = $"{request.Scheme}://{request.Host}";
-        if (book.bookpath.Contains("/book/") ) { url = $"{hostUrl}{book.bookpath}"; }
-        else { url = book.bookpath; }
+        if (string.IsNullOrEmpty(book.bookpath)) book.bookpath = null;
+        else if (book.bookpath.Contains("/book/"))
+        {
+            url = $"{hostUrl}{book.bookpath}";
+        } else { url = book.bookpath; }
         var bookDto = new BookDTO
         {
             BookName = book.BookName,
             Description = book.Description,
             Link = book.Link,
-            bookurl = string.IsNullOrEmpty(book.bookpath) ? null :url,
+            bookurl =url,
         };
 
         return bookDto;

@@ -363,9 +363,14 @@ namespace OnlineBookClub.Repository
                     TheDueTime = TempDate.AddDays(learn.Days);
                     TempDate = TheDueTime;
                 }
+                //第一筆加一天調整
+                if (learn.Learn_Index == 1)
+                {
+                    TheDueTime = TempDate.AddDays(learn.Days + 1).AddSeconds(-1);
+                    TempDate = TheDueTime.AddSeconds(1);
+                }
                 else
                 {
-                    //應該是Days要-1
                     TheDueTime = TempDate.AddDays(learn.Days).AddSeconds(-1);
                     TempDate = TheDueTime.AddSeconds(1);
                 }

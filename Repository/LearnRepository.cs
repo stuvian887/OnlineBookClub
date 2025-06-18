@@ -812,6 +812,34 @@ namespace OnlineBookClub.Repository
             }
             return dtoList;
         }
+        public void MoveLearnToChapter()
+        {
+            var bookPlans = _context.BookPlan
+            .Include(bp => bp.Learn) // ← 確保可以拿到該 BookPlan 底下所有 Learn
+            .ToList();
+
+            foreach (var plan in bookPlans)
+            {
+                // 1. 建立一個預設章節
+                var chapter = new Chapter
+                {
+                    Plan_Id = plan.Plan_Id,
+                    Chapter_Index = 1,
+                    Chapter_Name = "預設章節"
+                };
+
+                _context.Chapter.Add(chapter);
+                _context.SaveChanges(); // ⚠️ 儲存後才有 Chapter_Id
+
+                // 2. 將這個計畫下的所有 Learn 都指定到剛剛新增的章節
+                foreach (var learn in plan.Learn)
+                {
+                    learn.Chapter_Id = chapter.Chapter_Id;
+                }
+
+                _context.SaveChanges(); // ⚠️ 儲存更新
+            }
+        }
 
     }
 }

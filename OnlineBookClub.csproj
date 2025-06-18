@@ -7,12 +7,16 @@
 
   <ItemGroup>
     <Compile Remove="Middleware\**" />
+    <Compile Remove="Repository\NewFolder1\**" />
     <Compile Remove="Repository\NewFolder\**" />
     <Content Remove="Middleware\**" />
+    <Content Remove="Repository\NewFolder1\**" />
     <Content Remove="Repository\NewFolder\**" />
     <EmbeddedResource Remove="Middleware\**" />
+    <EmbeddedResource Remove="Repository\NewFolder1\**" />
     <EmbeddedResource Remove="Repository\NewFolder\**" />
     <None Remove="Middleware\**" />
+    <None Remove="Repository\NewFolder1\**" />
     <None Remove="Repository\NewFolder\**" />
   </ItemGroup>
 

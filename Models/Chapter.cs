@@ -8,7 +8,9 @@ namespace OnlineBookClub.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Chapter_Id { get; set; }
+        [Required]
         public int Chapter_Index { get; set; }
+        [Required]
         public string Chapter_Name { get; set; }
         public int Plan_Id { get; set; }
         [ForeignKey("Plan_Id")]

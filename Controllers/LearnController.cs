@@ -176,6 +176,11 @@ namespace OnlineBookClub.Controllers
             var UserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? throw new UnauthorizedAccessException("發生異常錯誤，找不到登入的人是誰"); ;
             return int.Parse(UserIdClaim.Value);
         }
+        [HttpPost("MoveLearnToChapter")]
+        public void MoveLearnToChapter()
+        {
+            _service.MoveLearnToChapter();
+        }
     }
 }
 

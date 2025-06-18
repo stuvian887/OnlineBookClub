@@ -61,5 +61,9 @@ namespace OnlineBookClub.Service
         {
             return await _learnRepository.GetMemberByPlansAsync(leaderId, planId, Learn_Index);
         }
+        public void MoveLearnToChapter()
+        {
+            _learnRepository.MoveLearnToChapter();
+        }
     }
 }

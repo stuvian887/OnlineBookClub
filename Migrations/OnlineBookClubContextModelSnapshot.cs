@@ -60,7 +60,7 @@ namespace OnlineBookClub.Migrations
 
                     b.HasIndex(new[] { "User_Id" }, "IX_Answer_Record_User_Id");
 
-                    b.ToTable("Answer_Record");
+                    b.ToTable("Answer_Record", (string)null);
                 });
 
             modelBuilder.Entity("OnlineBookClub.Models.Book", b =>
@@ -93,7 +93,7 @@ namespace OnlineBookClub.Migrations
 
                     b.HasIndex(new[] { "Plan_Id" }, "IX_Book_Plan_Id");
 
-                    b.ToTable("Book");
+                    b.ToTable("Book", (string)null);
                 });
 
             modelBuilder.Entity("OnlineBookClub.Models.BookPlan", b =>
@@ -138,7 +138,7 @@ namespace OnlineBookClub.Migrations
 
                     b.HasIndex(new[] { "User_Id" }, "IX_BookPlan_User_Id");
 
-                    b.ToTable("BookPlan");
+                    b.ToTable("BookPlan", (string)null);
                 });
 
             modelBuilder.Entity("OnlineBookClub.Models.Chapter", b =>
@@ -162,7 +162,7 @@ namespace OnlineBookClub.Migrations
 
                     b.HasIndex("Plan_Id");
 
-                    b.ToTable("Chapter");
+                    b.ToTable("Chapter", (string)null);
                 });
 
             modelBuilder.Entity("OnlineBookClub.Models.Learn", b =>
@@ -206,7 +206,7 @@ namespace OnlineBookClub.Migrations
 
                     b.HasIndex(new[] { "Plan_Id" }, "IX_Learn_Plan_Id");
 
-                    b.ToTable("Learn");
+                    b.ToTable("Learn", (string)null);
                 });
 
             modelBuilder.Entity("OnlineBookClub.Models.Members", b =>
@@ -252,7 +252,7 @@ namespace OnlineBookClub.Migrations
                     b.HasIndex(new[] { "Email" }, "UQ__Members__A9D10534555AED53")
                         .IsUnique();
 
-                    b.ToTable("Members");
+                    b.ToTable("Members", (string)null);
                 });
 
             modelBuilder.Entity("OnlineBookClub.Models.Notice", b =>
@@ -282,7 +282,7 @@ namespace OnlineBookClub.Migrations
 
                     b.HasIndex(new[] { "User_Id" }, "IX_Notice_User_Id");
 
-                    b.ToTable("Notice");
+                    b.ToTable("Notice", (string)null);
                 });
 
             modelBuilder.Entity("OnlineBookClub.Models.PlanMembers", b =>
@@ -306,7 +306,7 @@ namespace OnlineBookClub.Migrations
 
                     b.HasIndex(new[] { "Plan_Id" }, "IX_PlanMembers_Plan_Id");
 
-                    b.ToTable("PlanMembers");
+                    b.ToTable("PlanMembers", (string)null);
                 });
 
             modelBuilder.Entity("OnlineBookClub.Models.Post", b =>
@@ -349,7 +349,7 @@ namespace OnlineBookClub.Migrations
 
                     b.HasIndex(new[] { "User_Id" }, "IX_Post_User_Id");
 
-                    b.ToTable("Post");
+                    b.ToTable("Post", (string)null);
                 });
 
             modelBuilder.Entity("OnlineBookClub.Models.Post_Report", b =>
@@ -383,7 +383,7 @@ namespace OnlineBookClub.Migrations
 
                     b.HasIndex(new[] { "Post_Id" }, "IX_Post_Report_Post_Id");
 
-                    b.ToTable("Post_Report");
+                    b.ToTable("Post_Report", (string)null);
                 });
 
             modelBuilder.Entity("OnlineBookClub.Models.ProgressTracking", b =>
@@ -416,7 +416,7 @@ namespace OnlineBookClub.Migrations
 
                     b.HasIndex(new[] { "User_Id" }, "IX_ProgressTracking_User_Id");
 
-                    b.ToTable("ProgressTracking");
+                    b.ToTable("ProgressTracking", (string)null);
                 });
 
             modelBuilder.Entity("OnlineBookClub.Models.Reply", b =>
@@ -454,7 +454,7 @@ namespace OnlineBookClub.Migrations
 
                     b.HasIndex(new[] { "User_Id" }, "IX_Reply_User_Id");
 
-                    b.ToTable("Reply");
+                    b.ToTable("Reply", (string)null);
                 });
 
             modelBuilder.Entity("OnlineBookClub.Models.Reply_Report", b =>
@@ -488,7 +488,7 @@ namespace OnlineBookClub.Migrations
 
                     b.HasIndex(new[] { "Reply_Id" }, "IX_Reply_Report_Reply_Id");
 
-                    b.ToTable("Reply_Report");
+                    b.ToTable("Reply_Report", (string)null);
                 });
 
             modelBuilder.Entity("OnlineBookClub.Models.Statistic", b =>
@@ -516,7 +516,7 @@ namespace OnlineBookClub.Migrations
 
                     b.HasIndex(new[] { "Plan_Id" }, "IX_Statistic_Plan_Id");
 
-                    b.ToTable("Statistic");
+                    b.ToTable("Statistic", (string)null);
                 });
 
             modelBuilder.Entity("OnlineBookClub.Models.Topic", b =>
@@ -568,7 +568,7 @@ namespace OnlineBookClub.Migrations
 
                     b.HasIndex(new[] { "Learn_Id" }, "IX_Topic_Learn_Id");
 
-                    b.ToTable("Topic");
+                    b.ToTable("Topic", (string)null);
                 });
 
             modelBuilder.Entity("OnlineBookClub.Models.Answer_Record", b =>

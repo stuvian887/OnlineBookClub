@@ -34,9 +34,14 @@ public class BookService
 
         // 用 System.Text.Json 解析 JSON
         var json = JsonDocument.Parse(content);
+        if (!json.RootElement.TryGetProperty("items", out var items) || items.GetArrayLength() == 0)
+        {
+            return null; // 查不到資料，避免 KeyNotFoundException
+        }
 
         // 拿出第一本書的資料
         var item = json.RootElement.GetProperty("items")[0];
+
         var info = item.GetProperty("volumeInfo");
 
         // 取得書名
@@ -47,7 +52,7 @@ public class BookService
 
         // 拿 infoLink（Google 提供的書籍頁面）
         var infoLink = info.TryGetProperty("infoLink", out var linkProp) ? linkProp.GetString() : "";
-
+        
         // 封面圖片（有些書可能沒有）
         string? imageUrl = null;
         if (info.TryGetProperty("imageLinks", out var imageLinks) &&

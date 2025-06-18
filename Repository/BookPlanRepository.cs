@@ -115,7 +115,7 @@ namespace OnlineBookClub.Repository
                         if(progress.Status != true)
                         {
                             TempTime = FindRecentlyLearnTime.TotalSeconds;
-                            LearnDate = progress.LearnDueTime.AddDays(-1).ToString("yyyy/MM/dd");
+                            LearnDate = progress.LearnDueTime.ToString("yyyy/MM/dd");
                             TempLearn = Learn.Learn_Name;
                         }
                     }

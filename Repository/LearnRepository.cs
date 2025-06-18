@@ -246,7 +246,8 @@ namespace OnlineBookClub.Repository
                 .Where(l => l.Plan_Id == PlanId)
                 .OrderByDescending(l => l.Learn_Index)
                 .FirstOrDefaultAsync();
-            DateTime previousDate = lastLearn?.DueTime ?? DateTime.Now.Date;
+            //讓他如果沒資料 是以該天00:00:00計算
+            DateTime previousDate = lastLearn?.DueTime ?? DateTime.Now.Date.AddHours(-12);
 
 
             Learn learn = new Learn();
@@ -268,12 +269,13 @@ namespace OnlineBookClub.Repository
                 {
                     return (null, "錯誤，期限不可於今天之前");
                 }
-                if (InsertData.DueTime <= previousDate)
+                else if (InsertData.DueTime <= previousDate)
                 {
                     return (null, "錯誤，期限小於前一個計畫");
                 }
                 learn.DueTime = InsertData.DueTime.AddDays(1).AddSeconds(-1);
-                learn.Days = (InsertData.DueTime.AddDays(1) - previousDate).Days + 1;
+                //+1刪除
+                learn.Days = (InsertData.DueTime.AddDays(1) - previousDate).Days;
             }
 
             await _context.Learn.AddAsync(learn);
@@ -282,7 +284,7 @@ namespace OnlineBookClub.Repository
             {
                 Learn_Name = learn.Learn_Name,
             };
-            await CreateProgressTrackAsync(PlanId, learn.Learn_Id);
+            await CreateProgressTrackAsync(PlanId , learn.Learn_Id);
             return (resultDTO, "學習內容新增成功");
         }
         //創建新Learn時幫所有成員新增ProgressTracking
@@ -299,7 +301,6 @@ namespace OnlineBookClub.Repository
             if (Members == null) return null;
             foreach (var member in Members)
             {
-
                 var lastDueTime = await _context.ProgressTracking
                     .Include(pt => pt.Learn)
                         .ThenInclude(l => l.Plan)
@@ -308,17 +309,20 @@ namespace OnlineBookClub.Repository
                     .Select(p => (DateTime?)p.LearnDueTime)
                     .FirstOrDefaultAsync();
 
-                DateTime TheDueTime = DateTime.MinValue;
-
-                if (lastDueTime.HasValue)
+                DateTime TheDueTime = DateTime.MaxValue;
+                if(member.Role == "組長")
+                {
+                    TheDueTime = Learn.DueTime;
+                }
+                else if (lastDueTime.HasValue)
                 {
                     // 重點：用前次 DueTime 當基準
-                    TheDueTime = lastDueTime.Value.AddDays(Learn.Days).AddMinutes(-1);
+                    TheDueTime = lastDueTime.Value.AddDays(Learn.Days).AddSeconds(-1);
                 }
                 else
                 {
                     // 第一次新增，用現在日期當基準
-                    TheDueTime = DateTime.Now.Date.AddDays(Learn.Days).AddMinutes(-1);
+                    TheDueTime = DateTime.Now.Date.AddDays(Learn.Days).AddSeconds(-1);
                 }
 
                 ProgressTracking progress = new ProgressTracking
@@ -358,6 +362,12 @@ namespace OnlineBookClub.Repository
                 {
                     TheDueTime = TempDate.AddDays(learn.Days);
                     TempDate = TheDueTime;
+                }
+                //第一筆加一天調整
+                if (learn.Learn_Index == 1)
+                {
+                    TheDueTime = TempDate.AddDays(learn.Days + 1).AddSeconds(-1);
+                    TempDate = TheDueTime.AddSeconds(1);
                 }
                 else
                 {
@@ -449,7 +459,10 @@ namespace OnlineBookClub.Repository
                     {
                         UpdateLearn.DueTime = UpdateData.DueTime.AddDays(1).AddSeconds(-1);
                         UpdateLearn.Days = (UpdateLearn.DueTime.Date - DateTime.Now.Date).Days;
-                        nextLearn.Days = (nextLearn.DueTime.Date - UpdateLearn.DueTime.Date).Days + 1;
+                        if (nextLearn != null)
+                        {
+                            nextLearn.Days = (nextLearn.DueTime.Date - UpdateLearn.DueTime.Date).Days + 1;
+                        }
                     }
                     else
                     {
@@ -464,10 +477,14 @@ namespace OnlineBookClub.Repository
                         // 輸入日期模式
                         UpdateLearn.DueTime = UpdateData.DueTime.AddDays(1).AddSeconds(-1);
                         UpdateLearn.Days = (UpdateLearn.DueTime.Date - previousDate).Days + 1;
-                        nextLearn.Days = (nextLearn.DueTime.Date - UpdateLearn.DueTime.Date).Days + 1;
+                        if (nextLearn != null)
+                        {
+                            nextLearn.Days = (nextLearn.DueTime.Date - UpdateLearn.DueTime.Date).Days + 1;
+                        }
                     }
                 }
                 UpdateLearn.Learn_Name = UpdateData.Learn_Name;
+                UpdateLearn.Pass_Standard = UpdateData.Pass_Standard;
                 _context.Update(UpdateLearn);
 
                 //讓ProgressTrackingTracking的日期也更動
@@ -476,7 +493,7 @@ namespace OnlineBookClub.Repository
                     .FirstOrDefaultAsync();
                 if (UserProgress != null)
                 {
-                    UserProgress.LearnDueTime = UpdateData.DueTime;
+                    UserProgress.LearnDueTime = UpdateLearn.DueTime;
                 }
 
                 await _context.SaveChangesAsync();

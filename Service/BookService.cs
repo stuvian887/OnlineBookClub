@@ -95,7 +95,7 @@ public class BookService
             return (null, "書籍新增失敗，找不到該書籍計畫");
 
         var savedFilePath = await SaveBookCoverAsync(bookDto.BookCover);
-
+        if (savedFilePath != null) { savedFilePath= bookDto.bookurl; }
         var book = new Book
         {
             Plan_Id = planId,

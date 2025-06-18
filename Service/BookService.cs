@@ -78,7 +78,7 @@ public class BookService
         var url = "";
         var hostUrl = $"{request.Scheme}://{request.Host}";
         if (string.IsNullOrEmpty(book.bookpath)) book.bookpath = null;
-        else if (book.bookpath.Contains("/book/"))
+        else if (book.bookpath.Contains("/Book/"))
         {
             url = $"{hostUrl}{book.bookpath}";
         } else { url = book.bookpath; }

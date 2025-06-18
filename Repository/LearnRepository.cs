@@ -467,7 +467,10 @@ namespace OnlineBookClub.Repository
                         // 輸入日期模式
                         UpdateLearn.DueTime = UpdateData.DueTime.AddDays(1).AddSeconds(-1);
                         UpdateLearn.Days = (UpdateLearn.DueTime.Date - previousDate).Days + 1;
-                        nextLearn.Days = (nextLearn.DueTime.Date - UpdateLearn.DueTime.Date).Days + 1;
+                        if (nextLearn != null)
+                        {
+                            nextLearn.Days = (nextLearn.DueTime.Date - UpdateLearn.DueTime.Date).Days + 1;
+                        }
                     }
                 }
                 UpdateLearn.Learn_Name = UpdateData.Learn_Name;
@@ -480,7 +483,7 @@ namespace OnlineBookClub.Repository
                     .FirstOrDefaultAsync();
                 if (UserProgress != null)
                 {
-                    UserProgress.LearnDueTime = UpdateData.DueTime;
+                    UserProgress.LearnDueTime = UpdateLearn.DueTime;
                 }
 
                 await _context.SaveChangesAsync();

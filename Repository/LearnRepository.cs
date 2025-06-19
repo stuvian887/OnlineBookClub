@@ -683,20 +683,21 @@ namespace OnlineBookClub.Repository
 
 
 
-        public async Task<ProgressTrackingDTO> PassProgressAsync(int UserId, int PlanId, int LearnIndex)
+        public async Task<ProgressTrackingDTO> PassProgressAsync(int UserId, int PlanId,int Chapter_Id , int LearnIndex)
         {
             var User = await _planMemberRepository.GetUserRoleAsync(UserId, PlanId);
             var Plan = await _context.BookPlan.FindAsync(PlanId);
-            var Learn = await _context.Learn.Where(l => l.Plan_Id == PlanId).FirstOrDefaultAsync(l => l.Learn_Index == LearnIndex);
-            if (User == null && Plan == null && Learn == null)
+            var Chapter = await _context.Chapter.FindAsync(Chapter_Id);
+            var Learn = await _context.Learn.Where(l => l.Plan_Id == PlanId && l.Chapter_Id == Chapter_Id).FirstOrDefaultAsync(l => l.Learn_Index == LearnIndex);
+            if (User == null && Plan == null && Chapter == null && Learn == null)
             {
                 return null;
             }
-            //找出前一個是否通過(未改完)
+            //找出前一個是否通過
             if (LearnIndex != 1)
             {
                 var PreviousLearn = await _context.Learn
-                .Where(l => l.Plan_Id == PlanId && l.Learn_Index == LearnIndex - 1)
+                .Where(l => l.Plan_Id == PlanId && l.Chapter_Id == Chapter_Id && l.Learn_Index == LearnIndex - 1)
                 .FirstOrDefaultAsync();
                 var CheckIsCanPass = await _context.ProgressTracking
                 .Where(pt => pt.User_Id == UserId && pt.Learn_Id == PreviousLearn.Learn_Id)

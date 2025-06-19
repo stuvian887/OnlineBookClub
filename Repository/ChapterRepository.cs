@@ -50,61 +50,81 @@ namespace OnlineBookClub.Repository
         }
         public async Task<IEnumerable<ChapterDTO>> GetChapterByPlanAsync(int PlanId)
         {
-            var chap = (from c in _context.Chapter
-                        where c.Plan_Id == PlanId
-                        select new ChapterDTO
-                        {
-                            Chapter_Id = c.Chapter_Id,
-                            Chapter_Index = c.Chapter_Index,
-                            Chapter_Name = c.Chapter_Name,
-                            Plan_Id = c.Plan_Id
-                        }).ToListAsync();
-            return await chap;
+            var Chapter = await _context.Chapter
+                .Where(c => c.Plan_Id == PlanId)
+                .ToListAsync();
+            var list = new List<ChapterDTO>();
+            foreach(var chapter in Chapter)
+            {
+                double PassPersent = await GetChapterPersentOfMemberPass(chapter.Chapter_Id);
+                list.Add(new ChapterDTO
+                {
+                    Chapter_Id = chapter.Chapter_Id,
+                    Chapter_Index = chapter.Chapter_Index,
+                    Chapter_Name= chapter.Chapter_Name,
+                    Plan_Id = chapter.Plan_Id,
+                    PersentOfMemberPass = PassPersent,
+                });
+            }
+            return list;
         }
-        //章節成員完成度
-        //public async Task<double> GetChapterPersentOfMemberPass(int Chapter_Id)
-        //{
-        //    try
-        //    {
-        //        var Chapter = await _context.Chapter
-        //            .Where(l => l.Chapter_Id == Chapter_Id)
-        //            .FirstOrDefaultAsync();
-        //        int PassCount = 0;
-        //        if (Chapter == null)
-        //        {
-        //            return 0;
-        //        }
-
-        //        var MembersProgress = await _context.ProgressTracking
-        //            .Include(p => p.User)
-        //            .ThenInclude(u => u.PlanMembers)
-        //            .Where(p => p.Learn_Id == Chapter.Learn_Id)
-        //            .Where(p => p.User.PlanMembers.Any(pm => pm.Plan_Id == Chapter.Plan_Id && pm.Role != "組長"))
-        //            .ToListAsync();
-        //        foreach (var MemberPass in MembersProgress)
-        //        {
-
-        //            if (MemberPass.Status == true) PassCount++;
-        //        }
-
-        //        double LearnMemberCount = await _context.ProgressTracking
-        //            .Include(p => p.User)
-        //            .ThenInclude(u => u.PlanMembers)
-        //            .Where(p => p.Learn_Id == Chapter.Learn_Id)
-        //            .Where(p => p.User.PlanMembers.Any(pm => pm.Plan_Id == Chapter.Plan_Id && pm.Role != "組長"))
-        //            .CountAsync();
-        //        if (LearnMemberCount == 0)
-        //        {
-        //            return 0;
-        //        }
-        //        double PassPersent = Math.Round((double)PassCount / LearnMemberCount, 2) * 100;
-        //        return PassPersent;
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        throw new Exception(e.Message.ToString());
-        //    }
-        //}
+        public async Task<double> GetChapterPersentOfMemberPass(int Chapter_Id)
+        {
+            try
+            {
+                //找出該章節
+                var Chapter = await _context.Chapter
+                    .Where(l => l.Chapter_Id == Chapter_Id)
+                    .FirstOrDefaultAsync();
+                
+                if (Chapter == null)
+                {
+                    return 0;
+                }
+                //找出該章節的Learn的數量
+                var LearnCount = await _context.Learn
+                    .Where(l => l.Chapter_Id == Chapter_Id)
+                    .CountAsync();
+                //找出計畫所有成員
+                var ChapterMembers = await _context.PlanMembers
+                    .Where(p => p.Plan_Id == Chapter.Plan_Id && p.Role != "組長")
+                    .ToListAsync();
+                int PassCount = 0;
+                foreach (var member in ChapterMembers)
+                {
+                    int LearnPassCount = 0;
+                    //找出屬於該章節的ProgressTracking
+                    var progress = await _context.ProgressTracking
+                        .Where(p => p.Learn.Plan_Id == Chapter.Plan_Id && p.User_Id == member.User_Id)
+                        .ToListAsync();
+                    foreach(var checkIsAllPass in progress)
+                    {
+                        if (checkIsAllPass.Status)
+                        {
+                            LearnPassCount++;
+                        }
+                    }
+                    //如果成員的該章節Learn都通過就++
+                    if(LearnPassCount == LearnCount)
+                    {
+                        PassCount++;
+                    }
+                }
+                double ChapterMemberCount = await _context.PlanMembers
+                    .Where(p => p.Plan_Id == Chapter.Plan_Id && p.Role != "組長")
+                    .CountAsync();
+                if (ChapterMemberCount == 0)
+                {
+                    return 0;
+                }
+                double PassPersent = Math.Round((double)PassCount / ChapterMemberCount, 2) * 100;
+                return PassPersent;
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message.ToString());
+            }
+        }
         public async Task<(ChapterDTO , string Message)> UpdateChapterAsync(int UserId, int Chapter_Id, ChapterDTO UpdateData)
         {
             Chapter FindChapter = await _context.Chapter.Where(c => c.Chapter_Id == Chapter_Id).FirstOrDefaultAsync();

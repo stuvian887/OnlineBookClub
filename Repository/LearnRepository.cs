@@ -19,12 +19,41 @@ namespace OnlineBookClub.Repository
             _context = context;
             _planMemberRepository = planMemberRepository;
         }
-
+        //copy計畫有用到這個，我先保留不動她他
         public async Task<IEnumerable<LearnDTO>> GetLearnByPlanIdAsync(int UserId, int PlanId)
         {
             var list = new List<LearnDTO>();
             var Learns = await _context.Learn
                 .Where(l => l.Plan_Id == PlanId)
+                .Include(l => l.ProgressTracking)
+                .ToListAsync();
+            foreach (var a in Learns)
+            {
+                ProgressTrackingDTO pt = await GetProgressTrack(UserId, a.Learn_Id);
+                double PassPersent = await GetPersentOfMemberPass(a.Learn_Id);
+                list.Add(new LearnDTO
+                {
+                    Plan_Id = a.Plan_Id,
+                    Chapter_Id = a.Chapter_Id,
+                    Learn_Index = a.Learn_Index,
+                    Learn_Name = a.Learn_Name,
+                    Pass_Standard = a.Pass_Standard,
+                    DueTime = a.DueTime,
+                    Days = a.Days,
+                    PersentOfMemberPass = PassPersent,
+                    Manual_Check = a.Manual_Check,
+                    //
+                    ProgressTracking = pt != null ? new List<ProgressTrackingDTO> { pt } : new List<ProgressTrackingDTO>()
+                });
+            }
+            return list;
+        }
+        //查詢Learn,加入Chapter_Id
+        public async Task<IEnumerable<LearnDTO>> GetLearnByPlanIdAndChapterIdAsync(int UserId, int PlanId , int Chapter_Id)
+        {
+            var list = new List<LearnDTO>();
+            var Learns = await _context.Learn
+                .Where(l => l.Plan_Id == PlanId && l.Chapter_Id == Chapter_Id)
                 .Include(l => l.ProgressTracking)
                 .ToListAsync();
             foreach (var a in Learns)
@@ -241,7 +270,7 @@ namespace OnlineBookClub.Repository
                 return (null, "找不到該章節");
             }
 
-            var AllLearn = await _context.Learn.Where(l => l.Plan_Id == PlanId).ToListAsync();
+            var AllLearn = await _context.Learn.Where(l => l.Plan_Id == PlanId && l.Chapter_Id == Chapter_Id).ToListAsync();
             foreach (var learns in AllLearn)
             {
                 if (InsertData.Learn_Index == learns.Learn_Index) return (null, "錯誤，此學習編號已經存在");
@@ -249,7 +278,7 @@ namespace OnlineBookClub.Repository
             var defaultDate = DateTime.Now.Date;
             //找出前一個Learn的日期
             var lastLearn = await _context.Learn
-                .Where(l => l.Plan_Id == PlanId)
+                .Where(l => l.Plan_Id == PlanId && l.Chapter_Id == Chapter_Id)
                 .OrderByDescending(l => l.Learn_Index)
                 .FirstOrDefaultAsync();
             //讓他如果沒資料 是以該天00:00:00計算
@@ -261,7 +290,7 @@ namespace OnlineBookClub.Repository
 
             Learn learn = new Learn();
             learn.Plan_Id = PlanId;
-            learn.Chapter_Id = InsertData.Chapter_Id;
+            learn.Chapter_Id = Chapter_Id;
             learn.Learn_Name = InsertData.Learn_Name;
             learn.Learn_Index = InsertData.Learn_Index;
             learn.Pass_Standard = InsertData.Pass_Standard;
@@ -405,7 +434,7 @@ namespace OnlineBookClub.Repository
             return resultDTOs;
         }
 
-        public async Task<(LearnDTO, string Message)> UpdateLearnAsync(int UserId, int PlanId, int Learn_Index, int Chapter_Id, LearnDTO UpdateData)
+        public async Task<(LearnDTO, string Message)> UpdateLearnAsync(int UserId, int PlanId, int Chapter_Id, int Learn_Index,  LearnDTO UpdateData)
         {
             var Role = await _planMemberRepository.GetUserRoleAsync(UserId, PlanId);
             if (Role == "組長")
@@ -416,15 +445,15 @@ namespace OnlineBookClub.Repository
                     return (null, "錯誤，找不到該計畫");
                 }
 
-                var UpdateLearn = await _context.Learn.Where(l => l.Plan_Id == PlanId).FirstOrDefaultAsync(l => l.Learn_Index == Learn_Index);
+                var UpdateLearn = await _context.Learn.Where(l => l.Plan_Id == PlanId && l.Chapter_Id == Chapter_Id).FirstOrDefaultAsync(l => l.Learn_Index == Learn_Index);
                 if (UpdateLearn == null)
                 {
                     return (null, "錯誤，找不到該學習內容");
                 }
-                var AllLearn = await _context.Learn.Where(l => l.Plan_Id == PlanId).ToListAsync();
+                var AllLearn = await _context.Learn.Where(l => l.Plan_Id == PlanId && l.Chapter_Id == Chapter_Id).ToListAsync();
                 //確定編號不會重複
                 bool isIndexExist = await _context.Learn
-                    .AnyAsync(l => l.Plan_Id == PlanId
+                    .AnyAsync(l => l.Plan_Id == PlanId && l.Chapter_Id == Chapter_Id
                     && l.Learn_Index == UpdateData.Learn_Index
                     && l.Learn_Index != Learn_Index);
                 if (isIndexExist)
@@ -432,17 +461,17 @@ namespace OnlineBookClub.Repository
                     return (null, "錯誤，此學習編號已經存在");
                 }
                 //不可超過5項
-                var Learns = await _context.Learn.Where(l => l.Chapter_Id == Chapter_Id).CountAsync();
+                var Learns = await _context.Learn.Where(l => l.Chapter_Id == UpdateData.Chapter_Id).CountAsync();
                 if (Learns >= 5) { return (null, "錯誤，單一章節不可超過五個學習內容"); }
                 // 動態查詢前一個學習計畫（Learn_Index 小於當前值中的最大者）
                 var previousLearn = await _context.Learn
-                    .Where(l => l.Plan_Id == PlanId
+                    .Where(l => l.Plan_Id == PlanId && l.Chapter_Id == Chapter_Id
                              && l.Learn_Index < UpdateLearn.Learn_Index)
                     .OrderByDescending(l => l.Learn_Index)
                     .FirstOrDefaultAsync();
                 //要找出上一個跟下一個Learn
                 var nextLearn = await _context.Learn
-                    .Where(l => l.Plan_Id == PlanId
+                    .Where(l => l.Plan_Id == PlanId && l.Chapter_Id == Chapter_Id
                              && l.Learn_Index > UpdateLearn.Learn_Index)
                     .OrderBy(l => l.Learn_Index)
                     .FirstOrDefaultAsync();
@@ -495,7 +524,15 @@ namespace OnlineBookClub.Repository
                         }
                     }
                 }
-                UpdateLearn.Chapter_Id = UpdateData.Chapter_Id;
+                if(UpdateData.Chapter_Id == null)
+                {
+                    UpdateLearn.Chapter_Id = Chapter_Id;
+                }
+                else
+                {
+                    UpdateLearn.Chapter_Id = UpdateData.Chapter_Id;
+                }
+                UpdateLearn.Learn_Index = UpdateData.Learn_Index;
                 UpdateLearn.Learn_Name = UpdateData.Learn_Name;
                 UpdateLearn.Pass_Standard = UpdateData.Pass_Standard;
                 _context.Update(UpdateLearn);

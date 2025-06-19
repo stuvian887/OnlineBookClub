@@ -36,11 +36,11 @@ namespace OnlineBookClub.Controllers
         //}
 
         // GET api/<LearnController>/5
-        [HttpGet("Index/{PlanId}")]
-        public async Task<IActionResult> Get(int PlanId)
+        [HttpGet("Index/{PlanId}/{Chapter_Id}")]
+        public async Task<IActionResult> Get(int PlanId , int Chapter_Id)
         {
             int UserId = GetUser();
-            return Ok(await _service.GetLearn(UserId , PlanId));
+            return Ok(await _service.GetLearnByChapter_Id(UserId , PlanId , Chapter_Id));
         }
         [HttpGet("Calendar")]
         public async Task<IActionResult> GetLearnByCalendar([FromQuery] DateTime? BeginTime , [FromQuery] DateTime? EndTime)
@@ -60,11 +60,11 @@ namespace OnlineBookClub.Controllers
         }
 
         // POST api/<LearnController>
-        [HttpPost("Create/{PlanId}/{ChapterId}")]
+        [HttpPost("Create/{PlanId}/{Chapter_Id}")]
         public async Task<IActionResult> CreateLearn(int PlanId,int Chapter_Id, [FromBody] LearnDTO newData)
         {
             int UserId = GetUser();
-            var result = await _service.CreateLearn(Chapter_Id, UserId, PlanId, newData);
+            var result = await _service.CreateLearn(UserId, PlanId, Chapter_Id , newData);
 
             if (result.Item1 != null)
             { // 創建通知
@@ -80,10 +80,10 @@ namespace OnlineBookClub.Controllers
 
         // PUT api/<LearnController>/5
         [HttpPut("Update/{PlanId}/{Learn_Index}/{Chapter_Id}")]
-        public async Task<IActionResult> UpdateLearn(int PlanId, int Learn_Index,int Chapter_Id, [FromBody] LearnDTO updateData)
+        public async Task<IActionResult> UpdateLearn(int PlanId, int Chapter_Id, int Learn_Index , [FromBody] LearnDTO updateData)
         {
             int UserId = GetUser();
-            var result = await _service.UpdateLearn(Chapter_Id, UserId, PlanId, Learn_Index, updateData);
+            var result = await _service.UpdateLearn(UserId, PlanId, Chapter_Id, Learn_Index, updateData);
             if (result.Item1 != null)
             {
                 return Ok(result.Message);

@@ -554,23 +554,21 @@ namespace OnlineBookClub.Repository
             else if (Role == "組員") return (null, "你沒有權限這麼做");
             else return (null, "找不到你是誰");
         }
-        public async Task<(LearnDTO, string Message)> DeleteLearnAsync(int UserId, int PlanId, int Learn_Index)
+        public async Task<(LearnDTO, string Message)> DeleteLearnAsync(int UserId, int PlanId,int Chapter_Id, int Learn_Index)
         {
             var Role = await _planMemberRepository.GetUserRoleAsync(UserId, PlanId);
             if (Role == "組長")
             {
+                var DeleteLearn = await _context.Learn.Where(l => l.Plan_Id == PlanId && l.Chapter_Id == Chapter_Id).FirstOrDefaultAsync(l => l.Learn_Index == Learn_Index);
+                if (DeleteLearn == null)
+                {
+                    return (null, "找不到該章節的學習");
+                }
                 var DeleteLearnOfPlan = await _context.BookPlan.FindAsync(PlanId);
                 if (DeleteLearnOfPlan == null)
                 {
                     return (null, "找不到此計畫");
                 }
-
-                var DeleteLearn = await _context.Learn.Where(l => l.Plan_Id == PlanId).FirstOrDefaultAsync(l => l.Learn_Index == Learn_Index);
-                if (DeleteLearn == null)
-                {
-                    return (null, "找不到此學習");
-                }
-
                 var mardata = await _context.ProgressTracking.Where(X => X.Learn_Id == DeleteLearn.Learn_Id).FirstOrDefaultAsync();
                 var topic = await _context.Topic.Where(X => X.Learn_Id == DeleteLearn.Learn_Id).FirstOrDefaultAsync();
                 if (mardata != null)

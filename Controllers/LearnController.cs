@@ -79,7 +79,7 @@ namespace OnlineBookClub.Controllers
         }
 
         // PUT api/<LearnController>/5
-        [HttpPut("Update/{PlanId}/{Learn_Index}/{Chapter_Id}")]
+        [HttpPut("Update/{PlanId}/{Chapter_Id}/{Learn_Index}/")]
         public async Task<IActionResult> UpdateLearn(int PlanId, int Chapter_Id, int Learn_Index , [FromBody] LearnDTO updateData)
         {
             int UserId = GetUser();
@@ -95,11 +95,11 @@ namespace OnlineBookClub.Controllers
         }
 
         // DELETE api/<LearnController>/5
-        [HttpDelete("Delete/{PlanId}/{Learn_Index}")]
-        public async Task<IActionResult> Delete(int PlanId, int Learn_Index)
+        [HttpDelete("Delete/{PlanId}/{Chapter_Id}/{Learn_Index}")]
+        public async Task<IActionResult> Delete(int PlanId,int Chapter_Id , int Learn_Index)
         {
             int UserId = GetUser();
-            var result = await _service.DeleteLearn(UserId, PlanId, Learn_Index);
+            var result = await _service.DeleteLearn(UserId, PlanId, Chapter_Id, Learn_Index);
             if (result.Item1 != null)
             {
                 return Ok(result.Message);

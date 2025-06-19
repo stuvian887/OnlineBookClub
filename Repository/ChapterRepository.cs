@@ -61,6 +61,50 @@ namespace OnlineBookClub.Repository
                         }).ToListAsync();
             return await chap;
         }
+        //章節成員完成度
+        //public async Task<double> GetChapterPersentOfMemberPass(int Chapter_Id)
+        //{
+        //    try
+        //    {
+        //        var Chapter = await _context.Chapter
+        //            .Where(l => l.Chapter_Id == Chapter_Id)
+        //            .FirstOrDefaultAsync();
+        //        int PassCount = 0;
+        //        if (Chapter == null)
+        //        {
+        //            return 0;
+        //        }
+
+        //        var MembersProgress = await _context.ProgressTracking
+        //            .Include(p => p.User)
+        //            .ThenInclude(u => u.PlanMembers)
+        //            .Where(p => p.Learn_Id == Chapter.Learn_Id)
+        //            .Where(p => p.User.PlanMembers.Any(pm => pm.Plan_Id == Chapter.Plan_Id && pm.Role != "組長"))
+        //            .ToListAsync();
+        //        foreach (var MemberPass in MembersProgress)
+        //        {
+
+        //            if (MemberPass.Status == true) PassCount++;
+        //        }
+
+        //        double LearnMemberCount = await _context.ProgressTracking
+        //            .Include(p => p.User)
+        //            .ThenInclude(u => u.PlanMembers)
+        //            .Where(p => p.Learn_Id == Chapter.Learn_Id)
+        //            .Where(p => p.User.PlanMembers.Any(pm => pm.Plan_Id == Chapter.Plan_Id && pm.Role != "組長"))
+        //            .CountAsync();
+        //        if (LearnMemberCount == 0)
+        //        {
+        //            return 0;
+        //        }
+        //        double PassPersent = Math.Round((double)PassCount / LearnMemberCount, 2) * 100;
+        //        return PassPersent;
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        throw new Exception(e.Message.ToString());
+        //    }
+        //}
         public async Task<(ChapterDTO , string Message)> UpdateChapterAsync(int UserId, int Chapter_Id, ChapterDTO UpdateData)
         {
             Chapter FindChapter = await _context.Chapter.Where(c => c.Chapter_Id == Chapter_Id).FirstOrDefaultAsync();

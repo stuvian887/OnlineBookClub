@@ -6,5 +6,7 @@
         public int Chapter_Index { get; set; }
         public string Chapter_Name { get; set; }
         public int Plan_Id { get; set; }
+        public bool Status { get; set; }
+        public double PersentOfMemberPass { get; set; }
     }
 }

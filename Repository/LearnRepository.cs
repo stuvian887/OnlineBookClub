@@ -490,8 +490,7 @@ namespace OnlineBookClub.Repository
                 //日期沒動
                 else if (UpdateData.DueTime.AddDays(1).AddSeconds(-1) == UpdateLearn.DueTime)
                 {
-                    UpdateLearn.DueTime = UpdateData.DueTime.AddDays(1).AddSeconds(-1);
-                    UpdateLearn.Days = (UpdateLearn.DueTime.Date - previousDate.Date).Days;
+                    UpdateLearn.DueTime = UpdateData.DueTime;
                 }
                 else
                 {

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Identity.Client;
 using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
+using System.Linq;
 using System.Net;
 using System.Numerics;
 using System.Security.Claims;
@@ -554,7 +555,7 @@ namespace OnlineBookClub.Repository
 
                 await _context.SaveChangesAsync();
                 //變更成員的學習日期
-                await UpdateMembersDueTime(UserId ,UpdateLearn, previousLearn, nextLearn);
+                await UpdateMembersDueTime(PlanId , Chapter_Id);
                 LearnDTO resultDTO = new LearnDTO();
                 resultDTO.Learn_Name = UpdateLearn.Learn_Name;
                 return (resultDTO, "修改學習內容成功");
@@ -564,42 +565,41 @@ namespace OnlineBookClub.Repository
             else return (null, "找不到你是誰");
         }
         //幫所有成員更新日期
-        public async Task UpdateMembersDueTime(int UserId ,Learn currentLearn , Learn previousLearn , Learn nextLearn)
+        public async Task UpdateMembersDueTime(int Plan_Id , int Chapter_Id)
         {
-            //找出該成員的加入時間
-            var Members = await _context.ProgressTracking
-                .Where(p => p.Learn_Id == currentLearn.Learn_Id && p.User_Id != UserId)
+            var Members = await _context.PlanMembers
+                .Where(p => p.Plan_Id == Plan_Id && p.Role != "組長")
+                .ToListAsync();
+            var Learns = await _context.Learn
+                .Where(l => l.Plan_Id == Plan_Id && l.Chapter_Id == Chapter_Id)
                 .ToListAsync();
             foreach(var member in Members)
             {
-                var memberJoinDate = await _context.PlanMembers
-                    .Where(p => p.Plan_Id == currentLearn.Plan_Id && p.User_Id == member.User_Id)
-                    .Select(p => p.JoinDate)
-                    .FirstOrDefaultAsync();
-                //找出當前進度
-                var currentProgress = await _context.ProgressTracking
-                    .Where(p => p.Learn_Id == currentLearn.Learn_Id && p.User_Id == member.User_Id)
-                    .FirstOrDefaultAsync();
-                var previousDate = DateTime.MinValue;
-                if (previousLearn != null)
+                foreach(var learn in Learns)
                 {
-                    previousDate = await _context.ProgressTracking
-                    .Where(p => p.Learn_Id == previousLearn.Learn_Id && p.User_Id == member.User_Id)
-                    .Select(p => p.LearnDueTime)
-                    .FirstOrDefaultAsync();
-                }
+                    var memberProgress = await _context.ProgressTracking
+                        .Where(p => p.User_Id == member.User_Id && p.Learn_Id == learn.Learn_Id)
+                        .FirstOrDefaultAsync();
+                    var previousDate = await _context.ProgressTracking
+                        .Include(l => l.Learn)
+                        .Where(p => p.User_Id == member.User_Id && p.Learn.Plan_Id == Plan_Id && p.Learn.Learn_Index < learn.Learn_Index)
+                        .OrderByDescending(l => l.Learn_Id)
+                        .Select(p => (DateTime?)p.LearnDueTime)
+                        .FirstOrDefaultAsync();
+                    if (previousDate == null)
+                    {
+                        var JoinDate = await _context.PlanMembers
+                            .Where(p => p.User_Id == member.User_Id && p.Plan_Id == Plan_Id)
+                            .Select(p => p.JoinDate)
+                            .FirstOrDefaultAsync();
+                        previousDate = JoinDate.Date.AddDays(1).AddSeconds(-1);
+                    }
+                    DateTime UseDate = (DateTime)previousDate;
+                    memberProgress.LearnDueTime = UseDate.AddDays(learn.Days);
 
-                //如果更新的是第一筆， 用他的加入時間去算
-                if (previousDate == DateTime.MinValue)
-                {
-                    member.LearnDueTime = memberJoinDate.Date.AddDays(currentLearn.Days + 1).AddMinutes(-1);
-                }
-                else
-                {
-                    member.LearnDueTime = previousDate.AddDays(currentLearn.Days);
+                    await _context.SaveChangesAsync();
                 }
             }
-            await _context.SaveChangesAsync();
         }
         public async Task<(LearnDTO, string Message)> DeleteLearnAsync(int UserId, int PlanId,int Chapter_Id, int Learn_Index)
         {

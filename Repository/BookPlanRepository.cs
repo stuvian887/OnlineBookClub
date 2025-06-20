@@ -180,6 +180,10 @@ namespace OnlineBookClub.Repository
                 .Where(u => u.User_Id == plan.User_Id)
                 .Select(u => u.UserName)
                 .FirstOrDefaultAsync();
+            var PlanCreateTime = await _context.PlanMembers
+                .Where(p => p.User_Id == plan.User_Id)
+                .Select(p => p.JoinDate)
+                .FirstOrDefaultAsync();
 
             (string recentlyLearnDate, string recentlyLearn) = await GetRecentlyLearn(plan.Plan_Id);
 
@@ -194,6 +198,7 @@ namespace OnlineBookClub.Repository
                 RecentlyLearnDate = recentlyLearnDate,
                 RecentlyLearn = recentlyLearn,
                 IsComplete = plan.IsComplete,
+                JoinDate = PlanCreateTime.ToString("yyyy/MM/dd"),
                 CreatorName = user ?? "未知使用者"
             };
         }

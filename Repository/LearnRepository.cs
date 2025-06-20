@@ -475,12 +475,12 @@ namespace OnlineBookClub.Repository
                              && l.Learn_Index > UpdateLearn.Learn_Index)
                     .OrderBy(l => l.Learn_Index)
                     .FirstOrDefaultAsync();
-                // 基準日期：前一個計畫的 DueTime，若無則用計畫建立日期
+                // 基準日期：前一個計畫的 DueTime，若無則用系統預設最小日期先帶入
                 DateTime previousDate = previousLearn?.DueTime ?? DateTime.MinValue.Date;
                 // 後一個計劃的DueTime
                 DateTime nextDate = nextLearn?.DueTime ?? DateTime.MaxValue.Date;
 
-                // 更新邏輯
+                // 更新邏輯 //第一個判斷為輸入天數模式，但我們系統沒用到，所以不管他
                 if (UpdateData.DueTime == DateTime.MinValue)
                 {
                     // 輸入天數模式
@@ -501,7 +501,7 @@ namespace OnlineBookClub.Repository
                         UpdateLearn.Days = (UpdateLearn.DueTime.Date - DateTime.Now.Date).Days;
                         if (nextLearn != null)
                         {
-                            nextLearn.Days = (nextLearn.DueTime.Date - UpdateLearn.DueTime.Date).Days + 1;
+                            nextLearn.Days = (nextLearn.DueTime.Date - UpdateLearn.DueTime.Date).Days;
                         }
                     }
                     else
@@ -516,10 +516,10 @@ namespace OnlineBookClub.Repository
                         }
                         // 輸入日期模式
                         UpdateLearn.DueTime = UpdateData.DueTime.AddDays(1).AddSeconds(-1);
-                        UpdateLearn.Days = (UpdateLearn.DueTime.Date - previousDate).Days + 1;
+                        UpdateLearn.Days = (UpdateLearn.DueTime - previousDate).Days;
                         if (nextLearn != null)
                         {
-                            nextLearn.Days = (nextLearn.DueTime.Date - UpdateLearn.DueTime.Date).Days + 1;
+                            nextLearn.Days = (nextLearn.DueTime - UpdateLearn.DueTime).Days;
                         }
                     }
                 }
@@ -546,6 +546,8 @@ namespace OnlineBookClub.Repository
                 }
 
                 await _context.SaveChangesAsync();
+                //變更成員的學習日期
+                await UpdateMembersDueTime(UserId ,UpdateLearn, previousLearn, nextLearn);
                 LearnDTO resultDTO = new LearnDTO();
                 resultDTO.Learn_Name = UpdateLearn.Learn_Name;
                 return (resultDTO, "修改學習內容成功");
@@ -553,6 +555,44 @@ namespace OnlineBookClub.Repository
             }
             else if (Role == "組員") return (null, "你沒有權限這麼做");
             else return (null, "找不到你是誰");
+        }
+        //幫所有成員更新日期
+        public async Task UpdateMembersDueTime(int UserId ,Learn currentLearn , Learn previousLearn , Learn nextLearn)
+        {
+            //找出該成員的加入時間
+            var Members = await _context.ProgressTracking
+                .Where(p => p.Learn_Id == currentLearn.Learn_Id && p.User_Id != UserId)
+                .ToListAsync();
+            foreach(var member in Members)
+            {
+                var memberJoinDate = await _context.PlanMembers
+                    .Where(p => p.Plan_Id == currentLearn.Plan_Id && p.User_Id == member.User_Id)
+                    .Select(p => p.JoinDate)
+                    .FirstOrDefaultAsync();
+                //找出當前進度
+                var currentProgress = await _context.ProgressTracking
+                    .Where(p => p.Learn_Id == currentLearn.Learn_Id && p.User_Id == member.User_Id)
+                    .FirstOrDefaultAsync();
+                var previousDate = DateTime.MinValue;
+                if (previousLearn != null)
+                {
+                    previousDate = await _context.ProgressTracking
+                    .Where(p => p.Learn_Id == previousLearn.Learn_Id && p.User_Id == member.User_Id)
+                    .Select(p => p.LearnDueTime)
+                    .FirstOrDefaultAsync();
+                }
+
+                //如果更新的是第一筆， 用他的加入時間去算
+                if (previousDate == DateTime.MinValue)
+                {
+                    member.LearnDueTime = memberJoinDate.Date.AddDays(currentLearn.Days + 1).AddMinutes(-1);
+                }
+                else
+                {
+                    member.LearnDueTime = previousDate.AddDays(currentLearn.Days);
+                }
+            }
+            await _context.SaveChangesAsync();
         }
         public async Task<(LearnDTO, string Message)> DeleteLearnAsync(int UserId, int PlanId,int Chapter_Id, int Learn_Index)
         {

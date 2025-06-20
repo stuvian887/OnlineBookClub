@@ -460,6 +460,12 @@ namespace OnlineBookClub.Repository
                 {
                     return (null, "錯誤，此學習編號已經存在");
                 }
+                //創建計畫時間
+                var PlanCreateTime = await _context.PlanMembers
+                    .Where(p => p.Plan_Id == PlanId && p.Role == "組長")
+                    .Select(p => p.JoinDate)
+                    .FirstOrDefaultAsync();
+
                 //不可超過5項
                 var Learns = await _context.Learn.Where(l => l.Chapter_Id == UpdateData.Chapter_Id).CountAsync();
                 if (Learns >= 5) { return (null, "錯誤，單一章節不可超過五個學習內容"); }
@@ -498,7 +504,8 @@ namespace OnlineBookClub.Repository
                     if(previousDate == DateTime.MinValue.Date)
                     {
                         UpdateLearn.DueTime = UpdateData.DueTime.AddDays(1).AddSeconds(-1);
-                        UpdateLearn.Days = (UpdateLearn.DueTime.Date - DateTime.Now.Date).Days;
+                        //原本用改動計畫時間，改為用創建計畫時間
+                        UpdateLearn.Days = (UpdateLearn.DueTime.Date - PlanCreateTime.Date).Days;
                         if (nextLearn != null)
                         {
                             nextLearn.Days = (nextLearn.DueTime.Date - UpdateLearn.DueTime.Date).Days;

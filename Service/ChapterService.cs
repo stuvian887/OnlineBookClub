@@ -1,6 +1,7 @@
 ﻿using HtmlAgilityPack;
 using OnlineBookClub.DTO;
 using OnlineBookClub.Repository;
+using System.Runtime.CompilerServices;
 
 namespace OnlineBookClub.Service
 {
@@ -28,6 +29,10 @@ namespace OnlineBookClub.Service
         public async Task<string> DeleteChapter(int UserId, int Chapter_Id)
         {
             return await _chapterRepository.DeleteChapterAsync(UserId, Chapter_Id);
+        }
+        public async Task CopyChapters(int original_planId, int source_plan_Id)
+        {
+            await _chapterRepository.CopyChapter(original_planId ,source_plan_Id);
         }
     }
 }

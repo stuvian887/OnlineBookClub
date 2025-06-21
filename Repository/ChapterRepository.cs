@@ -180,5 +180,23 @@ namespace OnlineBookClub.Repository
             await _context.SaveChangesAsync();
             return ("刪除成功");
         }
+
+        public async Task CopyChapter(int original_planId, int source_plan_Id)
+        {
+            var Chapters = await _context.Chapter
+                .Where(c => c.Plan_Id == original_planId)
+                .ToListAsync();
+
+            var newChapters = Chapters.Select(c => new Chapter
+            {
+                Plan_Id = source_plan_Id,
+                Chapter_Name = c.Chapter_Name,
+                Chapter_Index = c.Chapter_Index,
+                Status = c.Status
+            }).ToList();
+
+            await _context.AddRangeAsync(newChapters);
+            await _context.SaveChangesAsync();
+        }
     }
 }

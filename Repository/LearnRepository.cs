@@ -20,7 +20,7 @@ namespace OnlineBookClub.Repository
             _context = context;
             _planMemberRepository = planMemberRepository;
         }
-        //copy計畫有用到這個，我先保留不動她他
+        //copy計畫有用到這個，我先保留不動他
         public async Task<IEnumerable<LearnDTO>> GetLearnByPlanIdAsync(int UserId, int PlanId)
         {
             var list = new List<LearnDTO>();

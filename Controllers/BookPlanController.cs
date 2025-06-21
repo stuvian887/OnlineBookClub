@@ -18,13 +18,15 @@ namespace OnlineBookClub.Controllers
         private readonly StatisticService _statisticService;
         private readonly BookService _bookService;
         private readonly LearnService _learnService;
-        public BookPlanController(BookPlanService service, JwtService jwtService, StatisticService statisticService,BookService bookService , LearnService learnService)
+        private readonly ChapterService _chapterService;
+        public BookPlanController(BookPlanService service, JwtService jwtService, StatisticService statisticService,BookService bookService , LearnService learnService, ChapterService chapterService)
         {
             _service = service;
             _jwtService = jwtService;
             _statisticService = statisticService;
             _bookService = bookService;
             _learnService = learnService;
+            _chapterService = chapterService;
         }
 
         [HttpGet("public")]
@@ -115,6 +117,7 @@ namespace OnlineBookClub.Controllers
                 return NotFound("找不到");
             var book = await _bookService.GetBookByPlanIdAsync(planId, Request);
             await _bookService.AddBookAsync(result.Plan_Id, book);
+            await _chapterService.CopyChapters(planId , result.Plan_Id);
             var learn = await _learnService.GetLearn(userId , planId);
             foreach (var item in learn)
             {

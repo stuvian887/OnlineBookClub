@@ -17,14 +17,14 @@ namespace OnlineBookClub.Repository
             _context = context;
             _memberRepository = memberRepository;
         }
-        public async Task<IEnumerable<TopicDTO>> GetTopicAsync(int PlanId, int Learn_Index)
+        public async Task<IEnumerable<TopicDTO>> GetTopicAsync(int PlanId,int Chapter_Id, int Learn_Index)
         {
             var plan = await _context.BookPlan.FindAsync(PlanId);
             if (plan == null)
             {
                 return null;
             }
-            var learn = await _context.Learn.Where(l => l.Plan_Id == PlanId).FirstOrDefaultAsync(l => l.Learn_Index == Learn_Index);
+            var learn = await _context.Learn.Where(l => l.Plan_Id == PlanId && l.Chapter_Id == Chapter_Id).FirstOrDefaultAsync(l => l.Learn_Index == Learn_Index);
             if (learn == null)
             {
                 return null;
@@ -45,7 +45,7 @@ namespace OnlineBookClub.Repository
             });
             return result;
         }
-        public async Task<(TopicDTO, string Message)> CreateTopicAsync(int UserId, int PlanId, int Learn_Index, TopicDTO InsertTopic)
+        public async Task<(TopicDTO, string Message)> CreateTopicAsync(int UserId, int PlanId,int Chapter_Id , int Learn_Index, TopicDTO InsertTopic)
         {
             var role = await _memberRepository.GetUserRoleAsync(UserId, PlanId);
             if (role == "組長")
@@ -55,7 +55,7 @@ namespace OnlineBookClub.Repository
                 {
                     return (null, "找不到該計畫");
                 }
-                var learn = await _context.Learn.Where(l => l.Plan_Id == PlanId).FirstOrDefaultAsync(l => l.Learn_Index == Learn_Index);
+                var learn = await _context.Learn.Where(l => l.Plan_Id == PlanId && l.Chapter_Id == Chapter_Id).FirstOrDefaultAsync(l => l.Learn_Index == Learn_Index);
                 if (learn == null)
                 {
                     return (null, "找不到該學習內容");
@@ -100,7 +100,7 @@ namespace OnlineBookClub.Repository
                 return (null, "找不到你是誰");
             }
         }
-        public async Task<(TopicDTO, string Message)> UpdateTopicAsync(int UserId, int PlanId, int Learn_Index, int QuestionId, TopicDTO EditTopic)
+        public async Task<(TopicDTO, string Message)> UpdateTopicAsync(int UserId, int PlanId,int Chapter_Id , int Learn_Index, int QuestionId, TopicDTO EditTopic)
         {
             var role = await _memberRepository.GetUserRoleAsync(UserId, PlanId);
             if (role == "組長")
@@ -110,7 +110,7 @@ namespace OnlineBookClub.Repository
                 {
                     return (null, "找不到該計畫");
                 }
-                var learn = await _context.Learn.Where(l => l.Plan_Id == PlanId).FirstOrDefaultAsync(l => l.Learn_Index == Learn_Index);
+                var learn = await _context.Learn.Where(l => l.Plan_Id == PlanId && l.Chapter_Id == Chapter_Id).FirstOrDefaultAsync(l => l.Learn_Index == Learn_Index);
                 if (learn == null)
                 {
                     return (null, "找不到該學習內容");
@@ -153,7 +153,7 @@ namespace OnlineBookClub.Repository
                 return (null, "找不到你是誰");
             }
         }
-        public async Task<(TopicDTO,string Message)> DeleteTopicAsync(int UserId , int PlanId, int Learn_Index, int QuestionId)
+        public async Task<(TopicDTO,string Message)> DeleteTopicAsync(int UserId , int PlanId,int Chapter_Id, int Learn_Index, int QuestionId)
         {
             var Role = await _memberRepository.GetUserRoleAsync(UserId, PlanId);
             if (Role == "組長")
@@ -164,7 +164,7 @@ namespace OnlineBookClub.Repository
                     return (null, "找不到該計畫");
                 }
 
-                var learn = await _context.Learn.Where(l => l.Plan_Id == PlanId).FirstOrDefaultAsync(l => l.Learn_Index == Learn_Index);
+                var learn = await _context.Learn.Where(l => l.Plan_Id == PlanId && l.Chapter_Id == Chapter_Id).FirstOrDefaultAsync(l => l.Learn_Index == Learn_Index);
                 if (learn == null)
                 {
                     return (null, "找不到該學習內容");

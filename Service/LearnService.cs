@@ -21,21 +21,21 @@ namespace OnlineBookClub.Service
         {
             return await _learnRepository.GetLearnByPlanIdAsync(UserId , PlanId);
         }
-        public async Task<IEnumerable<LearnDTO>> GetLearnByChapter_Id(int UserId, int PlanId, int Chapter_Id)
+        public async Task<IEnumerable<LearnDTO>> GetLearnByChapter_Id(int UserId, int Chapter_Id)
         {
-            return await _learnRepository.GetLearnByPlanIdAndChapterIdAsync(UserId, PlanId, Chapter_Id);
+            return await _learnRepository.GetLearnByPlanIdAndChapterIdAsync(UserId, Chapter_Id);
         }
         public async Task<(IEnumerable<CalendarLearnDTO> , string Message)> GetLearnByCalendar(int UserId , DateTime? BeginTime , DateTime? EndTime)
         {
             return await _learnRepository.GetLearnByCalendar(UserId , BeginTime , EndTime);
         }
-        public async Task<(LearnDTO, string Message)> CreateLearn( int UserId , int PlanId , int Chapter_Id, LearnDTO newData)
+        public async Task<(LearnDTO, string Message)> CreateLearn( int UserId ,int Chapter_Id, LearnDTO newData)
         {
-            return await _learnRepository.CreateLearnAsync(UserId, PlanId, Chapter_Id, newData);
+            return await _learnRepository.CreateLearnAsync(UserId, Chapter_Id, newData);
         }
-        public async Task<(LearnDTO , string Message)> UpdateLearn(int UserId , int PlanId , int Chapter_Id, int Learn_Index ,  LearnDTO UpdateData)
+        public async Task<(LearnDTO , string Message)> UpdateLearn(int UserId ,int Chapter_Id, int Learn_Index ,  LearnDTO UpdateData)
         {
-            return await _learnRepository.UpdateLearnAsync(UserId , PlanId, Chapter_Id, Learn_Index, UpdateData);
+            return await _learnRepository.UpdateLearnAsync(UserId ,Chapter_Id, Learn_Index, UpdateData);
         }
         public async Task<(LearnDTO , string Message)> DeleteLearn(int UserId , int PlanId ,int Chapter_Id , int Learn_Index)
         {

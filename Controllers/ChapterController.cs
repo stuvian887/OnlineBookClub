@@ -35,13 +35,13 @@ namespace OnlineBookClub.Controllers
         {
             int UserId = GetUser();
             var result = await _service.CreateChapter(UserId, Plan_Id, newData);
-            if (result.Message == "Success")
+            if (result.Item1 != null)
             {
-                return Ok(new { message = "新增章節成功" });
+                return Ok(result.Item1);
             }
             else
             {
-                return BadRequest(result);
+                return BadRequest(result.Message);
             }
             
         }

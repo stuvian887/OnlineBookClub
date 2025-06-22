@@ -734,13 +734,14 @@ namespace OnlineBookClub.Repository
 
 
 
-        public async Task<ProgressTrackingDTO> PassProgressAsync(int UserId, int PlanId,int Chapter_Id , int LearnIndex)
+        public async Task<ProgressTrackingDTO> PassProgressAsync(int UserId, int Chapter_Id , int LearnIndex)
         {
-            var User = await _planMemberRepository.GetUserRoleAsync(UserId, PlanId);
-            var Plan = await _context.BookPlan.FindAsync(PlanId);
             var Chapter = await _context.Chapter.FindAsync(Chapter_Id);
-            var Learn = await _context.Learn.Where(l => l.Plan_Id == PlanId && l.Chapter_Id == Chapter_Id).FirstOrDefaultAsync(l => l.Learn_Index == LearnIndex);
-            if (User == null && Plan == null && Chapter == null && Learn == null)
+            if (Chapter == null) return null;
+            var User = await _planMemberRepository.GetUserRoleAsync(UserId, Chapter.Plan_Id);
+            var Plan = await _context.BookPlan.FindAsync(Chapter.Plan_Id);
+            var Learn = await _context.Learn.Where(l =>l.Chapter_Id == Chapter_Id).FirstOrDefaultAsync(l => l.Learn_Index == LearnIndex);
+            if (User == null && Plan == null && Learn == null)
             {
                 return null;
             }
@@ -748,7 +749,7 @@ namespace OnlineBookClub.Repository
             if (LearnIndex != 1)
             {
                 var PreviousLearn = await _context.Learn
-                .Where(l => l.Plan_Id == PlanId && l.Chapter_Id == Chapter_Id && l.Learn_Index == LearnIndex - 1)
+                .Where(l =>l.Chapter_Id == Chapter_Id && l.Learn_Index == LearnIndex - 1)
                 .FirstOrDefaultAsync();
                 var CheckIsCanPass = await _context.ProgressTracking
                 .Where(pt => pt.User_Id == UserId && pt.Learn_Id == PreviousLearn.Learn_Id)

@@ -141,11 +141,11 @@ namespace OnlineBookClub.Controllers
                 return BadRequest(new { message = "發生錯誤" });
             }
         }
-        [HttpPut("PassProgress/{PlanId}/{Chapter_Id}/{Learn_Index}")]
-        public async Task<IActionResult> PassProgress(int PlanId ,int Chapter_Id, int Learn_Index)
+        [HttpPut("PassProgress/{Chapter_Id}/{Learn_Index}")]
+        public async Task<IActionResult> PassProgress(int Chapter_Id, int Learn_Index)
         {
             int UserId = GetUser();
-            var result = await _service.PassProgressAsync(UserId, PlanId, Chapter_Id, Learn_Index);
+            var result = await _service.PassProgressAsync(UserId, Chapter_Id, Learn_Index);
             if(result != null)
             {
                 return Ok(new { message = "進度通過!" });

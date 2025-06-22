@@ -34,8 +34,8 @@ namespace OnlineBookClub.Controllers
         public async Task<IActionResult> CreateChapter(int Plan_Id, [FromBody] ChapterDTO newData)
         {
             int UserId = GetUser();
-            string result = await _service.CreateChapter(UserId, Plan_Id, newData);
-            if (result == "Success")
+            var result = await _service.CreateChapter(UserId, Plan_Id, newData);
+            if (result.Message == "Success")
             {
                 return Ok(new { message = "新增章節成功" });
             }

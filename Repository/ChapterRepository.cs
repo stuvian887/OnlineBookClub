@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
 using System.Numerics;
@@ -15,38 +16,45 @@ namespace OnlineBookClub.Repository
             _planMemberRepository = planMemberRepository;
         }
 
-        public async Task<string> CreateChapterAsync(int UserId, int PlanId, ChapterDTO InsertData)
+        public async Task<(ChapterDTO , string Message)> CreateChapterAsync(int UserId, int PlanId, ChapterDTO InsertData)
         {
             
             BookPlan FindPlan = await _context.BookPlan.Include(bp => bp.Chapters).SingleOrDefaultAsync(p => p.Plan_Id == PlanId);
             if (FindPlan == null)
             {
-                return ("錯誤，找不到該計畫");
+                return (null ,"錯誤，找不到該計畫");
             }
             var Role = await _planMemberRepository.GetUserRoleAsync(UserId, PlanId);
             if (Role != "組長")
             {
-                return ("錯誤，你不是組長");
+                return (null, "錯誤，你不是組長");
             }
             
             var AllChapter = await _context.Chapter.Where(l => l.Plan_Id == PlanId).ToListAsync();
             
             foreach (var chapters in AllChapter)
             {
-                if (InsertData.Chapter_Index == chapters.Chapter_Index) return ("錯誤，此章節編號已經存在");
+                if (InsertData.Chapter_Index == chapters.Chapter_Index) return (null, "錯誤，此章節編號已經存在");
             }
             //不可超過5項
             int ChapterCount = await _context.Chapter.Where(l => l.Plan_Id == PlanId).CountAsync();
-            if (ChapterCount >= 5) { return "錯誤，單一計畫的章節不可超過五個"; };
+            if (ChapterCount >= 5) { return (null, "錯誤，單一計畫的章節不可超過五個"); };
             var Chapter = new Chapter
             {
                 Chapter_Index = InsertData.Chapter_Index,
                 Chapter_Name = InsertData.Chapter_Name,
                 Plan_Id = PlanId,
             };
+            var resultdto = new ChapterDTO
+            {
+                Chapter_Id = Chapter.Chapter_Id,
+                Chapter_Index = Chapter.Chapter_Index,
+                Chapter_Name = Chapter.Chapter_Name,
+                Plan_Id = PlanId,
+            };
             _context.Chapter.Add(Chapter);
             await _context.SaveChangesAsync();
-            return "Success";
+            return (resultdto, "Success");
         }
         public async Task<IEnumerable<ChapterDTO>> GetChapterByPlanAsync(int PlanId)
         {

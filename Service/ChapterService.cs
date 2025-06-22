@@ -12,10 +12,9 @@ namespace OnlineBookClub.Service
         {
             _chapterRepository = chapterRepository;
         }
-        public async Task<string> CreateChapter(int UserId, int Plan_Id, ChapterDTO InsertData)
+        public async Task<(ChapterDTO , string Message)> CreateChapter(int UserId, int Plan_Id, ChapterDTO InsertData)
         {
-            string result = await _chapterRepository.CreateChapterAsync(UserId, Plan_Id, InsertData);
-            return result;
+            return await _chapterRepository.CreateChapterAsync(UserId, Plan_Id, InsertData);
         }
         public async Task<IEnumerable<ChapterDTO>> GetChapter(int Plan_Id)
         {

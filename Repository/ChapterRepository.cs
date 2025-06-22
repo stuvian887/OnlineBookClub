@@ -45,6 +45,8 @@ namespace OnlineBookClub.Repository
                 Chapter_Name = InsertData.Chapter_Name,
                 Plan_Id = PlanId,
             };
+            _context.Chapter.Add(Chapter);
+            await _context.SaveChangesAsync();
             var resultdto = new ChapterDTO
             {
                 Chapter_Id = Chapter.Chapter_Id,
@@ -52,8 +54,6 @@ namespace OnlineBookClub.Repository
                 Chapter_Name = Chapter.Chapter_Name,
                 Plan_Id = PlanId,
             };
-            _context.Chapter.Add(Chapter);
-            await _context.SaveChangesAsync();
             return (resultdto, "Success");
         }
         public async Task<IEnumerable<ChapterDTO>> GetChapterByPlanAsync(int PlanId)
@@ -163,6 +163,7 @@ namespace OnlineBookClub.Repository
             }
             FindChapter.Chapter_Index = UpdateData.Chapter_Index;
             FindChapter.Chapter_Name = UpdateData.Chapter_Name;
+            await _context.SaveChangesAsync();
             var resultDto = new ChapterDTO
             {
                 Chapter_Id = FindChapter.Chapter_Id,
@@ -170,7 +171,6 @@ namespace OnlineBookClub.Repository
                 Chapter_Name = FindChapter.Chapter_Name,
                 Plan_Id = FindChapter.Plan_Id,
             };
-            await _context.SaveChangesAsync();
             return (null, "章節修改成功");
         }
         public async Task<string> DeleteChapterAsync(int UserId ,int ChapterId)

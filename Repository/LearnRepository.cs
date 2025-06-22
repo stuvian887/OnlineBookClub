@@ -835,12 +835,14 @@ namespace OnlineBookClub.Repository
             await _context.SaveChangesAsync();
             return resultDTOs;
         }
-        public async Task<IEnumerable<Answer_RecordDTO>> GetRecordAsync(int UserId, int PlanId, int Learn_Index)
+        public async Task<IEnumerable<Answer_RecordDTO>> GetRecordAsync(int UserId, int Chapter_Id, int Learn_Index)
         {
-            var User = await _planMemberRepository.GetUserRoleAsync(UserId, PlanId);
-            var Plan = await _context.BookPlan.FindAsync(PlanId);
+            var Chapter = await _context.Chapter.FindAsync(Chapter_Id);
+            if (Chapter == null) return null;
+            var User = await _planMemberRepository.GetUserRoleAsync(UserId, Chapter.Plan_Id);
+            var Plan = await _context.BookPlan.FindAsync(Chapter.Plan_Id);
             var Learn = await _context.Learn
-                .Where(l => l.Plan_Id == PlanId && l.Learn_Index == Learn_Index)
+                .Where(l => l.Chapter_Id == Chapter_Id && l.Learn_Index == Learn_Index)
                 .FirstOrDefaultAsync();
             if (User != null && Plan != null && Learn != null)
             {

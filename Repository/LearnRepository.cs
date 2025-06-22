@@ -287,8 +287,8 @@ namespace OnlineBookClub.Repository
                 .Where(l => l.Chapter_Id == Chapter_Id)
                 .OrderByDescending(l => l.Learn_Index)
                 .FirstOrDefaultAsync();
-            //前一個沒資料 是以該天00:00:00計算
-            DateTime previousDate = lastLearn?.DueTime ?? DateTime.Now.Date.AddDays(1).AddSeconds(-1);
+            //前一個沒資料設定
+            DateTime previousDate = lastLearn?.DueTime ?? DateTime.Now.Date.AddSeconds(-1);
 
             //不可超過5項
             var Learns = await _context.Learn.Where(l => l.Chapter_Id == Chapter_Id).CountAsync();

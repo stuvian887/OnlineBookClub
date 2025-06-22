@@ -603,17 +603,19 @@ namespace OnlineBookClub.Repository
                 }
             }
         }
-        public async Task<(LearnDTO, string Message)> DeleteLearnAsync(int UserId, int PlanId,int Chapter_Id, int Learn_Index)
+        public async Task<(LearnDTO, string Message)> DeleteLearnAsync(int UserId,int Chapter_Id, int Learn_Index)
         {
-            var Role = await _planMemberRepository.GetUserRoleAsync(UserId, PlanId);
+            var Chapter = await _context.Chapter.FindAsync(Chapter_Id);
+            if (Chapter == null) return (null, "錯誤，找不到該章節");
+            var Role = await _planMemberRepository.GetUserRoleAsync(UserId, Chapter.Plan_Id);
             if (Role == "組長")
             {
-                var DeleteLearn = await _context.Learn.Where(l => l.Plan_Id == PlanId && l.Chapter_Id == Chapter_Id).FirstOrDefaultAsync(l => l.Learn_Index == Learn_Index);
+                var DeleteLearn = await _context.Learn.Where(l =>l.Chapter_Id == Chapter_Id).FirstOrDefaultAsync(l => l.Learn_Index == Learn_Index);
                 if (DeleteLearn == null)
                 {
                     return (null, "找不到該章節的學習");
                 }
-                var DeleteLearnOfPlan = await _context.BookPlan.FindAsync(PlanId);
+                var DeleteLearnOfPlan = await _context.BookPlan.FindAsync(Chapter.Plan_Id);
                 if (DeleteLearnOfPlan == null)
                 {
                     return (null, "找不到此計畫");
@@ -631,7 +633,7 @@ namespace OnlineBookClub.Repository
                 _context.Learn.Remove(DeleteLearn);
                 //變更編號邏輯
                 var subsequentLearns = await _context.Learn
-                    .Where(l => l.Plan_Id == PlanId && l.Learn_Index > Learn_Index)
+                    .Where(l => l.Chapter_Id == Chapter_Id && l.Learn_Index > Learn_Index)
                     .ToListAsync();
                 foreach(var learn in subsequentLearns)
                 {

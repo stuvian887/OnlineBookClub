@@ -37,9 +37,9 @@ namespace OnlineBookClub.Service
         {
             return await _learnRepository.UpdateLearnAsync(UserId ,Chapter_Id, Learn_Index, UpdateData);
         }
-        public async Task<(LearnDTO , string Message)> DeleteLearn(int UserId , int PlanId ,int Chapter_Id , int Learn_Index)
+        public async Task<(LearnDTO , string Message)> DeleteLearn(int UserId ,int Chapter_Id , int Learn_Index)
         {
-            return await _learnRepository.DeleteLearnAsync(UserId , PlanId ,Chapter_Id,  Learn_Index);
+            return await _learnRepository.DeleteLearnAsync(UserId ,Chapter_Id,  Learn_Index);
         }
         public async Task<IEnumerable<MemberProgressDTO>> GetMemberProgressAsync(int UserId , int PlanId)
         {

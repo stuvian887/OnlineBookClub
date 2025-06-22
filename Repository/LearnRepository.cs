@@ -21,11 +21,11 @@ namespace OnlineBookClub.Repository
             _planMemberRepository = planMemberRepository;
         }
         //copy計畫有用到這個，我先保留不動他
-        public async Task<IEnumerable<LearnDTO>> GetLearnByPlanIdAsync(int UserId, int PlanId)
+        public async Task<IEnumerable<LearnDTO>> GetLearnByChapterIdAsync(int UserId, int PlanId ,int Chapter_Id)
         {
             var list = new List<LearnDTO>();
             var Learns = await _context.Learn
-                .Where(l => l.Plan_Id == PlanId)
+                .Where(l => l.Plan_Id == PlanId && l.Chapter_Id == Chapter_Id)
                 .Include(l => l.ProgressTracking)
                 .ToListAsync();
             foreach (var a in Learns)
@@ -214,8 +214,9 @@ namespace OnlineBookClub.Repository
             }
         }
 
-        public async Task<(LearnDTO, string message)> copylearnAsync(int UserId, int PlanId, LearnDTO InsertData)
+        public async Task<(LearnDTO, string message)> copylearnAsync(int UserId, int PlanId, int Chapter_Id , LearnDTO InsertData)
         {
+            
             BookPlan FindPlan = await _context.BookPlan
                 .Include(bp => bp.Learn)
                 .SingleOrDefaultAsync(p => p.Plan_Id == PlanId);
@@ -223,8 +224,11 @@ namespace OnlineBookClub.Repository
             {
                 return (null, "錯誤，找不到該計畫");
             }
+            var Chapter = await _context.Chapter
+                .Where(c =>c.Chapter_Id == Chapter_Id)
+                .FirstOrDefaultAsync();
             var lastLearn = await _context.Learn
-                .Where(l => l.Plan_Id == PlanId)
+                .Where(l =>l.Chapter_Id == Chapter_Id)
                 .OrderByDescending(l => l.Learn_Index)
                 .FirstOrDefaultAsync();
             //要找出ProgressTracking的日期
@@ -244,6 +248,7 @@ namespace OnlineBookClub.Repository
             {
                 learn.DueTime = previousDate.Date.AddDays(learn.Days + 1).AddSeconds(-1);
             }
+            learn.Chapter_Id = Chapter_Id;
             await _context.Learn.AddAsync(learn);
             await _context.SaveChangesAsync();
             LearnDTO resultDTO = new LearnDTO()

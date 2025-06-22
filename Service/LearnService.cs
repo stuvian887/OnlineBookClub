@@ -17,9 +17,9 @@ namespace OnlineBookClub.Service
         //    return await _learnRepository.GetAllLearnAsync();
 
         //}
-        public async Task<IEnumerable<LearnDTO>> GetLearn(int UserId , int PlanId)
+        public async Task<IEnumerable<LearnDTO>> GetLearn(int UserId , int PlanId , int Chapter_Id)
         {
-            return await _learnRepository.GetLearnByPlanIdAsync(UserId , PlanId);
+            return await _learnRepository.GetLearnByChapterIdAsync(UserId , PlanId , Chapter_Id);
         }
         public async Task<IEnumerable<LearnDTO>> GetLearnByChapter_Id(int UserId, int Chapter_Id)
         {
@@ -57,9 +57,9 @@ namespace OnlineBookClub.Service
         {
             return await _learnRepository.PassProgressAsync(UserId, Chapter_Id, Learn_Index);
         }
-        public async Task<(LearnDTO, string Message)> copy(int UserId, int PlanId,  LearnDTO UpdateData)
+        public async Task<(LearnDTO, string Message)> copy(int UserId, int PlanId, int Chapter_Id ,  LearnDTO UpdateData)
         {
-            return await _learnRepository.copylearnAsync(UserId, PlanId, UpdateData);
+            return await _learnRepository.copylearnAsync(UserId, PlanId , Chapter_Id, UpdateData);
         }
         public async Task<IEnumerable<PassLearnDTO>> GetMemberByLearn(int leaderId , int Chapter_Id , int Learn_Index)
         {

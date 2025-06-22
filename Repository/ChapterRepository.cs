@@ -76,6 +76,11 @@ namespace OnlineBookClub.Repository
             }
             return list;
         }
+        public async Task<Chapter> GetSingleChapter(int Chapter_Id)
+        {
+            var TheChapter = await _context.Chapter.FindAsync(Chapter_Id);
+            return TheChapter;
+        }
         public async Task<double> GetChapterPersentOfMemberPass(int Chapter_Id)
         {
             try
@@ -189,22 +194,33 @@ namespace OnlineBookClub.Repository
             return ("刪除成功");
         }
 
-        public async Task CopyChapter(int original_planId, int source_plan_Id)
+        public async Task<ChapterDTO> CopyChapter(int original_planId, int source_plan_Id , int OriginalChapter_Id)
         {
             var Chapters = await _context.Chapter
-                .Where(c => c.Plan_Id == original_planId)
-                .ToListAsync();
+                .Where(c => c.Plan_Id == original_planId && c.Chapter_Id == OriginalChapter_Id)
+                .FirstOrDefaultAsync();
 
-            var newChapters = Chapters.Select(c => new Chapter
+            var newChapters = new Chapter()
             {
                 Plan_Id = source_plan_Id,
-                Chapter_Name = c.Chapter_Name,
-                Chapter_Index = c.Chapter_Index,
-                Status = c.Status
-            }).ToList();
+                Chapter_Name = Chapters.Chapter_Name,
+                Chapter_Index = Chapters.Chapter_Index,
+                Status = false,
+            };
 
             await _context.AddRangeAsync(newChapters);
             await _context.SaveChangesAsync();
+
+            var resultdto = new ChapterDTO()
+            {
+                Plan_Id = newChapters.Plan_Id,
+                Chapter_Name = newChapters.Chapter_Name,
+                Chapter_Index = newChapters.Chapter_Index,
+                Status = newChapters.Status,
+                Chapter_Id = newChapters.Chapter_Id,
+            };
+
+            return resultdto;
         }
     }
 }

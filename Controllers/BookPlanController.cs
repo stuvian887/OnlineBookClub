@@ -117,15 +117,26 @@ namespace OnlineBookClub.Controllers
                 return NotFound("找不到");
             var book = await _bookService.GetBookByPlanIdAsync(planId, Request);
             await _bookService.AddBookAsync(result.Plan_Id, book);
-            await _chapterService.CopyChapters(planId , result.Plan_Id);
-            var learn = await _learnService.GetLearn(userId , planId);
-            foreach (var item in learn)
+
+            
+
+            //取的原本的章節
+            var OriginalChapter = await _chapterService.GetChapter(planId);
+            
+            //跑五次(假設五個)
+            foreach(var chapter in OriginalChapter)
             {
-                await _learnService.copy(userId, result.Plan_Id, item);
+                //複製後，回傳新的章節
+                var ChapterResult = await _chapterService.CopyChapters(planId, result.Plan_Id ,chapter.Chapter_Id);
+                var newChapter = await _chapterService.GetSingleChapter(ChapterResult.Chapter_Id);
+                var learn = await _learnService.GetLearn(userId, planId , chapter.Chapter_Id);
+                //跑五次(假設五個)
+                foreach (var item in learn)
+                {
+                    await _learnService.copy(userId, result.Plan_Id, newChapter.Chapter_Id ,item );
+                }
+                await _statisticService.AddCopyCountAsync(planId);
             }
-            await _statisticService.AddCopyCountAsync(planId);
-
-
             return Ok("Plan copied successfully.");
         }
 

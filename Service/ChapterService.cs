@@ -1,5 +1,6 @@
 ﻿using HtmlAgilityPack;
 using OnlineBookClub.DTO;
+using OnlineBookClub.Models;
 using OnlineBookClub.Repository;
 using System.Runtime.CompilerServices;
 
@@ -21,6 +22,11 @@ namespace OnlineBookClub.Service
             var result = await _chapterRepository.GetChapterByPlanAsync(Plan_Id);
             return result;
         }
+        public async Task<Chapter> GetSingleChapter(int Chapter_Id)
+        {
+            var result = await _chapterRepository.GetSingleChapter(Chapter_Id);
+            return result;
+        }
         public async Task<(ChapterDTO, string Message)> UpdateChapter(int UserId, int Chapter_Id, ChapterDTO UpdateData)
         {
             return await _chapterRepository.UpdateChapterAsync(UserId, Chapter_Id, UpdateData); 
@@ -29,9 +35,9 @@ namespace OnlineBookClub.Service
         {
             return await _chapterRepository.DeleteChapterAsync(UserId, Chapter_Id);
         }
-        public async Task CopyChapters(int original_planId, int source_plan_Id)
+        public async Task<ChapterDTO> CopyChapters(int original_planId, int source_plan_Id , int Chapter_Id)
         {
-            await _chapterRepository.CopyChapter(original_planId ,source_plan_Id);
+            return await _chapterRepository.CopyChapter(original_planId ,source_plan_Id ,Chapter_Id);
         }
     }
 }

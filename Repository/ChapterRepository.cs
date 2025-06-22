@@ -157,9 +157,12 @@ namespace OnlineBookClub.Repository
             }
 
             var AllChapter = await _context.Chapter.Where(l => l.Plan_Id == FindChapter.Plan_Id).ToListAsync();
-            foreach (var chapters in AllChapter)
+            if(UpdateData.Chapter_Index != FindChapter.Chapter_Index)
             {
-                if (UpdateData.Chapter_Index == chapters.Chapter_Index) return (null , "錯誤，此章節編號已經存在");
+                foreach (var chapters in AllChapter)
+                {
+                    if (UpdateData.Chapter_Index == chapters.Chapter_Index) return (null, "錯誤，此章節編號已經存在");
+                }
             }
             FindChapter.Chapter_Index = UpdateData.Chapter_Index;
             FindChapter.Chapter_Name = UpdateData.Chapter_Name;

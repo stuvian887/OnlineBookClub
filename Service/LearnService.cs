@@ -61,9 +61,9 @@ namespace OnlineBookClub.Service
         {
             return await _learnRepository.copylearnAsync(UserId, PlanId, UpdateData);
         }
-        public async Task<IEnumerable<PassLearnDTO>> GetMemberByLearn(int leaderId , int planId , int Learn_Index)
+        public async Task<IEnumerable<PassLearnDTO>> GetMemberByLearn(int leaderId , int Chapter_Id , int Learn_Index)
         {
-            return await _learnRepository.GetMemberByPlansAsync(leaderId, planId, Learn_Index);
+            return await _learnRepository.GetMemberByPlansAsync(leaderId, Chapter_Id, Learn_Index);
         }
         public void MoveLearnToChapter()
         {

@@ -156,11 +156,11 @@ namespace OnlineBookClub.Controllers
             }
         }
 
-        [HttpGet("GetMemberByLearn/{PlanId}/{Learn_Index}")]
-        public async Task<IActionResult> GetMemberByLearn(int PlanId, int Learn_Index)
+        [HttpGet("GetMemberByLearn/{Chapter_Id}/{Learn_Index}")]
+        public async Task<IActionResult> GetMemberByLearn(int Chapter_Id, int Learn_Index)  
         {
             int UserId = GetUser();
-            var result = await _service.GetMemberByLearn(UserId, PlanId, Learn_Index);
+            var result = await _service.GetMemberByLearn(UserId, Chapter_Id, Learn_Index);
             if (result != null)
             {
                 return Ok(result);

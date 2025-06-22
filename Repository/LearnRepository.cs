@@ -867,10 +867,12 @@ namespace OnlineBookClub.Repository
             else { return null; }
         }
 
-        public async Task<List<PassLearnDTO>> GetMemberByPlansAsync(int leaderId, int planId, int Learn_Index)
+        public async Task<List<PassLearnDTO>> GetMemberByPlansAsync(int leaderId, int Chapter_Id, int Learn_Index)
         {
+            var Chapter = await _context.Chapter.FindAsync(Chapter_Id);
+            if (Chapter == null) return null;
             var IsLeader = await _context.PlanMembers
-                .Where(pl => pl.User_Id == leaderId && pl.Plan_Id == planId && pl.Role == "組長")
+                .Where(pl => pl.User_Id == leaderId && pl.Plan_Id == Chapter.Plan_Id && pl.Role == "組長")
                 .AnyAsync();
             if (!IsLeader)
             {
@@ -878,7 +880,7 @@ namespace OnlineBookClub.Repository
             }
 
             var learn = await _context.Learn
-                .Where(l => l.Plan_Id == planId && l.Learn_Index == Learn_Index)
+                .Where(l => l.Plan_Id == Chapter.Plan_Id && l.Learn_Index == Learn_Index)
                 .FirstOrDefaultAsync();
             if (learn == null)
             {
@@ -886,7 +888,7 @@ namespace OnlineBookClub.Repository
             }
 
             var planMembers = await _context.PlanMembers
-                .Where(pm => pm.Plan_Id == planId && pm.Role == "組員")
+                .Where(pm => pm.Plan_Id == Chapter.Plan_Id && pm.Role == "組員")
                 .ToListAsync();
 
             var dtoList = new List<PassLearnDTO>();

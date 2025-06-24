@@ -79,11 +79,11 @@ namespace OnlineBookClub.Controllers
         }
 
         // PUT api/<LearnController>/5
-        [HttpPut("Update/{Chapter_Id}/{Learn_Index}/")]
-        public async Task<IActionResult> UpdateLearn(int Chapter_Id, int Learn_Index , [FromBody] LearnDTO updateData)
+        [HttpPut("Update/{Chapter_Id}/{Learn_Id}/")]
+        public async Task<IActionResult> UpdateLearn(int Chapter_Id, int Learn_Id, [FromBody] LearnDTO updateData)
         {
             int UserId = GetUser();
-            var result = await _service.UpdateLearn(UserId, Chapter_Id, Learn_Index, updateData);
+            var result = await _service.UpdateLearn(UserId, Chapter_Id, Learn_Id, updateData);
             if (result.Item1 != null)
             {
                 return Ok(result.Message);
@@ -95,11 +95,11 @@ namespace OnlineBookClub.Controllers
         }
 
         // DELETE api/<LearnController>/5
-        [HttpDelete("Delete/{Chapter_Id}/{Learn_Index}")]
-        public async Task<IActionResult> Delete(int Chapter_Id , int Learn_Index)
+        [HttpDelete("Delete/{Chapter_Id}/{Learn_Id}")]
+        public async Task<IActionResult> Delete(int Chapter_Id , int Learn_Id)
         {
             int UserId = GetUser();
-            var result = await _service.DeleteLearn(UserId, Chapter_Id, Learn_Index);
+            var result = await _service.DeleteLearn(UserId, Chapter_Id, Learn_Id);
             if (result.Item1 != null)
             {
                 return Ok(result.Message);

@@ -63,6 +63,7 @@ namespace OnlineBookClub.Repository
                 double PassPersent = await GetPersentOfMemberPass(a.Learn_Id);
                 list.Add(new LearnDTO
                 {
+                    Learn_Id = a.Learn_Id,
                     Plan_Id = a.Plan_Id,
                     Chapter_Id = a.Chapter_Id,
                     Learn_Index = a.Learn_Index,
@@ -440,137 +441,149 @@ namespace OnlineBookClub.Repository
             return resultDTOs;
         }
 
-        public async Task<(LearnDTO, string Message)> UpdateLearnAsync(int UserId ,int Chapter_Id, int Learn_Index,  LearnDTO UpdateData)
+        public async Task<(LearnDTO, string)> UpdateLearnAsync(
+        int userId, int originChapterId, int learnId, LearnDTO dto)
         {
-            var Chapter = await _context.Chapter.FindAsync(Chapter_Id);
-            if (Chapter == null) return (null, "錯誤，找不到該章節");
-            var Role = await _planMemberRepository.GetUserRoleAsync(UserId, Chapter.Plan_Id);
-            if (Role == "組長")
+            // ===== 1. 基本驗證 =====
+            var originChapter = await _context.Chapter.FindAsync(originChapterId);
+            if (originChapter == null) return (null, "錯誤，找不到該章節");
+
+            var role = await _planMemberRepository.GetUserRoleAsync(userId, originChapter.Plan_Id);
+            if (role != "組長") return (null, "你沒有權限這麼做");
+
+            var learn = await _context.Learn
+                .FirstOrDefaultAsync(l => l.Chapter_Id == originChapterId && l.Learn_Id == learnId);
+            if (learn == null) return (null, "錯誤，找不到該學習內容");
+
+            // ===== 2. 目標章節與索引 =====
+            int targetChapterId = dto.Chapter_Id ?? originChapterId;               // ★
+            int targetIndex = dto.Learn_Index;
+
+            // (1) 同章節不可 > 5 筆
+            int targetCount = await _context.Learn.CountAsync(l => l.Chapter_Id == targetChapterId);
+            if (targetCount >= 5 && targetChapterId != originChapterId)            // ★
+                return (null, "錯誤，單一章節不可超過五個學習內容");
+
+            // (2) 先確定目標章節沒有重複 index  (修正問題 #1) ★
+            bool clash = await _context.Learn.AnyAsync(l =>
+                l.Chapter_Id == targetChapterId &&
+                l.Learn_Index == targetIndex &&
+                l.Learn_Id != learnId);
+            if (clash) return (null, "錯誤，此學習編號已經存在");
+
+            // ===== 3. 重新排序：跨章節 or 同章節調整位置 =====
+            if (targetChapterId != originChapterId)          // ★——搬到其他章節
             {
-                var UpdateDataPlan = await _context.BookPlan.FindAsync(Chapter.Plan_Id);
-                if (UpdateDataPlan == null)
-                {
-                    return (null, "錯誤，找不到該計畫");
-                }
-
-                var UpdateLearn = await _context.Learn.Where(l =>l.Chapter_Id == Chapter_Id).FirstOrDefaultAsync(l => l.Learn_Index == Learn_Index);
-                if (UpdateLearn == null)
-                {
-                    return (null, "錯誤，找不到該學習內容");
-                }
-                var AllLearn = await _context.Learn.Where(l =>l.Chapter_Id == Chapter_Id).ToListAsync();
-                //確定編號不會重複
-                bool isIndexExist = await _context.Learn
-                    .AnyAsync(l =>l.Chapter_Id == Chapter_Id
-                    && l.Learn_Index == UpdateData.Learn_Index
-                    && l.Learn_Index != Learn_Index);
-                if (isIndexExist)
-                {
-                    return (null, "錯誤，此學習編號已經存在");
-                }
-                //創建計畫時間
-                var PlanCreateTime = await _context.PlanMembers
-                    .Where(p => p.Plan_Id == Chapter.Plan_Id && p.Role == "組長")
-                    .Select(p => p.JoinDate)
-                    .FirstOrDefaultAsync();
-
-                //不可超過5項(他可能會移動至別的章節，所以用UpdateData的Chapter_Id)
-                var Learns = await _context.Learn.Where(l => l.Chapter_Id == UpdateData.Chapter_Id).CountAsync();
-                if (Learns >= 5) { return (null, "錯誤，單一章節不可超過五個學習內容"); }
-                // 動態查詢前一個學習計畫（Learn_Index 小於當前值中的最大者）
-                var previousLearn = await _context.Learn
-                    .Where(l =>l.Chapter_Id == Chapter_Id
-                             && l.Learn_Index < UpdateLearn.Learn_Index)
-                    .OrderByDescending(l => l.Learn_Index)
-                    .FirstOrDefaultAsync();
-                //要找出上一個跟下一個Learn
-                var nextLearn = await _context.Learn
-                    .Where(l =>l.Chapter_Id == Chapter_Id
-                             && l.Learn_Index > UpdateLearn.Learn_Index)
+                // 3-1 移除原章節後重排
+                var originList = await _context.Learn
+                    .Where(l => l.Chapter_Id == originChapterId && l.Learn_Id != learnId)
                     .OrderBy(l => l.Learn_Index)
-                    .FirstOrDefaultAsync();
-                // 基準日期：前一個計畫的 DueTime，若無則用系統預設最小日期先帶入
-                DateTime previousDate = previousLearn?.DueTime ?? DateTime.MinValue.Date;
-                // 後一個計劃的DueTime
-                DateTime nextDate = nextLearn?.DueTime ?? DateTime.MaxValue.Date;
+                    .ToListAsync();
+                for (int i = 0; i < originList.Count; i++)
+                    originList[i].Learn_Index = i + 1;        // ★
 
-                // 更新邏輯 //第一個判斷為輸入天數模式，但我們系統沒用到，所以不管他
-                if (UpdateData.DueTime == DateTime.MinValue)
-                {
-                    // 輸入天數模式
-                    UpdateLearn.Days = UpdateData.Days;
-                    UpdateLearn.DueTime = previousDate.AddDays(UpdateData.Days + 1).AddSeconds(-1);
-                }
-                //日期沒動
-                else if (UpdateData.DueTime.AddDays(1).AddSeconds(-1) == UpdateLearn.DueTime)
-                {
-                    UpdateLearn.DueTime = UpdateData.DueTime;
-                }
-                else
-                {
-                    //如果為第一筆
-                    if(previousDate == DateTime.MinValue.Date)
-                    {
-                        UpdateLearn.DueTime = UpdateData.DueTime.AddDays(1).AddSeconds(-1);
-                        //原本用改動計畫時間，改為用創建計畫時間
-                        UpdateLearn.Days = (UpdateLearn.DueTime.Date - PlanCreateTime.Date).Days;
-                        if (nextLearn != null)
-                        {
-                            nextLearn.Days = (nextLearn.DueTime.Date - UpdateLearn.DueTime.Date).Days;
-                        }
-                    }
-                    else
-                    {
-                        if (UpdateData.DueTime <= previousDate)
-                        {
-                            return (null, "錯誤，日期不可小於前一個計劃");
-                        }
-                        if (UpdateData.DueTime >= nextDate.AddDays(-1))
-                        {
-                            return (null, "錯誤，日期不可大於下一個計劃");
-                        }
-                        // 輸入日期模式
-                        UpdateLearn.DueTime = UpdateData.DueTime.AddDays(1).AddSeconds(-1);
-                        UpdateLearn.Days = (UpdateLearn.DueTime - previousDate).Days;
-                        if (nextLearn != null)
-                        {
-                            nextLearn.Days = (nextLearn.DueTime - UpdateLearn.DueTime).Days;
-                        }
-                    }
-                }
-                if(UpdateData.Chapter_Id == null)
-                {
-                    UpdateLearn.Chapter_Id = Chapter_Id;
-                }
-                else
-                {
-                    UpdateLearn.Chapter_Id = UpdateData.Chapter_Id;
-                }
-                UpdateLearn.Learn_Index = UpdateData.Learn_Index;
-                UpdateLearn.Learn_Name = UpdateData.Learn_Name;
-                UpdateLearn.Pass_Standard = UpdateData.Pass_Standard;
-                _context.Update(UpdateLearn);
+                // 3-2 取目標章節清單，插入指定位置
+                var targetList = await _context.Learn
+                    .Where(l => l.Chapter_Id == targetChapterId && l.Learn_Id != learnId)
+                    .OrderBy(l => l.Learn_Index)
+                    .ToListAsync();
 
-                //讓ProgressTrackingTracking的日期也更動
-                var UserProgress = await _context.ProgressTracking
-                    .Where(pt => pt.Learn_Id == UpdateLearn.Learn_Id && pt.User_Id == UserId)
-                    .FirstOrDefaultAsync();
-                if (UserProgress != null)
-                {
-                    UserProgress.LearnDueTime = UpdateLearn.DueTime;
-                }
+                targetIndex = Math.Clamp(targetIndex, 1, targetList.Count + 1); // ★
+                targetList.Insert(targetIndex - 1, learn);
 
-                await _context.SaveChangesAsync();
-                //變更成員的學習日期
-                await UpdateMembersDueTime(Chapter.Plan_Id , Chapter_Id);
-                LearnDTO resultDTO = new LearnDTO();
-                resultDTO.Learn_Name = UpdateLearn.Learn_Name;
-                return (resultDTO, "修改學習內容成功");
+                for (int i = 0; i < targetList.Count; i++)
+                    targetList[i].Learn_Index = i + 1;        // ★
 
+                learn.Chapter_Id = targetChapterId;           // ★ 更新章節
             }
-            else if (Role == "組員") return (null, "你沒有權限這麼做");
-            else return (null, "找不到你是誰");
+            else if (targetIndex != learn.Learn_Index)        // ★——同章節改順序
+            {
+                var list = await _context.Learn
+                    .Where(l => l.Chapter_Id == originChapterId)
+                    .OrderBy(l => l.Learn_Index)
+                    .ToListAsync();
+
+                // 移除自己、插回新位置
+                list.RemoveAll(l => l.Learn_Id == learnId);
+                targetIndex = Math.Clamp(targetIndex, 1, list.Count + 1);
+                list.Insert(targetIndex - 1, learn);
+
+                for (int i = 0; i < list.Count; i++)
+                    list[i].Learn_Index = i + 1;              // ★
+            }
+
+            // learn.Learn_Index 已在上面流程更新，不用再手動設；若仍想保險可設一次
+            learn.Learn_Index = targetIndex;                  // ★
+
+            // ===== 4. 日期相關欄位 =====
+            // 重新抓「更新後」的上一個 / 下一個項目 (修正問題 #3) ★
+            var previousLearn = await _context.Learn
+                .Where(l => l.Chapter_Id == targetChapterId && l.Learn_Index < targetIndex)
+                .OrderByDescending(l => l.Learn_Index)
+                .FirstOrDefaultAsync();
+
+            var nextLearn = await _context.Learn
+                .Where(l => l.Chapter_Id == targetChapterId && l.Learn_Index > targetIndex)
+                .OrderBy(l => l.Learn_Index)
+                .FirstOrDefaultAsync();
+
+            DateTime previousDate = previousLearn?.DueTime ?? DateTime.MinValue.Date;
+            DateTime nextDate = nextLearn?.DueTime ?? DateTime.MaxValue.Date;
+
+            // == 沿用你原本的日期運算邏輯 ==
+            if (dto.DueTime == DateTime.MinValue)         // 輸入天數模式
+            {
+                learn.Days = dto.Days;
+                learn.DueTime = previousDate.AddDays(dto.Days + 1).AddSeconds(-1);
+            }
+            else if (dto.DueTime.AddDays(1).AddSeconds(-1) == learn.DueTime)
+            {
+                learn.DueTime = dto.DueTime;
+            }
+            else
+            {
+                if (previousDate == DateTime.MinValue.Date)   // 第一筆
+                {
+                    learn.DueTime = dto.DueTime.AddDays(1).AddSeconds(-1);
+                    var planCreateTime = await _context.PlanMembers
+                        .Where(p => p.Plan_Id == originChapter.Plan_Id && p.Role == "組長")
+                        .Select(p => p.JoinDate).FirstOrDefaultAsync();
+                    learn.Days = (learn.DueTime.Date - planCreateTime.Date).Days;
+
+                    if (nextLearn != null)
+                        nextLearn.Days = (nextLearn.DueTime.Date - learn.DueTime.Date).Days;
+                }
+                else
+                {
+                    if (dto.DueTime <= previousDate) return (null, "錯誤，日期不可小於前一個計劃");
+                    if (dto.DueTime >= nextDate.AddDays(-1)) return (null, "錯誤，日期不可大於下一個計劃");
+
+                    learn.DueTime = dto.DueTime.AddDays(1).AddSeconds(-1);
+                    learn.Days = (learn.DueTime - previousDate).Days;
+
+                    if (nextLearn != null)
+                        nextLearn.Days = (nextLearn.DueTime - learn.DueTime).Days;
+                }
+            }
+
+            // ===== 5. 其他欄位 =====
+            learn.Learn_Name = dto.Learn_Name;
+            learn.Pass_Standard = dto.Pass_Standard;
+
+            // ===== 6. 更新所有 ProgressTracking 的到期日 (修正問題 #5) =====
+            var tracks = await _context.ProgressTracking
+                .Where(pt => pt.Learn_Id == learnId)
+                .ToListAsync();
+            foreach (var t in tracks) t.LearnDueTime = learn.DueTime;
+
+            await _context.SaveChangesAsync();
+
+            // ===== 7. 更新計畫所有成員的學習日期 (修正問題 #4) =====
+            await UpdateMembersDueTime(originChapter.Plan_Id, targetChapterId);     // ★
+
+            return (new LearnDTO { Learn_Name = learn.Learn_Name }, "修改學習內容成功");
         }
+
         //幫所有成員更新日期
         public async Task UpdateMembersDueTime(int Plan_Id , int Chapter_Id)
         {
@@ -608,14 +621,14 @@ namespace OnlineBookClub.Repository
                 }
             }
         }
-        public async Task<(LearnDTO, string Message)> DeleteLearnAsync(int UserId,int Chapter_Id, int Learn_Index)
+        public async Task<(LearnDTO, string Message)> DeleteLearnAsync(int UserId,int Chapter_Id, int Learn_Id)
         {
             var Chapter = await _context.Chapter.FindAsync(Chapter_Id);
             if (Chapter == null) return (null, "錯誤，找不到該章節");
             var Role = await _planMemberRepository.GetUserRoleAsync(UserId, Chapter.Plan_Id);
             if (Role == "組長")
             {
-                var DeleteLearn = await _context.Learn.Where(l =>l.Chapter_Id == Chapter_Id).FirstOrDefaultAsync(l => l.Learn_Index == Learn_Index);
+                var DeleteLearn = await _context.Learn.Where(l =>l.Chapter_Id == Chapter_Id).FirstOrDefaultAsync(l => l.Learn_Id == Learn_Id);
                 if (DeleteLearn == null)
                 {
                     return (null, "找不到該章節的學習");
@@ -637,10 +650,12 @@ namespace OnlineBookClub.Repository
                 }
                 _context.Learn.Remove(DeleteLearn);
                 //變更編號邏輯
+                var currentIndex = DeleteLearn.Learn_Index;
                 var subsequentLearns = await _context.Learn
-                    .Where(l => l.Chapter_Id == Chapter_Id && l.Learn_Index > Learn_Index)
+                    .Where(l => l.Chapter_Id == Chapter_Id && l.Learn_Index > currentIndex)
                     .ToListAsync();
-                foreach(var learn in subsequentLearns)
+
+                foreach (var learn in subsequentLearns)
                 {
                     learn.Learn_Index -= 1;
                 }

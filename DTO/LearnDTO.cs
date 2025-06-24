@@ -9,6 +9,7 @@ namespace OnlineBookClub.DTO
 
         public int Plan_Id { get; set; }
 
+        public int Learn_Id { get; set; }
         public int? Chapter_Id { get; set; }
         public string Learn_Name { get; set; } = null!;
 

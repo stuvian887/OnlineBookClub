@@ -456,15 +456,15 @@ namespace OnlineBookClub.Repository
             if (learn == null) return (null, "錯誤，找不到該學習內容");
 
             // ===== 2. 目標章節與索引 =====
-            int targetChapterId = dto.Chapter_Id ?? originChapterId;               // ★
+            int targetChapterId = dto.Chapter_Id ?? originChapterId;              
             int targetIndex = dto.Learn_Index;
 
             // (1) 同章節不可 > 5 筆
             int targetCount = await _context.Learn.CountAsync(l => l.Chapter_Id == targetChapterId);
-            if (targetCount >= 5 && targetChapterId != originChapterId)            // ★
+            if (targetCount >= 5 && targetChapterId != originChapterId)            
                 return (null, "錯誤，單一章節不可超過五個學習內容");
 
-            // (2) 先確定目標章節沒有重複 index  (修正問題 #1) ★
+            // (2) 先確定目標章節沒有重複 index  (修正問題 #1) 
             bool clash = await _context.Learn.AnyAsync(l =>
                 l.Chapter_Id == targetChapterId &&
                 l.Learn_Index == targetIndex &&
@@ -472,7 +472,7 @@ namespace OnlineBookClub.Repository
             if (clash) return (null, "錯誤，此學習編號已經存在");
 
             // ===== 3. 重新排序：跨章節 or 同章節調整位置 =====
-            if (targetChapterId != originChapterId)          // ★——搬到其他章節
+            if (targetChapterId != originChapterId)         
             {
                 // 3-1 移除原章節後重排
                 var originList = await _context.Learn
@@ -480,7 +480,7 @@ namespace OnlineBookClub.Repository
                     .OrderBy(l => l.Learn_Index)
                     .ToListAsync();
                 for (int i = 0; i < originList.Count; i++)
-                    originList[i].Learn_Index = i + 1;        // ★
+                    originList[i].Learn_Index = i + 1;       
 
                 // 3-2 取目標章節清單，插入指定位置
                 var targetList = await _context.Learn
@@ -488,15 +488,15 @@ namespace OnlineBookClub.Repository
                     .OrderBy(l => l.Learn_Index)
                     .ToListAsync();
 
-                targetIndex = Math.Clamp(targetIndex, 1, targetList.Count + 1); // ★
+                targetIndex = Math.Clamp(targetIndex, 1, targetList.Count + 1); 
                 targetList.Insert(targetIndex - 1, learn);
 
                 for (int i = 0; i < targetList.Count; i++)
-                    targetList[i].Learn_Index = i + 1;        // ★
+                    targetList[i].Learn_Index = i + 1;        // 
 
-                learn.Chapter_Id = targetChapterId;           // ★ 更新章節
+                learn.Chapter_Id = targetChapterId;           //  更新章節
             }
-            else if (targetIndex != learn.Learn_Index)        // ★——同章節改順序
+            else if (targetIndex != learn.Learn_Index)        // ——同章節改順序
             {
                 var list = await _context.Learn
                     .Where(l => l.Chapter_Id == originChapterId)
@@ -509,14 +509,14 @@ namespace OnlineBookClub.Repository
                 list.Insert(targetIndex - 1, learn);
 
                 for (int i = 0; i < list.Count; i++)
-                    list[i].Learn_Index = i + 1;              // ★
+                    list[i].Learn_Index = i + 1;              // 
             }
 
             // learn.Learn_Index 已在上面流程更新，不用再手動設；若仍想保險可設一次
-            learn.Learn_Index = targetIndex;                  // ★
+            learn.Learn_Index = targetIndex;                  // 
 
             // ===== 4. 日期相關欄位 =====
-            // 重新抓「更新後」的上一個 / 下一個項目 (修正問題 #3) ★
+            // 重新抓「更新後」的上一個 / 下一個項目 (修正問題 #3) 
             var previousLearn = await _context.Learn
                 .Where(l => l.Chapter_Id == targetChapterId && l.Learn_Index < targetIndex)
                 .OrderByDescending(l => l.Learn_Index)
@@ -579,7 +579,7 @@ namespace OnlineBookClub.Repository
             await _context.SaveChangesAsync();
 
             // ===== 7. 更新計畫所有成員的學習日期 (修正問題 #4) =====
-            await UpdateMembersDueTime(originChapter.Plan_Id, targetChapterId);     // ★
+            await UpdateMembersDueTime(originChapter.Plan_Id, targetChapterId);     // 
 
             return (new LearnDTO { Learn_Name = learn.Learn_Name }, "修改學習內容成功");
         }

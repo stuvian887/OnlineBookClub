@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Identity.Client;
 using OnlineBookClub.DTO;
 using OnlineBookClub.Models;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Net;
 using System.Numerics;
@@ -572,12 +573,13 @@ namespace OnlineBookClub.Repository
 
             // ===== 5. 其他欄位 =====
             learn.Learn_Name = dto.Learn_Name;
-            learn.Pass_Standard = dto.Pass_Standard;
+            if (dto.Pass_Standard == 0) { }
+            else { learn.Pass_Standard = dto.Pass_Standard; }
 
-            // ===== 6. 更新所有 ProgressTracking 的到期日 (修正問題 #5) =====
-            var tracks = await _context.ProgressTracking
-                .Where(pt => pt.Learn_Id == learnId)
-                .ToListAsync();
+                // ===== 6. 更新所有 ProgressTracking 的到期日 (修正問題 #5) =====
+                var tracks = await _context.ProgressTracking
+                    .Where(pt => pt.Learn_Id == learnId)
+                    .ToListAsync();
             foreach (var t in tracks) t.LearnDueTime = learn.DueTime;
 
             await _context.SaveChangesAsync();
@@ -619,6 +621,7 @@ namespace OnlineBookClub.Repository
                         previousDate = JoinDate.Date.AddDays(1).AddSeconds(-1);
                     }
                     DateTime UseDate = (DateTime)previousDate;
+                    //這裡可能要修
                     memberProgress.LearnDueTime = UseDate.AddDays(learn.Days);
 
                     await _context.SaveChangesAsync();

@@ -286,8 +286,8 @@ namespace OnlineBookClub.Repository
             var defaultDate = DateTime.Now.Date;
             //找出前一個Learn的日期
             var lastLearn = await _context.Learn
-                .Where(l => l.Chapter_Id == Chapter_Id)
-                .OrderByDescending(l => l.Learn_Index)
+                .Where(l => l.Plan_Id == FindPlan.Plan_Id)
+                .OrderByDescending(l => l.Learn_Id)
                 .FirstOrDefaultAsync();
             //前一個沒資料設定
             DateTime previousDate = lastLearn?.DueTime ?? DateTime.Now.Date.AddSeconds(-1);

@@ -83,8 +83,13 @@ public class BookService
         var book = await _bookRepository.GetBookByPlanIdAsync(planId);
         if (book == null) return null;
         var url = "";
-        var hostUrl = $"{request.Scheme}://{request.Host}";
+
+        var hostUrl = $"{request.Scheme}://{request.Host}/";
         if (string.IsNullOrEmpty(book.bookpath)) book.bookpath = null;
+        else if(book.bookpath.Contains("https://localhost:7009/"))
+        {
+            url =  book.bookpath;
+        }
         else if (book.bookpath.Contains("/Book/"))
         {
             url = $"{hostUrl}{book.bookpath}";

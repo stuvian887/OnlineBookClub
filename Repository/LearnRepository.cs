@@ -230,8 +230,8 @@ namespace OnlineBookClub.Repository
                 .Where(c =>c.Chapter_Id == Chapter_Id)
                 .FirstOrDefaultAsync();
             var lastLearn = await _context.Learn
-                .Where(l =>l.Chapter_Id == Chapter_Id)
-                .OrderByDescending(l => l.Learn_Index)
+                .Where(l =>l.Plan_Id == PlanId)
+                .OrderByDescending(l => l.Learn_Id)
                 .FirstOrDefaultAsync();
             //要找出ProgressTracking的日期
             DateTime previousDate = lastLearn?.DueTime ?? DateTime.Now.Date;

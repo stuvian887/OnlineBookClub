@@ -454,6 +454,10 @@ namespace OnlineBookClub.Repository
             var learn = await _context.Learn
                 .FirstOrDefaultAsync(l => l.Chapter_Id == originChapterId && l.Learn_Id == learnId);
             if (learn == null) return (null, "錯誤，找不到該學習內容");
+            var plan = await _context.Chapter
+                .Where(c => c.Chapter_Id == originChapterId)
+                .Select(c => c.Plan)
+                .FirstOrDefaultAsync();
 
             // ===== 2. 目標章節與索引 =====
             int targetChapterId = dto.Chapter_Id ?? originChapterId;              
@@ -518,13 +522,13 @@ namespace OnlineBookClub.Repository
             // ===== 4. 日期相關欄位 =====
             // 重新抓「更新後」的上一個 / 下一個項目 (修正問題 #3) 
             var previousLearn = await _context.Learn
-                .Where(l => l.Chapter_Id == targetChapterId && l.Learn_Index < targetIndex)
-                .OrderByDescending(l => l.Learn_Index)
+                .Where(l => l.Plan_Id == plan.Plan_Id && l.Learn_Id < learn.Learn_Id)
+                .OrderByDescending(l => l.Learn_Id)
                 .FirstOrDefaultAsync();
 
             var nextLearn = await _context.Learn
-                .Where(l => l.Chapter_Id == targetChapterId && l.Learn_Index > targetIndex)
-                .OrderBy(l => l.Learn_Index)
+                .Where(l => l.Plan_Id == plan.Plan_Id && l.Learn_Id > learn.Learn_Id)
+                .OrderBy(l => l.Learn_Id)
                 .FirstOrDefaultAsync();
 
             DateTime previousDate = previousLearn?.DueTime ?? DateTime.MinValue.Date;

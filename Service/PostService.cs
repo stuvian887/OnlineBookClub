@@ -160,7 +160,7 @@ namespace OnlineBookClub.Service
         {
             var posts = await _repository.GetPostsByUserIdAsync(userId);
             var data = await _membersRepository.GetByIdAsync(userId);
-            var hostUrl = $"{request.Scheme}://{request.Host}";  // 獲取主機 URL
+            var hostUrl = $"{request.Scheme}://{request.Host}/";  // 獲取主機 URL
             return posts.Select(post => new PostDTO
             {
                 UserId=post.User_Id,
